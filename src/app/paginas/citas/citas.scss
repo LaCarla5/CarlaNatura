@@ -1,0 +1,37 @@
+// Importar estilos base del calendario
+//@import "../node_modules/angular-calendar/css/angular-calendar.css";
+
+@import "../../../../node_modules/angular-calendar/css/angular-calendar.css";
+
+.calendario-container {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+
+  .controles {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    
+    h3 {
+      text-transform: capitalize;
+    }
+
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+      background: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      &:hover { background: #357abd; }
+    }
+  }
+}
+
+// Estilo para que el día seleccionado resalte
+.cal-day-selected {
+  background-color: #e0f0ff !important;
+}

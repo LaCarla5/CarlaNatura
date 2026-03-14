@@ -1,0 +1,54 @@
+// Definimos un color principal acorde a "CarlaNatura"
+$primary-nature: #2d6a4f;
+
+// Importar boostrap
+@use "bootstrap/scss/bootstrap" as *;
+
+/* Scroll suave en toda la web */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Evita que el Navbar tape el contenido al saltar a una sección */
+section {
+  scroll-margin-top: 90px;
+  /* Ajusta según el alto de tu navbar */
+}
+
+/* Espacio extra para que el contenido no empiece tapado por el menú fijo */
+main {
+  min-height: 100vh;
+}
+
+.navbar {
+  .nav-link {
+    font-weight: 500;
+    color: #555;
+    transition: color 0.3s ease;
+    margin: 0 5px;
+
+    &:hover {
+      color: $primary-nature;
+    }
+
+    // Clase que Angular aplica automáticamente al estar en la ruta
+    &.active-link {
+      color: $primary-nature !important;
+      border-bottom: 2px solid $primary-nature;
+    }
+  }
+
+  .navbar-brand {
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+// Estilo específico para el botón de login si no quieres que tenga el borde inferior
+.btn.active {
+  background-color: $primary-nature !important;
+  color: white !important;
+}

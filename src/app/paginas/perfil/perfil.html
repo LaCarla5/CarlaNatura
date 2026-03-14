@@ -1,0 +1,13 @@
+<h2>Mi Perfil</h2>
+<!-- <p>Nombre: {{ nombreUsuario }}</p> -->
+<p>Nombre: Ejemplo</p>
+<button (click)="onLogout()">Cerrar sesión</button>
+
+<hr>
+
+<div *ngIf="authService.isAdmin()" class="admin-panel">
+  <h3>Panel de Administración</h3>
+  <p>Tienes permisos para gestionar la base de datos.</p>
+  <button class="btn-danger">Eliminar cuentas inactivas</button>
+  <button>Ver lista de todos los usuarios</button>
+</div>
