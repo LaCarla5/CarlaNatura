@@ -1,0 +1,60 @@
+// Define tus variables propias
+$verde: #2d5a27;
+$verde-claro: #f1f8f1;
+$blanco-puro: #ffffff;
+
+// Sobrescribe las de Bootstrap (ANTES de importar el framework)
+$primary: $verde;
+$success: $verde;
+$body-bg: $blanco-puro;
+
+// Importa Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// Estilos Globales con SASS
+body {
+  color: #333;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.text-verde { color: $verde; }
+.bg-verde-suave { background-color: $verde-claro; }
+
+.login-page {
+  min-height: 80vh;
+  perspective: 1000px;
+
+  .card-container {
+    width: 100%;
+    max-width: 400px;
+    height: 500px;
+    position: relative;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+
+    &.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      padding: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+
+      &.card-back {
+        transform: rotateY(180deg);
+      }
+
+      span {
+        cursor: pointer;
+        &:hover { text-decoration: underline; }
+      }
+    }
+  }
+}

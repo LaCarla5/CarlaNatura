@@ -1,0 +1,27 @@
+<section class="hero-store">
+    <img src="recursos/img/fondoTienda.png" alt="FondoTienda" class="hero-store__image">
+    <div class="hero-store__overlay">
+        <h1 class="hero-store__title">¡Bienvenidos a nuestra Tienda!</h1>
+    </div>
+</section>
+
+<section id="productos" class="py-5 bg-light" (click)="verDetalle('catalogo')">
+  <div class="container" style="cursor: pointer;">
+    <h2 class="text-center mb-4">Mira alguno de nuestro productos</h2>
+    <app-catalogo></app-catalogo> 
+  </div>
+</section>
+
+<section id="citas" class="py-5 bg-light" (click)="verDetalle('citas')">
+  <div class="container" style="cursor: pointer;">
+    <h2 class="text-center mb-4">Reserva tu Cita</h2>
+    <app-citas></app-citas> 
+  </div>
+</section>
+
+<section id="blog" class="py-5" (click)="verDetalle('blog')">
+  <div class="container" style="cursor: pointer;">
+    <h2 class="text-center mb-4">Nuestro Blog</h2>
+    <app-blog></app-blog>
+  </div>
+</section>

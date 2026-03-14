@@ -1,0 +1,36 @@
+<div class="login-page d-flex justify-content-center align-items-center">
+  <div class="card-container" [class.flipped]="isFlipped">
+    
+    <div class="card-face card-front border shadow-sm">
+      <h2 class="text-verde text-center mb-4">Únete a CarlaNatura</h2>
+      <form class="d-flex flex-column gap-3">
+        <!-- Usar [(ngModel)] en los inputs hace que registerData se rellene -->
+        <input type="text" name="regNombre" class="form-control" [(ngModel)]="registerData.nombre" placeholder="Nombre">
+        <input type="email" name="regEmail" class="form-control" [(ngModel)]="registerData.email" placeholder="Email">
+        <input type="password" name="regPass" class="form-control" [(ngModel)]="registerData.password" placeholder="Pass">
+        <!-- Añadir evento de CLICK -->
+        <button type="button" (click)="onRegister()" class="btn btn-primary w-100">
+        Registrarse
+        </button>
+      </form>
+      <p class="mt-4 text-center">¿Ya tienes cuenta? 
+        <span class="text-verde fw-bold" (click)="toggleFlip()">Inicia sesión</span>
+      </p>
+    </div>
+
+    <div class="card-face card-back border shadow-sm bg-light">
+      <h2 class="text-verde text-center mb-4">Bienvenido</h2>
+      <form class="d-flex flex-column gap-3">
+        <input type="email" class="form-control" placeholder="Email">
+        <input type="password" class="form-control" placeholder="Contraseña">
+        <button type="button" (click)="onLogin()" class="btn btn-primary w-100">
+        Iniciar Sesion
+        </button>
+      </form>
+      <p class="mt-4 text-center">¿Eres nuevo? 
+        <span class="text-verde fw-bold" (click)="toggleFlip()">Crea una cuenta</span>
+      </p>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="calendario-container">
+  <h2>Reserva tu cita en CarlaNatura</h2>
+
+  <div class="controles">
+    <button mwlCalendarPreviousView [view]="view" [(viewDate)]="viewDate">Anterior</button>
+    <h3>{{ viewDate | date:'MMMM yyyy' }}</h3>
+    <button mwlCalendarNextView [view]="view" [(viewDate)]="viewDate">Siguiente</button>
+  </div>
+
+  @if (isBrowser) {
+    <mwl-calendar-month-view
+      [viewDate]="viewDate"
+      (dayClicked)="dayClicked($event.day)">
+    </mwl-calendar-month-view>
+  } @else {
+    <p>Cargando calendario...</p>
+  }
+</div>
