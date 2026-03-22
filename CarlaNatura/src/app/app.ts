@@ -1,6 +1,6 @@
 import { Injectable, Component, signal, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from './guards/auth-guard'; // Ajusta la ruta
+import { AuthService } from './services/auth'; // Ajusta la ruta
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 

@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '../../guards/auth-guard';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-perfil',

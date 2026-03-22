@@ -69,6 +69,15 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  isLoggedIn(): boolean { return this.loggedIn; }
+  isLoggedIn(): boolean {
+  // Si ya sabemos que es true por la variable, genial
+  if (this.loggedIn) return true;
+
+  // Si la variable falló (por un refresco o cambio de componente), miramos el baúl
+  if (isPlatformBrowser(this.platformId)) {
+    return !!localStorage.getItem('userToken'); // Si hay token, es que hay sesión
+  }
+  return false;
+}
   getUserRole(): UserRole { return this.userRole; }
 }

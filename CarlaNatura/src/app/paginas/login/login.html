@@ -6,8 +6,8 @@
       <form class="d-flex flex-column gap-3">
         <!-- Usar [(ngModel)] en los inputs hace que registerData se rellene -->
         <input type="text" name="regNombre" class="form-control" [(ngModel)]="registerData.nombre" placeholder="Nombre">
-        <input type="email" name="regEmail" class="form-control" [(ngModel)]="registerData.email" placeholder="Email">
-        <input type="password" name="regPass" class="form-control" [(ngModel)]="registerData.password" placeholder="Pass">
+        <input type="email" name="regEmail" class="form-control" [(ngModel)]="registerData.email" placeholder="Correo">
+        <input type="password" name="regPass" class="form-control" [(ngModel)]="registerData.password" placeholder="Contraseña">
         <!-- Añadir evento de CLICK -->
         <button type="button" (click)="onRegister()" class="btn btn-primary w-100">
         Registrarse

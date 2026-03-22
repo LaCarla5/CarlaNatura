@@ -3,7 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CalendarModule, CalendarView, CalendarDateFormatter, CalendarNativeDateFormatter } from 'angular-calendar';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router'; 
-import { AuthService } from '../../guards/auth-guard'; 
+import { AuthService } from '../../services/auth'; 
 
 @Component({
   selector: 'app-citas',

@@ -9,7 +9,8 @@ import { Inicio } from './paginas/inicio/inicio';
 import { Login } from './paginas/login/login';
 import { Perfil } from './paginas/perfil/perfil';
 
-import { AuthService } from './guards/auth-guard';
+import { authGuard } from '../app/guards/auth-guard';
+import { AuthService } from '../app/services/auth';
 
 export const routes: Routes = [
 // Redirección inicial: Si entras a la raíz, te manda a inicio

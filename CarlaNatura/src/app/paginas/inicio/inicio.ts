@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core'; // Añadimos inject
 import { Router } from '@angular/router'; // Importante para navegar
-import { AuthService } from '../../guards/auth-guard';
+import { AuthService } from '../../services/auth';
 
 import { Blog } from '../blog/blog'; 
 import { Citas } from '../citas/citas';

@@ -1,14 +1,26 @@
 <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-inner p-5"> <div *ngFor="let producto of productos; let isFirst = first" 
+  
+  <div class="carousel-inner p-5">
+    <div *ngFor="let producto of productos; let isFirst = first" 
          class="carousel-item" 
          [class.active]="isFirst">
       
       <div class="product-container d-flex justify-content-center">
-        <div class="card-relief" (click)="irAlCatalogo(producto.id)">
-          <img [src]="producto.imagen" [alt]="producto.nombre" class="img-fluid">
+        <div class="card-relief" 
+             (click)="irAlCatalogo(producto.id)" 
+             style="cursor: pointer;" 
+             role="button"
+             aria-label="Ver detalles de {{ producto.nombre }}">
+          
+          <div class="image-wrapper">
+            <img [src]="producto.imagen" 
+                 [alt]="producto.nombre" 
+                 class="img-fluid rounded-4">
+          </div>
+
           <div class="info-overlay">
-            <h3>{{ producto.nombre }}</h3>
-            <p>Ver en catálogo</p>
+            <h3 class="text-verde">{{ producto.nombre }}</h3>
+            <p class="mb-0">Ver en catálogo <i class="bi bi-arrow-right"></i></p>
           </div>
         </div>
       </div>
@@ -17,10 +29,13 @@
   </div>
 
   <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+    <span class="visually-hidden">Anterior</span>
   </button>
+  
   <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+    <span class="visually-hidden">Siguiente</span>
   </button>
 
 </div>

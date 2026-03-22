@@ -1,34 +1,17 @@
-import { Injectable, inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-import { Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth'; // <--- Verifica que esta ruta llegue a tu auth.ts
 
-@Injectable({
-  providedIn: 'root'
-})
-export class AuthService {
-  private router = inject(Router);
-  private platformId = inject(PLATFORM_ID); // Inyectamos el ID de la plataforma
+export const authGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-  isLoggedIn(): boolean {
-    // Solo ejecutamos localStorage si estamos en el navegador
-    if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('token');
-    }
-    return false; // Si está en el servidor, devolvemos false por defecto
+  // Usamos el método de tu servicio que mira el localStorage
+  if (authService.isLoggedIn()) {
+    return true; 
+  } else {
+    // Si no hay token, lo mandamos al login
+    router.navigate(['/login']);
+    return false;
   }
-
-  logout() {
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('rol');
-      this.router.navigate(['/login']);
-    }
-  }
-
-  getRol(): string | null {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('rol');
-    }
-    return null;
-  }
-}
+};
