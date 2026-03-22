@@ -1,52 +1,85 @@
-/* src/app/paginas/perfil/perfil.scss */
-// Importamos tus variables de marca
-$verde: #2d5a27;
-$verde-claro: #f1f8f1;
-$blanco-puro: #ffffff;
+// Paleta de colores CarlaNatura
+$verde-oscuro: #2d5a27;   // Color principal de la marca
+$verde-bosque: #1e3d1a;   // Para hover y énfasis
+$verde-fondo: #f4f9f4;    // Fondo muy suave
+$blanco: #ffffff;
 
 .perfil-container {
-  min-height: 80vh;
+  min-height: 80vh; // Asegura que esté centrado verticalmente en la pantalla
   display: flex;
   align-items: center;
+  background-color: transparent; // O usa $verde-fondo si quieres que toda la página sea verde
 }
 
 .profile-card {
-  border-radius: 30px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-  background-color: $verde-claro;
-}
+  border: none;
+  border-radius: 2rem;
+  background: $blanco;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  // Efecto "Card Relief" (Relieve sutil)
+  box-shadow: 20px 20px 60px #d9ded9, -20px -20px 60px #ffffff;
 
-.bg-verde-suave {
-  background-color: $verde-claro;
+  &:hover {
+    transform: translateY(-5px);
+  }
 }
 
 .text-verde {
-  color: $verde;
+  color: $verde-oscuro;
+}
+
+.bg-verde-suave {
+  background-color: rgba(45, 90, 39, 0.05);
 }
 
 .account-info {
-  background-color: $blanco-puro;
   border: 1px solid rgba(45, 90, 39, 0.1);
+  
+  strong {
+    color: #555;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
 }
 
+// Estilo para los Badges (Roles)
 .badge {
-  padding: 0.5em 1em;
-  border-radius: 20px;
-  font-weight: 600;
-
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 500;
+  
   &.bg-verde-intenso {
-    background-color: $verde;
+    background-color: $verde-oscuro !important;
+    color: $blanco;
+  }
+  
+  &.bg-verde-suave {
+    background-color: #e8f0e8 !important;
+    color: $verde-oscuro;
+    border: 1px solid $verde-oscuro;
+  }
+}
+
+// Botones personalizados
+.btn-primary {
+  background-color: $verde-oscuro;
+  border: none;
+  &:hover {
+    background-color: $verde-bosque;
+  }
+}
+
+.btn-outline-danger {
+  color: #dc3545;
+  border-color: #dc3545;
+  &:hover {
+    background-color: #dc3545;
     color: white;
   }
-
-  &.bg-verde-suave {
-    background-color: #f1f8f1;
-    color: $verde;
-    border: 1px solid $verde;
-  }
 }
 
-// Estilo para tus botones redondeados
-.btn-lg.rounded-5 {
-  border-radius: 50px;
+.rounded-5 {
+  border-radius: 50px !important;
 }

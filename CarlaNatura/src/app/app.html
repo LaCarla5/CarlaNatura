@@ -25,11 +25,11 @@
             <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('blog')" routerLinkActive="active-link">Blog</a>
           </li>
 
-          <li class="nav-item ms-lg-3" *ngIf="!authService.isLoggedIn()">
+          <li class="nav-item ms-lg-3" *ngIf="!(authService.isLoggedIn$ | async)">
             <a class="nav-link btn btn-outline-success px-3 me-2" style="cursor: pointer;" (click)="verDetalle('login')">Login</a>
           </li>
 
-          <ng-container *ngIf="authService.isLoggedIn()">
+          <ng-container *ngIf="authService.isLoggedIn$ | async">
             <li class="nav-item">
               <a class="nav-link position-relative" style="cursor: pointer;" (click)="verDetalle('carrito')" routerLinkActive="active-link">
                 <i class="bi bi-cart"></i> Carrito
@@ -44,7 +44,7 @@
             </li>
 
             <li class="nav-item ms-lg-2">
-              <a class="nav-link btn btn-outline-danger px-3 me-2" style="cursor: pointer;" (click)="authService.logout()">Cerrar Sesión</a>
+              <button class="btn btn-outline-danger px-3 me-2" (click)="authService.logout()">Cerrar Sesión</button>
             </li>
           </ng-container>
 

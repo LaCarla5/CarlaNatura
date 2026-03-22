@@ -23,7 +23,7 @@ export class Login {
   private router = inject(Router);
 
   toggleFlip() { this.isFlipped = !this.isFlipped; }
-
+  
   onLogin() {
     const credenciales = { 
       email: this.loginData.email, 
@@ -32,14 +32,16 @@ export class Login {
 
     this.authService.login(credenciales).subscribe({
       next: (res) => {
-        // Usamos mayúsculas para coincidir con tu nueva DB
-        const destino = '/inicio';
+        // 1. Verificamos qué rol nos devolvió la base de datos
+        // Importante: Si en tu DB es 'ADMIN' en mayúsculas, ponlo igual aquí
+        const destino = res.rol === 'ADMIN' ? '/admin-citas' : '/inicio';
+        
+        console.log('Login exitoso, redirigiendo a:', destino);
         this.router.navigate([destino]);
       },
-      error: (err) => alert(err.error.error || 'Fallo en el login')
+      error: (err) => alert(err.error.error || 'Correo o contraseña incorrectos')
     });
   }
-
   // .subscribe(), la petición nunca sale del navegador. Angular ignora las llamadas a servidores si nadie está "escuchando" la respuesta.
   onRegister() {
     // Mira si esto sale en la consola

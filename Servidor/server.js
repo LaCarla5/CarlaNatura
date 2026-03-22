@@ -1,16 +1,31 @@
-// Base de datos
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-// Correo
 const nodemailer = require('nodemailer');
+const path = require('path');
+const multer = require('multer');
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Configuración de MySQL
+// 1. Servir imágenes (Asegúrate de que esta línea esté antes de las rutas)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// 2. Configuración de Multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/perfil/'); 
+  },
+  filename: (req, file, cb) => {
+    const extension = path.extname(file.originalname);
+    cb(null, `user-${Date.now()}${extension}`);
+  }
+});
+const upload = multer({ storage: storage });
+
+// 3. Conexión MySQL
 const conexion = mysql.createConnection({
   host: 'localhost',
   user: 'lacarla',
@@ -20,143 +35,122 @@ const conexion = mysql.createConnection({
 
 conexion.connect((err) => {
   if (err) {
-    console.error('Error al conectar a Workbench:', err);
+    console.error('Error al conectar:', err);
     return;
   }
   console.log('¡Conectado con éxito a MySQL Workbench!');
 });
 
-// CONFIGURACIÓN DE NODEMAILER (Gmail)
+// 4. Configuración Nodemailer
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'carlanatura2026@gmail.com', // Cambia por tu correo
-    pass: 'mfmnmsssyhhozggl'  // Tu contraseña de aplicación de 16 letras
+    user: 'carlanatura2026@gmail.com',
+    pass: 'mfmnmsssyhhozggl' 
   }
 });
 
-// RUTA PARA PEDIR CITA
+// --- RUTAS DE LOGIN (UNIFICADA) ---
+  app.post('/api/login', (req, res) => {
+    const { email, password } = req.body;
+    // IMPORTANTE: foto_perfil debe coincidir con tu Workbench
+    const sql = 'SELECT id, nombre, email, rol, foto_perfil FROM usuarios WHERE email = ? AND password = ?';
+
+    conexion.query(sql, [email, password], (err, resultado) => {
+      if (err) return res.status(500).json({ error: 'Error en el servidor' });
+
+      if (resultado.length > 0) {
+        const usuario = resultado[0];
+        res.json({ 
+          token: 'token-falso-generado', 
+          id: usuario.id,
+          rol: usuario.rol, 
+          nombre: usuario.nombre,
+          // Enviamos el valor de la columna foto_perfil
+          foto: usuario.foto_perfil 
+        });
+      } else {
+        res.status(401).json({ error: 'Credenciales incorrectas' });
+      }
+    });
+  });
+
+// --- RUTA DE REGISTRO ---
+app.post('/api/registro', (req, res) => {
+  const { nombre, email, password, rol } = req.body;
+  const rolFinal = rol || 'USER';
+  const sql = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)';
+  
+  conexion.query(sql, [nombre, email, password, rolFinal], (err, resultado) => {
+    if (err) {
+      if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: 'Correo ya registrado' });
+      return res.status(500).json({ error: 'Error al registrar' });
+    }
+    res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
+  });
+});
+
+// --- RUTA ACTUALIZAR PERFIL ---
+app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
+  const { id } = req.params;
+  const { nombre } = req.body;
+  let foto_perfil = req.file ? `/uploads/perfil/${req.file.filename}` : null;
+
+  let sql = 'UPDATE usuarios SET nombre = ?';
+  let params = [nombre];
+
+  if (foto_perfil) {
+    sql += ', foto_perfil = ?';
+    params.push(foto_perfil);
+  }
+
+  sql += ' WHERE id = ?';
+  params.push(id);
+
+  conexion.query(sql, params, (err) => {
+    if (err) return res.status(500).json({ error: 'Error al actualizar' });
+    res.json({ mensaje: 'Perfil actualizado', nombre, foto: foto_perfil });
+  });
+});
+
+// --- RUTA CITAS ---
 app.post('/api/citas', (req, res) => {
   const { nombre, email, servicio, fecha, hora, estado } = req.body;
-
-  // 1. Insertar en la base de datos
   const sql = 'INSERT INTO citas (nombre, email, servicio, fecha, hora, estado) VALUES (?, ?, ?, ?, ?, ?)';
   
-  conexion.query(sql, [nombre, email, servicio, fecha, hora, estado], (err, resultado) => {
-    if (err) {
-      console.error('Error al guardar en DB:', err);
-      return res.status(500).json({ error: 'Error al guardar la cita' });
-    }
+  conexion.query(sql, [nombre, email, servicio, fecha, hora, estado], (err) => {
+    if (err) return res.status(500).json({ error: 'Error al guardar cita' });
 
-    // 2. Si se guardó bien, enviar el correo
     const mailOptions = {
       from: 'CarlaNatura <carlanatura2026@gmail.com>',
       to: email,
-      subject: 'Confirmación de tu Cita - CarlaNatura',
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd;">
-          <h2 style="color: #4CAF50;">¡Cita confirmada!</h2>
-          <p>Hola <strong>${nombre}</strong>,</p>
-          <p>Tu cita se ha registrado correctamente en nuestro sistema.</p>
-          <p><strong>Fecha:</strong> ${fecha}</p>
-          <p><strong>Hora:</strong> ${hora}</p>
-          <p>¡Te esperamos en CarlaNatura!</p>
-        </div>
-      `
+      subject: 'Confirmación de Cita',
+      html: `<h2>¡Cita confirmada!</h2><p>Hola ${nombre}, te esperamos el ${fecha} a las ${hora}.</p>`
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.error('Error al enviar correo:', error);
-        // Aunque el correo falle, la cita ya se guardó en DB
-        return res.status(200).json({ mensaje: 'Cita guardada pero el correo falló' });
-      }
-      
-      res.status(200).json({ mensaje: 'Cita guardada y correo enviado con éxito' });
+    transporter.sendMail(mailOptions, () => {
+      res.status(200).json({ mensaje: 'Cita procesada' });
     });
+  });
+});
+
+// --- RUTAS ADMIN ---
+app.get('/api/admin/citas', (req, res) => {
+  conexion.query('SELECT * FROM citas ORDER BY fecha DESC, hora DESC', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
+});
+
+app.patch('/api/admin/citas/:id', (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+  conexion.query('UPDATE citas SET estado = ? WHERE id = ?', [estado, id], (err) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json({ mensaje: 'Cita actualizada' });
   });
 });
 
 app.listen(3000, () => {
   console.log('Servidor corriendo en el puerto 3000');
-});
-
-// --- RUTAS PARA EL ADMINISTRADOR ---
-
-// 1. Obtener TODAS las citas (para la tabla del admin)
-app.get('/api/admin/citas', (req, res) => {
-  const sql = 'SELECT * FROM citas ORDER BY fecha DESC, hora DESC';
-  
-  conexion.query(sql, (err, resultados) => {
-    if (err) {
-      console.error('Error al obtener citas:', err);
-      return res.status(500).json({ error: 'Error al consultar la base de datos' });
-    }
-    res.json(resultados);
-  });
-});
-
-// 2. Actualizar el estado de una cita (Confirmar/Cancelar)
-app.patch('/api/admin/citas/:id', (req, res) => {
-  const { id } = req.params;
-  const { estado } = req.body; // El admin enviará "Confirmada" o "Cancelada"
-
-  const sql = 'UPDATE citas SET estado = ? WHERE id = ?';
-
-  conexion.query(sql, [estado, id], (err, resultado) => {
-    if (err) {
-      console.error('Error al actualizar cita:', err);
-      return res.status(500).json({ error: 'No se pudo actualizar la cita' });
-    }
-    res.json({ mensaje: `Cita ${id} actualizada a ${estado}` });
-  });
-});
-
-// -- Rutas Login --
-
-app.post('/api/login', (req, res) => {
-  const { email, password } = req.body;
-  const sql = 'SELECT id, nombre, rol FROM usuarios WHERE email = ? AND password = ?';
-
-  conexion.query(sql, [email, password], (err, resultado) => {
-    if (err) return res.status(500).json({ error: 'Error en el servidor' });
-
-    if (resultado.length > 0) {
-      const usuario = resultado[0];
-      // Devolvemos el rol que viene de la base de datos (ej: 'ADMIN' o 'USER')
-      res.json({ 
-        token: 'token-falso-generado', 
-        rol: usuario.rol, 
-        nombre: usuario.nombre 
-      });
-    } else {
-      res.status(401).json({ error: 'Credenciales incorrectas' });
-    }
-  });
-});
-
-// RUTA PARA REGISTRO DE USUARIOS
-app.post('/api/registro', (req, res) => {
-  const { nombre, email, password, rol } = req.body;
-
-  // Asignamos 'USER' si no viene ningún rol (por seguridad)
-  const rolFinal = rol || 'USER';
-
-  const sql = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)';
-  
-  conexion.query(sql, [nombre, email, password, rolFinal], (err, resultado) => {
-    if (err) {
-      console.error('Error al registrar usuario:', err);
-      // Si el email ya existe (asumiendo que es UNIQUE en tu DB)
-      if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(400).json({ error: 'El correo ya está registrado en la base de datos' });
-      }
-      return res.status(500).json({ error: 'Error al registrar el usuario' });
-    }
-
-    res.status(201).json({ 
-      mensaje: 'Usuario registrado con éxito',
-      id: resultado.insertId 
-    });
-  });
 });

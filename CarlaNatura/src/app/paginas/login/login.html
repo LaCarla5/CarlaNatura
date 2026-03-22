@@ -21,14 +21,26 @@
     <div class="card-face card-back border shadow-sm bg-light">
       <h2 class="text-verde text-center mb-4">Bienvenido</h2>
       <form class="d-flex flex-column gap-3">
-        <input type="email" class="form-control" placeholder="Email">
-        <input type="password" class="form-control" placeholder="Contraseña">
+        
+        <input type="email" 
+              name="loginEmail" 
+              class="form-control" 
+              [(ngModel)]="loginData.email" 
+              placeholder="Email">
+
+        <input type="password" 
+              name="loginPass" 
+              class="form-control" 
+              [(ngModel)]="loginData.password" 
+              placeholder="Contraseña">
+
         <button type="button" (click)="onLogin()" class="btn btn-primary w-100">
-        Iniciar Sesion
+          Iniciar Sesion
         </button>
       </form>
+      
       <p class="mt-4 text-center">¿Eres nuevo? 
-        <span class="text-verde fw-bold" (click)="toggleFlip()">Crea una cuenta</span>
+        <span class="text-verde fw-bold" (click)="toggleFlip()" style="cursor: pointer;">Crea una cuenta</span>
       </p>
     </div>
 
