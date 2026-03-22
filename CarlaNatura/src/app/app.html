@@ -1,7 +1,7 @@
 <header>
   <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" routerLink="/" style="cursor: pointer;">
+      <a class="navbar-brand d-flex align-items-center" routerLink="/inicio" style="cursor: pointer;">
         <img src="recursos/img/logo.png" alt="Logo" width="45" class="me-2">
         <span class="fw-bold text-success fs-3">{{ title() }}</span>
       </a>
@@ -12,37 +12,42 @@
 
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
+          
           <li class="nav-item">
-            <a class="nav-link" routerLink="/Catalogo" routerLinkActive="active-link" (click)="verDetalle('catalogo')">Catálogo</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/Citas" (click)="verDetalle('citas')" routerLinkActive="active-link">Citas</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" routerLink="/Blog" (click)="verDetalle('blog')" routerLinkActive="active-link">Blog</a>
+            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('catalogo')" routerLinkActive="active-link">Catálogo</a>
           </li>
 
-          <li class="nav-item ms-lg-3" *ngIf="!authService.isLoggedIn()" (click)="verDetalle('catalogo')">
-            <a class="nav-link btn btn-outline-success px-3 me-2" routerLink="/Login"
-              routerLinkActive="active">Login</a>
+          <li class="nav-item">
+            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('citas')" routerLinkActive="active-link">Citas</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('blog')" routerLinkActive="active-link">Blog</a>
+          </li>
+
+          <li class="nav-item ms-lg-3" *ngIf="!authService.isLoggedIn()">
+            <a class="nav-link btn btn-outline-success px-3 me-2" style="cursor: pointer;" (click)="verDetalle('login')">Login</a>
           </li>
 
           <ng-container *ngIf="authService.isLoggedIn()">
             <li class="nav-item">
-              <a class="nav-link position-relative" routerLink="/Carrito" routerLinkActive="active-link">
+              <a class="nav-link position-relative" style="cursor: pointer;" (click)="verDetalle('carrito')" routerLinkActive="active-link">
                 <i class="bi bi-cart"></i> Carrito
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">0</span>
               </a>
             </li>
+
             <li class="nav-item ms-lg-2">
-              <a class="nav-link" routerLink="/Perfil" routerLinkActive="active-link">
+              <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('perfil')" routerLinkActive="active-link">
                 <i class="bi bi-person-circle fs-5"></i> Mi Perfil
               </a>
             </li>
+
             <li class="nav-item ms-lg-2">
-              <button class="btn btn-sm btn-link text-muted" (click)="authService.logout()">Salir</button>
+              <a class="nav-link btn btn-outline-danger px-3 me-2" style="cursor: pointer;" (click)="authService.logout()">Cerrar Sesión</a>
             </li>
           </ng-container>
+
         </ul>
       </div>
     </div>
@@ -52,8 +57,6 @@
 <main class="container mt-4">
   <router-outlet></router-outlet>
 </main>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <footer class="py-4 mt-5 border-top text-center text-muted">
   <p>© 2026 {{ title() }} - Naturalmente contigo</p>

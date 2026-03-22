@@ -19,6 +19,7 @@ export class App {
   protected readonly title = signal('CarlaNatura');
   private router = inject(Router);
 
+  // Usa el VerDetalle y le lleva donde quiere ir
   verDetalle(item: string) {
   if (this.authService.isLoggedIn()) {
     // Si ya está logueado, le mandamos a la sección REAL que quiere ver

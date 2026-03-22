@@ -1,0 +1,52 @@
+/* src/app/paginas/perfil/perfil.scss */
+// Importamos tus variables de marca
+$verde: #2d5a27;
+$verde-claro: #f1f8f1;
+$blanco-puro: #ffffff;
+
+.perfil-container {
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+}
+
+.profile-card {
+  border-radius: 30px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  background-color: $verde-claro;
+}
+
+.bg-verde-suave {
+  background-color: $verde-claro;
+}
+
+.text-verde {
+  color: $verde;
+}
+
+.account-info {
+  background-color: $blanco-puro;
+  border: 1px solid rgba(45, 90, 39, 0.1);
+}
+
+.badge {
+  padding: 0.5em 1em;
+  border-radius: 20px;
+  font-weight: 600;
+
+  &.bg-verde-intenso {
+    background-color: $verde;
+    color: white;
+  }
+
+  &.bg-verde-suave {
+    background-color: #f1f8f1;
+    color: $verde;
+    border: 1px solid $verde;
+  }
+}
+
+// Estilo para tus botones redondeados
+.btn-lg.rounded-5 {
+  border-radius: 50px;
+}

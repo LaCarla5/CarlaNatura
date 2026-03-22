@@ -1,13 +1,37 @@
-<h2>Mi Perfil</h2>
-<!-- <p>Nombre: {{ nombreUsuario }}</p> -->
-<p>Nombre: Ejemplo</p>
-<button (click)="onLogout()">Cerrar sesión</button>
+<div class="perfil-container container p-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      
+      <div class="profile-card card-relief bg-verde-suave p-5 text-center">
+        <div class="profile-icon mb-4">
+          <i class="bi bi-person-circle text-verde" style="font-size: 5rem;"></i>
+        </div>
 
-<hr>
+        <h1 class="text-verde mb-3">Mi Perfil CarlaNatura</h1>
+        <p class="lead mb-4">¡Bienvenido de nuevo, <strong class="text-verde">{{ userName }}</strong>!</p>
 
-<div *ngIf="authService.isAdmin()" class="admin-panel">
-  <h3>Panel de Administración</h3>
-  <p>Tienes permisos para gestionar la base de datos.</p>
-  <button class="btn-danger">Eliminar cuentas inactivas</button>
-  <button>Ver lista de todos los usuarios</button>
+        <div class="account-info bg-white rounded-4 p-4 mb-4 shadow-sm">
+          <div class="d-flex justify-content-between mb-2">
+            <strong>Rol de cuenta:</strong>
+            <span class="badge" [class.bg-verde-intenso]="userRole === 'ADMIN'" [class.bg-verde-suave]="userRole === 'USER'">
+              {{ userRole }}
+            </span>
+          </div>
+          <p class="text-muted mb-0">Esta sección es exclusiva para usuarios registrados. Aquí podrás ver tus próximas citas y historial.</p>
+        </div>
+
+        <div class="profile-actions d-grid gap-3 d-sm-flex justify-content-sm-center">
+          <button class="btn btn-primary btn-lg rounded-5 px-5" routerLink="/catalogo">
+            Ir al catálogo
+          </button>
+          <button class="btn btn-outline-danger btn-lg rounded-5 px-5" (click)="onLogout()">
+            <i class="bi bi-box-arrow-right me-2"></i>
+            Cerrar Sesión
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
 </div>
