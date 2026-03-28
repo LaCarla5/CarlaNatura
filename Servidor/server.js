@@ -77,11 +77,12 @@ const transporter = nodemailer.createTransport({
 
 // --- RUTA DE REGISTRO ---
 app.post('/api/registro', (req, res) => {
-  const { nombre, email, password, rol } = req.body;
+  const { nombre, email, password, rol, foto_perfil } = req.body;
   const rolFinal = rol || 'USER';
-  const sql = 'INSERT INTO usuarios (nombre, email, password, rol) VALUES (?, ?, ?, ?)';
+  const foto_perfilDef = '/uploads/perfil/imagenUsuarioEjemplo.jpg';
+  const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   
-  conexion.query(sql, [nombre, email, password, rolFinal], (err, resultado) => {
+  conexion.query(sql, [nombre, email, password, rolFinal, foto_perfilDef], (err, resultado) => {
     if (err) {
       if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: 'Correo ya registrado' });
       return res.status(500).json({ error: 'Error al registrar' });

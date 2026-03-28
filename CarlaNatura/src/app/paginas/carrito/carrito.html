@@ -1,1 +1,52 @@
-<p>carrito works!</p>
+<main class="container py-5">
+  <section class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-white py-3">
+      <h3 class="text-success fw-bold mb-0">
+        <i class="bi bi-basket2-fill me-2"></i>Tu Carrito Natural 🛒
+      </h3>
+    </div>
+
+    <div class="card-body">
+      @for (item of miCarrito.productos(); track item.id) {
+        <div class="d-flex align-items-center justify-content-between border-bottom py-3">
+          <div class="d-flex align-items-center">
+            <img [src]="item.imagen" [alt]="item.nombre" class="rounded-3 shadow-sm me-3" width="70">
+            <div>
+              <h5 class="mb-0 fw-bold">{{ item.nombre }}</h5>
+              <p class="text-primary mb-0 fw-semibold">${{ item.precio }}</p>
+            </div>
+          </div>
+          <button (click)="miCarrito.eliminar(item.id)" class="btn btn-outline-danger btn-sm rounded-pill">
+            <i class="bi bi-trash3"></i> Eliminar
+          </button>
+        </div>
+      } @empty {
+        <div class="text-center py-5">
+          <p class="text-muted fs-5">Aún no has añadido ningun producto.</p>
+          <a routerLink="/catalogo" class="btn btn-success rounded-pill px-4">Ir al catálogo</a>
+        </div>
+      }
+    </div>
+
+    @if (miCarrito.cantidadTotal() > 0) {
+      <div class="card-footer bg-light p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="fs-5 fw-medium text-secondary">Total a pagar:</span>
+          <span class="fs-2 fw-bold text-success">${{ miCarrito.precioTotal() }}</span>
+        </div>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <button (click)="miCarrito.limpiar()" class="btn btn-outline-secondary w-100 rounded-pill">
+              Vaciar carrito
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-success w-100 rounded-pill fw-bold shadow">
+              Finalizar Pedido
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+</main>

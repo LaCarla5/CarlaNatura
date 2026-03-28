@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { CarritoS } from '../../services/carrito-s'; // Asumiendo que tienes un servicio
 
 @Component({
   selector: 'app-carrito',
@@ -7,5 +8,8 @@ import { Component } from '@angular/core';
   styleUrl: './carrito.scss',
 })
 export class Carrito {
+// Inyectamos el servicio con un nombre en español para el HTML
+  public miCarrito = inject(CarritoS);
 
+  constructor() {}
 }

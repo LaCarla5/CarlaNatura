@@ -2,6 +2,7 @@ import { Component, signal, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth'; 
 import { CommonModule } from '@angular/common';
+import { CarritoS, Producto } from '../../services/carrito-s'; // Asumiendo que tienes un servicio
 
 @Component({
 selector: 'app-catalogo',
@@ -16,16 +17,26 @@ export class Catalogo {
   private router = inject(Router);
   protected readonly title = signal('CarlaNatura');
 
+  constructor() {}
+
   productos = [
-      { id: 1, nombre: 'Producto A', imagen: 'https://www.agoracosmeticanatural.com/?srsltid=AfmBOordOhwcQ_9867H-Kedt-uV-JfGFx9dbOEM9VnjeBHakDgGUwZEr' },
-      { id: 2, nombre: 'Producto B', imagen: 'https://sendaaromatica.com/cosmetica-ecologica-cara-y-cuerpo/' },
-      { id: 3, nombre: 'Producto C', imagen: 'https://sendaaromatica.com/tienda-productos-de-cosmetica/' }
-    ];
+  { 
+    id: 1, 
+    nombre: 'Aceite de Lavanda', 
+    precio: 15.00, 
+    descripcion: 'Relajante natural.', 
+    imagen: 'assets/lavanda.jpg' 
+  },
+  // ... más productos
+];
+
+  ngOnInit(): void {
+    // Aquí podrías llamar a tu API para llenar la lista de productos
+  }
 
   irAlCatalogo(id: number) {
     // 1. Primero comprobamos con el servicio
     if (this.authService.isLoggedIn()) {
-      console.log('Usuario validado. Entrando al producto:', id);
       // Si está logueado, navega al detalle del producto
       this.router.navigate(['/catalogo', id]); 
     } else {
@@ -35,4 +46,13 @@ export class Catalogo {
       this.router.navigate(['/login']);
     }
   }
+
+  private carritoService = inject(CarritoS);
+
+  // Método para añadir al carrito
+  agregarAlCarrito(producto: Producto) {
+      this.carritoService.añadir(producto);
+      console.log('Producto agregado:', producto.nombre);
+    }
+
 }

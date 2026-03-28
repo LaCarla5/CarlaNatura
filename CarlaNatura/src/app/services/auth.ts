@@ -4,14 +4,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 
-// Interfaz para el Login
 export interface UserCredentials {
   email: string;
   password: string;
 }
 
-// Roles actualizados según tu tabla SQL
-export type UserRole = 'ADMIN' | 'USER' | null; // He puesto MAYÚSCULAS para que coincida con tu SQL anterior
+export type UserRole = 'ADMIN' | 'USER' | null;
 
 @Injectable({
   providedIn: 'root'
@@ -23,95 +21,87 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  // Mensajero en tiempo real
-  // Inicializa con true o false dependiendo de si hay un token al arrancar
+  // 1. Estado de autenticación
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
-  public isLoggedIn$ = this.loggedInSubject.asObservable(); // El Navbar se suscribirá a este
+  public isLoggedIn$ = this.loggedInSubject.asObservable();
 
-  constructor() {
-    // Verificación inicial de rol (opcional, ya que usamos BehaviorSubject)
-    if (isPlatformBrowser(this.platformId)) {
-      const savedRole = localStorage.getItem('rol') as UserRole;
-    }
-  }
+  // 2. NUEVO: Estado de los datos del usuario (Nombre y Foto)
+  // Esto permite que el Navbar se actualice cuando cambias tu foto o nombre
+  private userDataSubject = new BehaviorSubject<{nombre: string | null, foto: string | null}>({
+    nombre: this.getStoredItem('userName'),
+    foto: this.getStoredItem('userPhoto')
+  });
+  public userData$ = this.userDataSubject.asObservable();
 
-  // Función auxiliar para el constructor y el subject
+  constructor() {}
+
   private hasToken(): boolean {
-    if (isPlatformBrowser(this.platformId)) {
-      return !!localStorage.getItem('token');
-    }
-    return false;
+    return isPlatformBrowser(this.platformId) && !!localStorage.getItem('token');
   }
 
-  // --- LOGIN REAL CON NODE.JS ---
+  private getStoredItem(key: string): string | null {
+    return isPlatformBrowser(this.platformId) ? localStorage.getItem(key) : null;
+  }
+
+  // --- LOGIN ---
   login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => {
         if (isPlatformBrowser(this.platformId)) {
-          // 1. Guardamos todo en LocalStorage
           localStorage.setItem('token', res.token);
           localStorage.setItem('rol', res.rol);
           localStorage.setItem('userId', res.id);
           localStorage.setItem('userName', res.nombre);
           localStorage.setItem('userPhoto', res.foto || '');
 
-          // 2. AVISAMOS AL MENSAJERO: ¡Estamos logueados!
+          // Notificamos a los suscriptores
           this.loggedInSubject.next(true);
-          
-          console.log('Sesión guardada y estado actualizado');
+          this.userDataSubject.next({ nombre: res.nombre, foto: res.foto });
         }
       })
     );
   }
 
-  // Este método lo siguen usando los Guards
   isLoggedIn(): boolean {
     return this.loggedInSubject.value;
   }
 
-  // --- REGISTRO REAL CON NODE.JS ---
   registro(datos: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/registro`, datos);
   }
 
-  // --- LOGOUT CORREGIDO ---
+  // --- LOGOUT ---
   logout() {
     if (isPlatformBrowser(this.platformId)) {
-      // Limpiamos TODAS las llaves que usas
-      localStorage.removeItem('token');
-      localStorage.removeItem('rol');
-      localStorage.removeItem('userId');
-      localStorage.removeItem('userName');
-      localStorage.removeItem('userPhoto');
-      
-      // AVISAMOS AL MENSAJERO: ¡Se ha cerrado sesión!
+      localStorage.clear(); // Limpia todo de golpe
       this.loggedInSubject.next(false);
+      this.userDataSubject.next({ nombre: null, foto: null });
     }
     this.router.navigate(['/login']);
   }
 
   getUserRole(): UserRole {
-    if (isPlatformBrowser(this.platformId)) {
-      return localStorage.getItem('rol') as UserRole;
-    }
-    return null;
+    return this.getStoredItem('rol') as UserRole;
   }
 
   // --- ACTUALIZAR PERFIL ---
   actualizarPerfil(id: number, nombre: string, foto: File | null): Observable<any> {
     const formData = new FormData();
     formData.append('nombre', nombre);
-
-    if (foto) {
-      formData.append('foto', foto);
-    }
+    if (foto) formData.append('foto', foto);
 
     return this.http.put<any>(`${this.apiUrl}/perfil/${id}`, formData).pipe(
       tap(res => {
-        // Si el servidor devuelve el nuevo nombre/foto, actualizamos localStorage
         if (isPlatformBrowser(this.platformId)) {
+          // Actualizamos LocalStorage
           localStorage.setItem('userName', res.nombre);
           if (res.foto) localStorage.setItem('userPhoto', res.foto);
+
+          // ¡IMPORTANTE! Notificamos el cambio para que el Navbar se actualice solo
+          this.userDataSubject.next({ 
+            nombre: res.nombre, 
+            foto: res.foto || localStorage.getItem('userPhoto') 
+          });
         }
       })
     );
