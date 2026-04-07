@@ -1,32 +1,49 @@
 // Paleta de colores CarlaNatura
-$verde-oscuro: #2d5a27;   // Color principal de la marca
-$verde-bosque: #1e3d1a;   // Para hover y énfasis
-$verde-fondo: #f4f9f4;    // Fondo muy suave
+$verde-oscuro: #2d5a27;   
+$verde-bosque: #1e3d1a;   
+$verde-fondo: #f4f9f4;    
 $blanco: #ffffff;
 
 .perfil-container {
-  min-height: 80vh; // Asegura que esté centrado verticalmente en la pantalla
+  // Asegura que ocupe todo el alto para el centrado vertical
+  min-height: 90vh; 
   display: flex;
-  align-items: center;
-  background-color: transparent; // O usa $verde-fondo si quieres que toda la página sea verde
+  align-items: center;    // Centrado vertical
+  justify-content: center; // Centrado horizontal
+  background-color: transparent; 
+  padding: 2rem 1rem;
 }
 
 .profile-card {
   border: none;
-  border-radius: 2rem;
+  border-radius: 2.5rem; // Un poco más redondeado para suavidad
   background: $blanco;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   
-  // Efecto "Card Relief" (Relieve sutil)
+  // Tu efecto de relieve mejorado para que no se vea "estrecho"
   box-shadow: 20px 20px 60px #d9ded9, -20px -20px 60px #ffffff;
+  
+  // Aquí controlamos el ancho máximo para que no se estire al infinito en 4K
+  width: 100%;
+  max-width: 900px; // Esto lo hace ver "más ancho" pero elegante
+  
+  padding: 3.5rem !important; // Más espacio interno para que no se vea apretado
 
   &:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    box-shadow: 25px 25px 70px #ccd1cc, -25px -25px 70px #ffffff;
   }
+}
+
+// Estructura interna para que el contenido no se pegue
+.info-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .text-verde {
   color: $verde-oscuro;
+  letter-spacing: -0.5px;
 }
 
 .bg-verde-suave {
@@ -34,52 +51,73 @@ $blanco: #ffffff;
 }
 
 .account-info {
+  background-color: #fcfdfc;
   border: 1px solid rgba(45, 90, 39, 0.1);
+  border-radius: 1.5rem;
+  padding: 2rem;
   
   strong {
-    color: #555;
-    font-size: 0.9rem;
+    color: $verde-oscuro;
+    font-size: 0.85rem;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    opacity: 0.8;
   }
 }
 
-// Estilo para los Badges (Roles)
+// Badges (Roles)
 .badge {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border-radius: 50px;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.9rem;
   
   &.bg-verde-intenso {
     background-color: $verde-oscuro !important;
     color: $blanco;
+    box-shadow: 0 4px 15px rgba(45, 90, 39, 0.2);
   }
   
   &.bg-verde-suave {
-    background-color: #e8f0e8 !important;
+    background-color: #eef5ee !important;
     color: $verde-oscuro;
-    border: 1px solid $verde-oscuro;
+    border: 1px solid rgba($verde-oscuro, 0.2);
   }
 }
 
-// Botones personalizados
-.btn-primary {
-  background-color: $verde-oscuro;
-  border: none;
-  &:hover {
-    background-color: $verde-bosque;
+// Botones mejorados (Más grandes para accesibilidad)
+.btn {
+  padding: 12px 30px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  
+  &.btn-success {
+    background-color: $verde-oscuro;
+    border: none;
+    &:hover {
+      background-color: $verde-bosque;
+      transform: scale(1.02);
+    }
   }
-}
 
-.btn-outline-danger {
-  color: #dc3545;
-  border-color: #dc3545;
-  &:hover {
-    background-color: #dc3545;
-    color: white;
+  &.btn-outline-success {
+    border: 2px solid $verde-oscuro;
+    color: $verde-oscuro;
+    &:hover {
+      background-color: $verde-oscuro;
+      color: white;
+    }
   }
 }
 
 .rounded-5 {
   border-radius: 50px !important;
+}
+
+// Ajuste para móviles: que no pierda el estilo
+@media (max-width: 768px) {
+  .profile-card {
+    padding: 2rem 1.5rem !important;
+    margin: 1rem;
+  }
 }
