@@ -1,0 +1,65 @@
+$primary-nature: #2d6a4f;
+$bg-light: #f9fbf9;
+
+.blog-header {
+  height: 300px;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
+              url('/assets/bg-blog.jpg') center/cover;
+  margin-top: -20px; // Ajuste si tienes el navbar fijo
+}
+
+.blog-card {
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+
+    .blog-img-wrapper img {
+      transform: scale(1.05);
+    }
+  }
+
+  .blog-img-wrapper {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .badge-categoria {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      background-color: rgba($primary-nature, 0.9);
+      color: white;
+      padding: 5px 15px;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      backdrop-filter: blur(4px);
+    }
+  }
+
+  .btn-leer {
+    color: $primary-nature;
+    text-decoration: none;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: gap 0.3s ease;
+
+    &:hover {
+      gap: 10px;
+      color: darken($primary-nature, 10%);
+    }
+  }
+}
