@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { AuthService } from '../../services/auth'; 
 import { CommonModule } from '@angular/common';
 import { CarritoS, Producto } from '../../services/carrito-s'; // Asumiendo que tienes un servicio
+import { HttpClient } from '@angular/common/http';
 
 @Component({
 selector: 'app-catalogo',
@@ -16,22 +17,16 @@ export class Catalogo {
   public authService = inject(AuthService); 
   private router = inject(Router);
   protected readonly title = signal('CarlaNatura');
+  private http = inject(HttpClient);
+  private carritoService = inject(CarritoS);
 
+
+  private apiUrl = 'http://localhost:3000/api/catalogo';
+  productos: Producto[] = [];
   constructor() {}
 
-  productos = [
-  { 
-    id: 1, 
-    nombre: 'Aceite de Lavanda', 
-    precio: 15.00, 
-    descripcion: 'Relajante natural.', 
-    imagen: 'assets/lavanda.jpg' 
-  },
-  // ... más productos
-];
-
   ngOnInit(): void {
-    // Aquí podrías llamar a tu API para llenar la lista de productos
+    this.cargarProductosBBDD();
   }
 
   irAlCatalogo(id: number) {
@@ -47,7 +42,14 @@ export class Catalogo {
     }
   }
 
-  private carritoService = inject(CarritoS);
+  cargarProductosBBDD() {
+    this.http.get<Producto[]>(this.apiUrl).subscribe({
+      next: (res) => {
+        this.productos = res;
+      },
+      error: (err) => console.error('Error al cargar catálogo de usuarios:', err)
+    });
+  }
 
   // Método para añadir al carrito
   agregarAlCarrito(producto: Producto) {

@@ -135,6 +135,53 @@ app.post('/api/citas', (req, res) => {
   });
 });
 
+// -- CATALOGO USER
+app.get('/api/catalogo', (req, res) => {
+  const sql = 'SELECT * FROM productos'; 
+  conexion.query(sql, (err, resultados) => {
+    if (err) {
+      console.error('Error en la base de datos:', err);
+      return res.status(500).json({ error: 'Error al obtener productos' });
+    }
+    // Enviamos los productos a la web del usuario
+    res.json(resultados);
+  });
+});
+
+
+// --- RUTAS DE GESTIÓN (CATALOGO-ADMIN) ---
+// Obtener productos
+app.get('/api/catalogo-admin', (req, res) => {
+  const sql = 'SELECT * FROM productos'; // La tabla se sigue llamando productos en SQL
+  conexion.query(sql, (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error al obtener datos' });
+    res.json(resultados);
+  });
+});
+
+// Añadir producto
+app.post('/api/catalogo-admin', (req, res) => {
+  const { nombre, precio, stock, imagen, descripcion } = req.body;
+  const sql = 'INSERT INTO productos (nombre, precio, stock, imagen, descripcion) VALUES (?, ?, ?, ?, ?)';
+  
+  conexion.query(sql, [nombre, precio, stock, imagen, descripcion], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al insertar' });
+    res.status(201).json({ mensaje: 'Creado con éxito', id: resultado.insertId });
+  });
+});
+
+// Eliminar producto
+app.delete('/api/catalogo-admin/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = 'DELETE FROM productos WHERE id = ?';
+  
+  conexion.query(sql, [id], (err) => {
+    if (err) return res.status(500).json({ error: 'Error al eliminar' });
+    res.json({ mensaje: 'Eliminado' });
+  });
+});
+
+
 // --- RUTAS ADMIN ---
 app.get('/api/admin/citas', (req, res) => {
   conexion.query('SELECT * FROM citas ORDER BY fecha DESC, hora DESC', (err, resultados) => {
@@ -155,3 +202,4 @@ app.patch('/api/admin/citas/:id', (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor corriendo en el puerto 3000');
 });
+

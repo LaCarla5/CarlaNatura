@@ -21,12 +21,19 @@ export class App {
 
   // Usa el VerDetalle y le lleva donde quiere ir
   verDetalle(item: string) {
-  if (this.authService.isLoggedIn()) {
-    // Si ya está logueado, le mandamos a la sección REAL que quiere ver
-    this.router.navigate(['/' + item]); 
-  } else {
-    // Si no está logueado, lo obligamos a pasar por el Login
-    this.router.navigate(['/login']);
+    // Definimos qué rutas son privadas (necesitan login)
+    const rutasPrivadas = ['carrito', 'perfil', 'citas', 'admin/catalogo-admin'];
+
+    if (rutasPrivadas.includes(item)) {
+      // Si es privada, verificamos login
+      if (this.authService.isLoggedIn()) {
+        this.router.navigate(['/' + item]);
+      } else {
+        this.router.navigate(['/login']);
+      }
+    } else {
+      // Si es pública (catálogo, blog, dietas, inicio), navegamos sin preguntar
+      this.router.navigate(['/' + item]);
+    }
   }
-}
 }

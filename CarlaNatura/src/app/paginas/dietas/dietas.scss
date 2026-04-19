@@ -1,0 +1,59 @@
+// Paleta de colores CarlaNatura
+$verde-oscuro: #2d5a27;
+$blanco: #ffffff;
+
+.dietas-wrapper {
+  min-height: 100vh;
+  padding: 1.5rem 0; // Reducimos el padding superior
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  .header-seccion {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    
+    h2 {
+      color: $verde-oscuro;
+      font-weight: 800;
+    }
+  }
+
+  .iframe-container {
+    width: 98%;      
+    max-width: 1600px;
+    height: 85vh;    
+    background: $blanco;
+    
+    // Usamos un borde sólido con el verde
+    border: 5px solid $verde-oscuro; 
+    border-radius: 1.5rem; // Bordes redondeados
+    
+    overflow: hidden; // iframe no "pise" las esquinas redondeadas
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); // Sombra más suave para resaltar el borde verde
+    
+    position: relative;
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none; // Quitamos el borde por defecto del navegador
+      display: block;
+    }
+  }
+}
+
+// Pantallas pequeñas (Móviles)
+@media (max-width: 768px) {
+  .dietas-wrapper {
+    padding: 0.5rem 0;
+    
+    .iframe-container {
+      width: 100%; // En móvil, ocupamos el 100% total
+      height: 90vh;
+      border-radius: 0; // Sin redondeado en móvil para ganar espacio
+      border-left: none;
+      border-right: none; // Quitamos bordes laterales en móvil
+    }
+  }
+}

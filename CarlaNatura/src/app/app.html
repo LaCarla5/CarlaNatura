@@ -13,9 +13,23 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
           
+          <ng-container *ngIf="authService.isLoggedIn$ | async">
+          
+          <!-- Si es admin muestra esto sino muestra la tienda normal -->
+          <li class="nav-item" *ngIf="authService.getUserRole() === 'ADMIN'">
+            <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-3 shadow-sm bg-success-subtle" 
+              style="cursor: pointer;" 
+              (click)="verDetalle('admin/catalogo-admin')" 
+              routerLinkActive="active-link">
+              <i class="bi bi-shield-lock-fill"></i> Panel Admin - Productos
+            </a>
+          </li>
+
           <li class="nav-item">
             <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('catalogo')" routerLinkActive="active-link">Catálogo</a>
           </li>
+
+          </ng-container>
 
           <li class="nav-item">
             <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('citas')" routerLinkActive="active-link">Citas</a>
@@ -23,6 +37,10 @@
 
           <li class="nav-item">
             <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('blog')" routerLinkActive="active-link">Blog</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('dietas')" routerLinkActive="active-link">Dietas</a>
           </li>
 
           <li class="nav-item ms-lg-3" *ngIf="!(authService.isLoggedIn$ | async)">

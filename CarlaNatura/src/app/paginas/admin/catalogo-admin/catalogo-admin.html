@@ -1,0 +1,66 @@
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-success fw-bold">Panel de Inventario 🌿</h2>
+    <button class="btn btn-success rounded-pill px-4 shadow" (click)="mostrarFormulario = !mostrarFormulario">
+      {{ mostrarFormulario ? 'Cerrar' : '+ Nuevo Producto' }}
+    </button>
+  </div>
+
+  @if (mostrarFormulario) {
+    <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-light">
+      <form (ngSubmit)="agregarProducto()">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <input type="text" [(ngModel)]="nuevoProducto.nombre" name="nombre" class="form-control" placeholder="Nombre del producto" required>
+          </div>
+          <div class="col-md-3">
+            <input type="number" [(ngModel)]="nuevoProducto.precio" name="precio" class="form-control" placeholder="Precio €" required>
+          </div>
+          <div class="col-md-3">
+            <input type="number" [(ngModel)]="nuevoProducto.stock" name="stock" class="form-control" placeholder="Stock" required>
+          </div>
+          <div class="col-12">
+            <input type="text" [(ngModel)]="nuevoProducto.imagen" name="imagen" class="form-control" placeholder="URL de la imagen (ej: assets/recursos/img/aceite.jpg)">
+          </div>
+          <div class="col-12 text-end">
+            <button type="submit" class="btn btn-success px-5 rounded-pill">Guardar Producto</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  }
+
+  <div class="table-responsive shadow rounded-4">
+    <table class="table table-hover align-middle bg-white mb-0">
+      <thead class="table-dark">
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th class="text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (p of productos; track p.id) {
+          <tr>
+            <td>
+              <div class="d-flex align-items-center">
+                <img [src]="p.imagen" class="rounded me-3" style="width: 45px; height: 45px; object-fit: cover;">
+                <span class="fw-bold">{{ p.nombre }}</span>
+              </div>
+            </td>
+            <td>{{ p.precio }}€</td>
+            <td>
+              <span class="badge" [ngClass]="p.stock < 5 ? 'bg-danger' : 'bg-success'">{{ p.stock }}</span>
+            </td>
+            <td class="text-center">
+              <button class="btn btn-outline-danger btn-sm border-0" (click)="eliminar(p.id)">
+                <i class="bi bi-trash-fill"></i>
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

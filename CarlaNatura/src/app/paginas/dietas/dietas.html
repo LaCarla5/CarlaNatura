@@ -1,0 +1,16 @@
+<main class="dietas-wrapper">
+  <div class="header-seccion container">
+    <h2 class="text-verde">Tu Plan Nutricional</h2>
+    <p>Calcula tu dieta personalizada basada en productos naturales</p>
+  </div>
+
+  <div class="iframe-container shadow">
+    @if (urlSegura) {
+      <iframe 
+        [src]="urlSegura" 
+        allowfullscreen
+        title="Calculadora de Dietas CarlaNatura">
+      </iframe>
+    }
+  </div>
+</main>

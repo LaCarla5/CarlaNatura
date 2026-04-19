@@ -8,10 +8,12 @@ import { Citas } from './paginas/citas/citas';
 import { Inicio } from './paginas/inicio/inicio';
 import { Login } from './paginas/login/login';
 import { Perfil } from './paginas/perfil/perfil';
+import { Dietas } from './paginas/dietas/dietas';
 
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../app/services/auth';
+import { adminGuard } from '../app/guards/admin-guard';
 
 // 1. Creamos una función Guard rápida
 const authGuard = () => {
@@ -34,13 +36,31 @@ export const routes: Routes = [
   { path: 'inicio', component: Inicio },
   { path: 'login', component: Login },
   { path: 'blog', component: Blog },
-  { path: 'catalogo', component: Catalogo }, // <--- Usa siempre minúsculas
+  { path: 'dietas', component: Dietas },
+  { path: 'catalogo', component: Catalogo },
   
   // PÁGINAS QUE REQUIEREN LOGIN (Cita y Carrito suelen ser privadas)
   { path: 'perfil', component: Perfil, canActivate: [authGuard]},
   { path: 'citas', component: Citas, canActivate: [authGuard]},
   { path: 'carrito', component: Carrito, canActivate: [authGuard]},
 
-  // Ruta comodín: Si escriben cualquier cosa que no existe, al inicio
-  { path: '**', redirectTo: 'inicio' }
+  // Zona de admin
+  {
+    path: 'admin',
+    canActivate: [adminGuard], // Nuevo guardián
+    children: [
+      // { 
+      //   path: 'dashboard', 
+      //   loadComponent: () => import('./paginas/admin/dashboard/dashboard.component').then(m => m.DashboardComponent) 
+      // },
+      { 
+        path: 'catalogo-admin', 
+        loadComponent: () => import('../app/paginas/admin/catalogo-admin/catalogo-admin').then(m => m.CatalogoAdmin) 
+      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
+    ]
+  },
+
+    // SIEMPRE AL FINAL - Ruta comodín: Si escriben cualquier cosa que no existe, al inicio
+  { path: '**', redirectTo: 'inicio' },
 ];
