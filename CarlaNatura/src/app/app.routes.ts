@@ -49,10 +49,10 @@ export const routes: Routes = [
     path: 'admin',
     canActivate: [adminGuard], // Nuevo guardián
     children: [
-      // { 
-      //   path: 'dashboard', 
-      //   loadComponent: () => import('./paginas/admin/dashboard/dashboard.component').then(m => m.DashboardComponent) 
-      // },
+      { 
+        path: 'citas-admin', 
+        loadComponent: () => import('../app/paginas/admin/citas-admin/citas-admin').then(m => m.CitasAdmin) 
+      },
       { 
         path: 'catalogo-admin', 
         loadComponent: () => import('../app/paginas/admin/catalogo-admin/catalogo-admin').then(m => m.CatalogoAdmin) 

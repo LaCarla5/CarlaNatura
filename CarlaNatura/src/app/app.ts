@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from './services/auth'; // Ajusta la ruta
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Injectable({
   providedIn: 'root'
@@ -21,19 +22,31 @@ export class App {
 
   // Usa el VerDetalle y le lleva donde quiere ir
   verDetalle(item: string) {
-    // Definimos qué rutas son privadas (necesitan login)
-    const rutasPrivadas = ['carrito', 'perfil', 'citas', 'admin/catalogo-admin'];
+    // 1. LISTA BLANCA: Rutas que NO necesitan login
+    const rutasPublicas = ['inicio', 'login', 'blog'];
 
-    if (rutasPrivadas.includes(item)) {
-      // Si es privada, verificamos login
-      if (this.authService.isLoggedIn()) {
-        this.router.navigate(['/' + item]);
-      } else {
-        this.router.navigate(['/login']);
-      }
-    } else {
-      // Si es pública (catálogo, blog, dietas, inicio), navegamos sin preguntar
+    if (rutasPublicas.includes(item)) {
       this.router.navigate(['/' + item]);
+      return;
+    }
+
+    // 2. RESTO DE RUTAS: Sí necesitan login
+    if (this.authService.isLoggedIn()) {
+      this.router.navigate(['/' + item]);
+    } else {
+      Swal.fire({
+        title: 'Acceso Restringido',
+        text: `Para acceder a ${item}, por favor inicia sesión.`,
+        icon: 'info',
+        iconColor: '#198754',
+        confirmButtonColor: '#2d5a27',
+        confirmButtonText: 'Ir al Login',
+        allowOutsideClick: false
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
     }
   }
 }

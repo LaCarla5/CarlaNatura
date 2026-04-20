@@ -4,6 +4,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 
+
 export interface UserCredentials {
   email: string;
   password: string;
@@ -44,17 +45,17 @@ export class AuthService {
   }
 
   // --- LOGIN ---
-  login(credentials: any): Observable<any> {
+login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => {
         if (isPlatformBrowser(this.platformId)) {
-          localStorage.setItem('token', res.token);
-          localStorage.setItem('rol', res.rol);
-          localStorage.setItem('userId', res.id);
-          localStorage.setItem('userName', res.nombre);
-          localStorage.setItem('userPhoto', res.foto || '');
+          localStorage.setItem('token', res.token); // Guardamos el token
+          localStorage.setItem('rol', res.rol); // Guardamos el rol
+          localStorage.setItem('userId', res.id); // Guardamos el id
+          localStorage.setItem('userName', res.nombre); // Guardamos el nombre
+          localStorage.setItem('userPhoto', res.foto || ''); // Guardamos la foto
+          localStorage.setItem('userEmail', res.email); // Guardamos el mail
 
-          // Notificamos a los suscriptores
           this.loggedInSubject.next(true);
           this.userDataSubject.next({ nombre: res.nombre, foto: res.foto });
         }
@@ -80,6 +81,24 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  getUserEmail(): string | null {
+    return this.getStoredItem('userEmail');
+  }
+
+  getCurrentUser() {
+    return {
+      id: this.getStoredItem('userId'),
+      nombre: this.getStoredItem('userName'),
+      email: this.getStoredItem('userEmail'),
+      rol: this.getStoredItem('rol'),
+      foto: this.getStoredItem('userPhoto')
+    };
+  }
+
+  getUserId(): string | null {
+    return this.getStoredItem('userId');
+  }
+  
   getUserRole(): UserRole {
     return this.getStoredItem('rol') as UserRole;
   }

@@ -1,15 +1,12 @@
 import { Component, signal, inject } from '@angular/core'; // Añadimos inject
 import { Router } from '@angular/router'; // Importante para navegar
 import { AuthService } from '../../services/auth';
-
-import { Blog } from '../blog/blog'; 
-import { Citas } from '../citas/citas';
-import { Catalogo } from '../catalogo/catalogo';
+import Swal from 'sweetalert2'; // Mensaje mas suaves
 
 @Component({
   selector: 'app-inicio',
   standalone: true, // Asumo que es standalone por el formato que usas
-  imports: [Blog, Citas, Catalogo],
+  imports: [],
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss',
 })
@@ -26,7 +23,20 @@ export class Inicio {
     this.router.navigate(['/' + item]); 
   } else {
     // Si no está logueado, lo obligamos a pasar por el Login
-    this.router.navigate(['/login']);
+  Swal.fire({
+        title: '¡Atención!',
+        text: 'Para acceder a esta sección de CarlaNatura, por favor inicia sesión primero.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#198754', // Tu verde
+        cancelButtonColor: '#bf9525',  // Tu dorado
+        confirmButtonText: 'Ir al Login',
+        cancelButtonText: 'Seguir mirando'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/login']);
+        }
+      });
   }
 }
 }

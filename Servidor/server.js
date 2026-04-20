@@ -116,23 +116,119 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
 
 // --- RUTA CITAS ---
 app.post('/api/citas', (req, res) => {
-  const { nombre, email, servicio, fecha, hora, estado } = req.body;
-  const sql = 'INSERT INTO citas (nombre, email, servicio, fecha, hora, estado) VALUES (?, ?, ?, ?, ?, ?)';
-  
-  conexion.query(sql, [nombre, email, servicio, fecha, hora, estado], (err) => {
-    if (err) return res.status(500).json({ error: 'Error al guardar cita' });
+  const { nombre, email, servicio, fecha, hora, descripcion, cliente_id } = req.body;
 
+  const query = "INSERT INTO citas (nombre, email, servicio, fecha, hora, descripcion, usuario_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
+  
+  conexion.query(query, [nombre, email, servicio, fecha, hora, descripcion, cliente_id], (err, result) => {
+    if (err) {
+      console.error('Error SQL:', err); // Esto te dirá en la terminal el error exacto
+      return res.status(500).json({ error: "Error al guardar la cita" });
+    }
+  
+    // ENVIAR EL CORREO
     const mailOptions = {
       from: 'CarlaNatura <carlanatura2026@gmail.com>',
-      to: email,
-      subject: 'Confirmación de Cita',
-      html: `<h2>¡Cita confirmada!</h2><p>Hola ${nombre}, te esperamos el ${fecha} a las ${hora}.</p>`
+      to: email, // El email que viene desde el frontend
+      subject: 'Reserva Recibida - CarlaNatura 🌿',
+      html: `
+        <div style="font-family: sans-serif; color: #333;">
+          <h2 style="color: #198754;">¡Hola ${nombre}!</h2>
+          <p>Hemos recibido tu solicitud de cita para el servicio: <b>${servicio}</b>.</p>
+          <p>📅 <b>Fecha:</b> ${fecha}</p>
+          <p>⏰ <b>Hora:</b> ${hora}</p>
+          <hr>
+          <p>Tu cita está actualmente en estado <b>PENDIENTE</b>. Te enviaremos otro correo en cuanto el administrador la confirme.</p>
+          <br>
+          <p>Gracias por confiar en <b>CarlaNatura</b>.</p>
+        </div>
+      `
     };
 
-    transporter.sendMail(mailOptions, () => {
-      res.status(200).json({ mensaje: 'Cita procesada' });
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.log("❌ Error enviando email:", error);
+      } else {
+        console.log("📧 Email enviado con éxito: " + info.response);
+      }
     });
+
+    // Responder al frontend
+    res.status(200).json({ message: "Cita guardada y correo enviado" });
   });
+});
+
+// --- RUTA ACTUALIZAR PERFIL ---
+app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
+  const { id } = req.params;
+  const { nombre } = req.body;
+  let foto_perfil = req.file ? `/uploads/perfil/${req.file.filename}` : null;
+
+  let sql = 'UPDATE usuarios SET nombre = ?';
+  let params = [nombre];
+
+  if (foto_perfil) {
+    sql += ', foto_perfil = ?';
+    params.push(foto_perfil);
+  }
+
+  sql += ' WHERE id = ?';
+  params.push(id);
+
+  conexion.query(sql, params, (err) => {
+    if (err) return res.status(500).json({ error: 'Error al actualizar' });
+    res.json({ mensaje: 'Perfil actualizado', nombre, foto: foto_perfil });
+  });
+});
+
+// ADMIN CITAS
+app.patch('/api/admin/citas/:id', (req, res) => {
+  const { id } = req.params;
+  const { estado, email } = req.body;
+
+  const query = "UPDATE Citas SET estado = ? WHERE id = ?";
+  
+  db.query(query, [estado, id], (err, result) => {
+    if (err) return res.status(500).send(err);
+
+    // 📧 Si el estado es 'confirmada', enviamos el segundo email
+    if (estado === 'confirmada') {
+      const mailOptions = {
+        from: 'CarlaNatura <carlanatura2026@gmail.com>',
+        to: email,
+        subject: '✅ Cita Confirmada - CarlaNatura',
+        html: `
+          <div style="font-family: sans-serif; border: 1px solid #198754; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #198754;">¡Buenas noticias!</h2>
+            <p>Tu cita en <b>CarlaNatura</b> ha sido confirmada por nuestro equipo.</p>
+            <p>Te esperamos en el horario seleccionado. Si necesitas cambiarla, contáctanos.</p>
+            <br>
+            <p><i>Naturalmente contigo, Carla.</i></p>
+          </div>
+        `
+      };
+
+      transporter.sendMail(mailOptions);
+    }
+
+    res.json({ message: "Estado actualizado" });
+  });
+});
+
+// Obtener solo las pendientes para la "bandeja de entrada"
+app.get('/api/admin/citas/pendientes', (req, res) => {
+    db.query("SELECT * FROM Citas WHERE estado = 'pendiente' ORDER BY fecha, hora", (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+    });
+});
+
+// Obtener todas las confirmadas para el calendario
+app.get('/api/admin/citas/calendario', (req, res) => {
+    db.query("SELECT * FROM Citas WHERE estado = 'confirmada'", (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result);
+    });
 });
 
 // -- CATALOGO USER

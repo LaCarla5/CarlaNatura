@@ -1,27 +1,40 @@
 <section class="hero-store">
-    <img src="recursos/img/fondoTienda.png" alt="FondoTienda" class="hero-store__image">
-    <div class="hero-store__overlay">
-        <h1 class="hero-store__title">¡Bienvenidos a nuestra Tienda!</h1>
+  <img src="recursos/img/corporativo/fondoTienda.png" alt="FondoTienda" class="hero-store__image">
+  <div class="hero-store__overlay">
+    <h1 class="hero-store__title">Vive la experiencia CarlaNatura</h1>
+    <button class="btn btn-outline-light rounded-pill px-4" (click)="verDetalle('catalogo')">
+      Explorar tienda
+    </button>
+  </div>
+</section>
+
+<section class="bg-natural py-5">
+  <div class="container">
+    <div class="row row-overlap justify-content-center">
+
+      <div class="col-md-4 mb-4">
+        <div class="card hover-card text-center" (click)="verDetalle('catalogo')">
+          <div class="icon-box"><i class="bi bi-leaf"></i></div>
+          <h3>Catálogo Natura</h3>
+          <p>Nuestra mejor selección de aceites y cosmética orgánica.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="card hover-card text-center" (click)="verDetalle('citas')">
+          <div class="icon-box"><i class="bi bi-calendar-heart"></i></div>
+          <h3>Reserva Cita</h3>
+          <p>Atención personalizada para tu bienestar integral.</p>
+        </div>
+      </div>
+
+      <div class="col-md-4 mb-4">
+        <div class="card hover-card text-center" (click)="verDetalle('blog')">
+          <div class="icon-box"><i class="bi bi-journal-text"></i></div>
+          <h3>Nuestro Blog</h3>
+          <p>Aprende sobre rituales naturales y vida saludable.</p>
+        </div>
+      </div>
     </div>
-</section>
-
-<section id="productos" class="py-5 bg-light" (click)="verDetalle('catalogo')">
-  <div class="container" style="cursor: pointer;">
-    <h2 class="text-center mb-4">Mira alguno de nuestro productos</h2>
-    <app-catalogo></app-catalogo> 
-  </div>
-</section>
-
-<section id="citas" class="py-5 bg-light" (click)="verDetalle('citas')">
-  <div class="container" style="cursor: pointer;">
-    <h2 class="text-center mb-4">Reserva tu Cita</h2>
-    <app-citas></app-citas> 
-  </div>
-</section>
-
-<section id="blog" class="py-5" (click)="verDetalle('blog')">
-  <div class="container" style="cursor: pointer;">
-    <h2 class="text-center mb-4">Nuestro Blog</h2>
-    <app-blog></app-blog>
   </div>
 </section>

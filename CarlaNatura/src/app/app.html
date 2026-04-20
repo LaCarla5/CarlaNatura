@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" routerLink="/inicio" style="cursor: pointer;">
-        <img src="recursos/img/logo.png" alt="Logo" width="45" class="me-2">
+        <img src="recursos/img/corporativo/logo.png" alt="Logo" width="45" class="me-2">
         <span class="fw-bold text-success fs-3">{{ title() }}</span>
       </a>
 
@@ -25,11 +25,20 @@
             </a>
           </li>
 
-          <li class="nav-item">
-            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('catalogo')" routerLinkActive="active-link">Catálogo</a>
+          <li class="nav-item" *ngIf="authService.getUserRole() === 'ADMIN'">
+            <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-3 shadow-sm bg-success-subtle" 
+              style="cursor: pointer;" 
+              (click)="verDetalle('admin/citas-admin')" 
+              routerLinkActive="active-link">
+              <i class="bi bi-shield-lock-fill"></i> Panel Admin - Citas
+            </a>
           </li>
 
           </ng-container>
+
+          <li class="nav-item">
+            <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('catalogo')" routerLinkActive="active-link">Catálogo</a>
+          </li>
 
           <li class="nav-item">
             <a class="nav-link" style="cursor: pointer;" (click)="verDetalle('citas')" routerLinkActive="active-link">Citas</a>
