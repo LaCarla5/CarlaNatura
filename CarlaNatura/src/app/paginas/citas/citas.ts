@@ -114,9 +114,12 @@ export class Citas {
   }
 
   private enviarCita(date: Date, datos: any) {
+    const usuarioId = this.authService.getUserId();
+    
     const payload = {
       ...datos,
       email: this.authService.getUserEmail(), // Enviamos el email del usuario logueado automáticamente
+      cliente_id: usuarioId,
       fecha: date.toISOString().split('T')[0],
       estado: 'PENDIENTE' // Muy importante para el panel admin
     };

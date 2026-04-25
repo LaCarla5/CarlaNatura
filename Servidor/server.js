@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Servir imágenes (Asegúrate de que esta línea esté antes de las rutas)
+// 1. Servir imágenes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 2. Configuración de Multer
@@ -35,10 +35,10 @@ const conexion = mysql.createConnection({
 
 conexion.connect((err) => {
   if (err) {
-    console.error('Error al conectar:', err);
+    console.error('❌ Error al conectar:', err);
     return;
   }
-  console.log('¡Conectado con éxito a MySQL Workbench!');
+  console.log('✅ ¡Conectado con éxito a MySQL Workbench!');
 });
 
 // 4. Configuración Nodemailer
@@ -50,235 +50,87 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// --- RUTAS DE LOGIN (UNIFICADA) ---
-  app.post('/api/login', (req, res) => {
-    const { email, password } = req.body;
-    // IMPORTANTE: foto_perfil debe coincidir con tu Workbench
-    const sql = 'SELECT id, nombre, email, rol, foto_perfil FROM usuarios WHERE email = ? AND password = ?';
+// --- RUTAS DE USUARIOS ---
 
-    conexion.query(sql, [email, password], (err, resultado) => {
-      if (err) return res.status(500).json({ error: 'Error en el servidor' });
-
-      if (resultado.length > 0) {
-        const usuario = resultado[0];
-        res.json({ 
-          token: 'token-falso-generado', 
-          id: usuario.id,
-          rol: usuario.rol, 
-          nombre: usuario.nombre,
-          // Enviamos el valor de la columna foto_perfil
-          foto: usuario.foto_perfil 
-        });
-      } else {
-        res.status(401).json({ error: 'Credenciales incorrectas' });
-      }
-    });
-  });
-
-// --- RUTA DE REGISTRO ---
-app.post('/api/registro', (req, res) => {
-  const { nombre, email, password, rol, foto_perfil } = req.body;
-  const rolFinal = rol || 'USER';
-  const foto_perfilDef = '/uploads/perfil/imagenUsuarioEjemplo.jpg';
-  const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
-  
-  conexion.query(sql, [nombre, email, password, rolFinal, foto_perfilDef], (err, resultado) => {
-    if (err) {
-      if (err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: 'Correo ya registrado' });
-      return res.status(500).json({ error: 'Error al registrar' });
+app.post('/api/login', (req, res) => {
+  const { email, password } = req.body;
+  const sql = 'SELECT id, nombre, email, rol, foto_perfil FROM usuarios WHERE email = ? AND password = ?';
+  conexion.query(sql, [email, password], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error en el servidor' });
+    if (resultado.length > 0) {
+      const usuario = resultado[0];
+      res.json({ 
+        token: 'token-falso-generado', 
+        id: usuario.id,
+        rol: usuario.rol, 
+        nombre: usuario.nombre,
+        email: usuario.email,
+        foto: usuario.foto_perfil 
+      });
+    } else {
+      res.status(401).json({ error: 'Credenciales incorrectas' });
     }
+  });
+});
+
+app.post('/api/registro', (req, res) => {
+  const { nombre, email, password, rol } = req.body;
+  const rolFinal = rol || 'USER';
+  const fotoDef = '/uploads/perfil/imagenUsuarioEjemplo.jpg';
+  const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
+  conexion.query(sql, [nombre, email, password, rolFinal, fotoDef], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al registrar' });
     res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
   });
 });
 
-// --- RUTA ACTUALIZAR PERFIL ---
 app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
   const { id } = req.params;
   const { nombre } = req.body;
   let foto_perfil = req.file ? `/uploads/perfil/${req.file.filename}` : null;
-
   let sql = 'UPDATE usuarios SET nombre = ?';
   let params = [nombre];
-
   if (foto_perfil) {
     sql += ', foto_perfil = ?';
     params.push(foto_perfil);
   }
-
   sql += ' WHERE id = ?';
   params.push(id);
-
   conexion.query(sql, params, (err) => {
     if (err) return res.status(500).json({ error: 'Error al actualizar' });
     res.json({ mensaje: 'Perfil actualizado', nombre, foto: foto_perfil });
   });
 });
 
-// --- RUTA CITAS ---
+// --- RUTAS DE CITAS (CLIENTE) ---
+
 app.post('/api/citas', (req, res) => {
   const { nombre, email, servicio, fecha, hora, descripcion, cliente_id } = req.body;
-
-  const query = "INSERT INTO citas (nombre, email, servicio, fecha, hora, descripcion, usuario_id, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
+  // Usamos 'usuario_id' para que coincida con tu tabla SQL
+  const sql = "INSERT INTO citas (usuario_id, nombre, email, servicio, descripcion, fecha, hora, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
   
-  conexion.query(query, [nombre, email, servicio, fecha, hora, descripcion, cliente_id], (err, result) => {
+  conexion.query(sql, [cliente_id, nombre, email, servicio, descripcion, fecha, hora], (err, result) => {
     if (err) {
-      console.error('Error SQL:', err); // Esto te dirá en la terminal el error exacto
+      console.error('❌ Error SQL en Citas:', err);
       return res.status(500).json({ error: "Error al guardar la cita" });
     }
-  
-    // ENVIAR EL CORREO
+
+    // Nodemailer
     const mailOptions = {
       from: 'CarlaNatura <carlanatura2026@gmail.com>',
-      to: email, // El email que viene desde el frontend
+      to: email,
       subject: 'Reserva Recibida - CarlaNatura 🌿',
-      html: `
-        <div style="font-family: sans-serif; color: #333;">
-          <h2 style="color: #198754;">¡Hola ${nombre}!</h2>
-          <p>Hemos recibido tu solicitud de cita para el servicio: <b>${servicio}</b>.</p>
-          <p>📅 <b>Fecha:</b> ${fecha}</p>
-          <p>⏰ <b>Hora:</b> ${hora}</p>
-          <hr>
-          <p>Tu cita está actualmente en estado <b>PENDIENTE</b>. Te enviaremos otro correo en cuanto el administrador la confirme.</p>
-          <br>
-          <p>Gracias por confiar en <b>CarlaNatura</b>.</p>
-        </div>
-      `
+      html: `<h2>¡Hola ${nombre}!</h2><p>Hemos recibido tu solicitud para <b>${servicio}</b> el día ${fecha}. Estás en estado <b>PENDIENTE</b>.</p>`
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log("❌ Error enviando email:", error);
-      } else {
-        console.log("📧 Email enviado con éxito: " + info.response);
-      }
-    });
-
-    // Responder al frontend
+    transporter.sendMail(mailOptions);
     res.status(200).json({ message: "Cita guardada y correo enviado" });
   });
 });
 
-// --- RUTA ACTUALIZAR PERFIL ---
-app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
-  const { id } = req.params;
-  const { nombre } = req.body;
-  let foto_perfil = req.file ? `/uploads/perfil/${req.file.filename}` : null;
+// --- RUTAS DE ADMIN CITAS ---
 
-  let sql = 'UPDATE usuarios SET nombre = ?';
-  let params = [nombre];
-
-  if (foto_perfil) {
-    sql += ', foto_perfil = ?';
-    params.push(foto_perfil);
-  }
-
-  sql += ' WHERE id = ?';
-  params.push(id);
-
-  conexion.query(sql, params, (err) => {
-    if (err) return res.status(500).json({ error: 'Error al actualizar' });
-    res.json({ mensaje: 'Perfil actualizado', nombre, foto: foto_perfil });
-  });
-});
-
-// ADMIN CITAS
-app.patch('/api/admin/citas/:id', (req, res) => {
-  const { id } = req.params;
-  const { estado, email } = req.body;
-
-  const query = "UPDATE Citas SET estado = ? WHERE id = ?";
-  
-  db.query(query, [estado, id], (err, result) => {
-    if (err) return res.status(500).send(err);
-
-    // 📧 Si el estado es 'confirmada', enviamos el segundo email
-    if (estado === 'confirmada') {
-      const mailOptions = {
-        from: 'CarlaNatura <carlanatura2026@gmail.com>',
-        to: email,
-        subject: '✅ Cita Confirmada - CarlaNatura',
-        html: `
-          <div style="font-family: sans-serif; border: 1px solid #198754; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #198754;">¡Buenas noticias!</h2>
-            <p>Tu cita en <b>CarlaNatura</b> ha sido confirmada por nuestro equipo.</p>
-            <p>Te esperamos en el horario seleccionado. Si necesitas cambiarla, contáctanos.</p>
-            <br>
-            <p><i>Naturalmente contigo, Carla.</i></p>
-          </div>
-        `
-      };
-
-      transporter.sendMail(mailOptions);
-    }
-
-    res.json({ message: "Estado actualizado" });
-  });
-});
-
-// Obtener solo las pendientes para la "bandeja de entrada"
-app.get('/api/admin/citas/pendientes', (req, res) => {
-    db.query("SELECT * FROM Citas WHERE estado = 'pendiente' ORDER BY fecha, hora", (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json(result);
-    });
-});
-
-// Obtener todas las confirmadas para el calendario
-app.get('/api/admin/citas/calendario', (req, res) => {
-    db.query("SELECT * FROM Citas WHERE estado = 'confirmada'", (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json(result);
-    });
-});
-
-// -- CATALOGO USER
-app.get('/api/catalogo', (req, res) => {
-  const sql = 'SELECT * FROM productos'; 
-  conexion.query(sql, (err, resultados) => {
-    if (err) {
-      console.error('Error en la base de datos:', err);
-      return res.status(500).json({ error: 'Error al obtener productos' });
-    }
-    // Enviamos los productos a la web del usuario
-    res.json(resultados);
-  });
-});
-
-
-// --- RUTAS DE GESTIÓN (CATALOGO-ADMIN) ---
-// Obtener productos
-app.get('/api/catalogo-admin', (req, res) => {
-  const sql = 'SELECT * FROM productos'; // La tabla se sigue llamando productos en SQL
-  conexion.query(sql, (err, resultados) => {
-    if (err) return res.status(500).json({ error: 'Error al obtener datos' });
-    res.json(resultados);
-  });
-});
-
-// Añadir producto
-app.post('/api/catalogo-admin', (req, res) => {
-  const { nombre, precio, stock, imagen, descripcion } = req.body;
-  const sql = 'INSERT INTO productos (nombre, precio, stock, imagen, descripcion) VALUES (?, ?, ?, ?, ?)';
-  
-  conexion.query(sql, [nombre, precio, stock, imagen, descripcion], (err, resultado) => {
-    if (err) return res.status(500).json({ error: 'Error al insertar' });
-    res.status(201).json({ mensaje: 'Creado con éxito', id: resultado.insertId });
-  });
-});
-
-// Eliminar producto
-app.delete('/api/catalogo-admin/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'DELETE FROM productos WHERE id = ?';
-  
-  conexion.query(sql, [id], (err) => {
-    if (err) return res.status(500).json({ error: 'Error al eliminar' });
-    res.json({ mensaje: 'Eliminado' });
-  });
-});
-
-
-// --- RUTAS ADMIN ---
+// 1. Obtener todas para la tabla general
 app.get('/api/admin/citas', (req, res) => {
   conexion.query('SELECT * FROM citas ORDER BY fecha DESC, hora DESC', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });
@@ -286,16 +138,68 @@ app.get('/api/admin/citas', (req, res) => {
   });
 });
 
+// 2. Obtener solo pendientes para la bandeja de entrada
+app.get('/api/admin/citas/pendientes', (req, res) => {
+  conexion.query("SELECT * FROM citas WHERE estado = 'pendiente' ORDER BY fecha, hora", (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.json(result);
+  });
+});
+
+// 3. Obtener solo confirmadas para el calendario
+app.get('/api/admin/citas/calendario', (req, res) => {
+  conexion.query("SELECT * FROM citas WHERE estado = 'confirmada'", (err, result) => {
+      if (err) return res.status(500).send(err);
+      res.json(result);
+  });
+});
+
+// 4. Actualizar estado y enviar mail de confirmación
 app.patch('/api/admin/citas/:id', (req, res) => {
   const { id } = req.params;
-  const { estado } = req.body;
+  const { estado, email } = req.body;
+  
   conexion.query('UPDATE citas SET estado = ? WHERE id = ?', [estado, id], (err) => {
-    if (err) return res.status(500).json({ error: 'Error' });
+    if (err) return res.status(500).json({ error: 'Error al actualizar' });
+
+    if (estado === 'confirmada' && email) {
+      const mailOptions = {
+        from: 'CarlaNatura <carlanatura2026@gmail.com>',
+        to: email,
+        subject: '✅ Cita Confirmada - CarlaNatura',
+        html: `<h2>¡Tu cita ha sido confirmada!</h2><p>Te esperamos en el centro CarlaNatura.</p>`
+      };
+      transporter.sendMail(mailOptions);
+    }
     res.json({ mensaje: 'Cita actualizada' });
   });
 });
 
-app.listen(3000, () => {
-  console.log('Servidor corriendo en el puerto 3000');
+// --- RUTAS DE CATÁLOGO ---
+
+app.get('/api/catalogo', (req, res) => {
+  conexion.query('SELECT * FROM productos', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
 });
 
+app.post('/api/catalogo-admin', (req, res) => {
+  const { nombre, precio, stock, imagen, descripcion } = req.body;
+  const sql = 'INSERT INTO productos (nombre, precio, stock, imagen, descripcion) VALUES (?, ?, ?, ?, ?)';
+  conexion.query(sql, [nombre, precio, stock, imagen, descripcion], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.status(201).json({ id: resultado.insertId });
+  });
+});
+
+app.delete('/api/catalogo-admin/:id', (req, res) => {
+  conexion.query('DELETE FROM productos WHERE id = ?', [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json({ mensaje: 'Eliminado' });
+  });
+});
+
+app.listen(3000, () => {
+  console.log('🚀 Servidor corriendo en http://localhost:3000');
+});
