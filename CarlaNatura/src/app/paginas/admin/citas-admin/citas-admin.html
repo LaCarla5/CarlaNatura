@@ -1,48 +1,52 @@
 <div class="container-fluid mt-4">
   <div class="row">
-    
+
     <div class="col-lg-4 col-md-5">
       <div class="card shadow-sm border-0">
         <div class="card-header bg-success text-white fw-bold py-3">
           <i class="bi bi-mailbox"></i> Solicitudes Pendientes
         </div>
         <div class="list-group list-group-flush" style="max-height: 700px; overflow-y: auto;">
-          
-          @for (cita of citasPendientes; track cita.id) {
-            <div class="list-group-item p-3 border-start border-warning border-4 mb-1">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <h6 class="mb-0 fw-bold">{{ cita.nombre }}</h6>
-                  <small class="text-success fw-bold">{{ cita.servicio }}</small>
-                </div>
-                <span class="badge bg-warning text-dark small">Pendiente</span>
-              </div>
-              
-              <div class="mt-2 mb-2 small text-muted">
-                <i class="bi bi-calendar3"></i> {{ cita.fecha | date:'dd/MM/yyyy':'UTC' }} <br>
-                <i class="bi bi-clock"></i> {{ cita.hora }}
-              </div>
-              
-              <p class="small text-secondary bg-light p-2 rounded italic">
-                "{{ cita.descripcion }}"
-              </p>
 
-              <div class="d-flex gap-2">
-                <button (click)="gestionarCita(cita.id, 'confirmada', cita.email)" 
-                        class="btn btn-sm btn-success w-100">
-                  <i class="bi bi-check-lg"></i> Aceptar
-                </button>
-                <button (click)="gestionarCita(cita.id, 'cancelada', cita.email)" 
-                        class="btn btn-sm btn-outline-danger w-100">
-                  <i class="bi bi-x-lg"></i> Rechazar
-                </button>
+          @for (cita of citasPendientes; track cita.id) {
+          <div class="list-group-item p-3 border-start border-warning border-4 mb-1">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-0 fw-bold">{{ cita.nombre }}</h6>
+                <small class="text-success fw-bold">{{ cita.servicio }}</small>
               </div>
+              <span class="badge bg-warning text-dark small">Pendiente</span>
             </div>
+
+            <div class="mt-2 mb-2 small text-muted">
+              <i class="bi bi-calendar3"></i> {{ cita.fecha | date:'dd/MM/yyyy':'UTC' }} <br>
+              <i class="bi bi-clock"></i> {{ cita.hora }}
+            </div>
+
+            <p class="small text-secondary bg-light p-2 rounded italic">
+              "{{ cita.descripcion }}"
+            </p>
+            
+            <a [href]="'mailto:' + cita.email + '?subject=Consulta sobre tu cita - CarlaNatura'"
+              class="btn btn-sm btn-outline-primary w-100 mt-2">
+              <i class="bi bi-envelope"></i> Contactar cliente
+            </a>
+
+            <div class="d-flex gap-2">
+              <button (click)="gestionarCita(cita.id, 'confirmada', cita.email)" class="btn btn-sm btn-success w-100">
+                <i class="bi bi-check-lg"></i> Aceptar
+              </button>
+              <button (click)="gestionarCita(cita.id, 'cancelada', cita.email)"
+                class="btn btn-sm btn-outline-danger w-100">
+                <i class="bi bi-x-lg"></i> Rechazar
+              </button>
+            </div>
+          </div>
           } @empty {
-            <div class="p-5 text-center">
-              <i class="bi bi- stars text-muted fs-1"></i>
-              <p class="text-muted mt-2">No hay citas esperando respuesta.</p>
-            </div>
+          <div class="p-5 text-center">
+            <i class="bi bi- stars text-muted fs-1"></i>
+            <p class="text-muted mt-2">No hay citas esperando respuesta.</p>
+          </div>
           }
 
         </div>
@@ -60,10 +64,7 @@
           </div>
         </div>
 
-        <mwl-calendar-month-view
-          [viewDate]="viewDate"
-          [events]="eventosCalendario"
-          [refresh]="refresh"> 
+        <mwl-calendar-month-view [viewDate]="viewDate" [events]="eventosCalendario" [refresh]="refresh">
         </mwl-calendar-month-view>
       </div>
     </div>

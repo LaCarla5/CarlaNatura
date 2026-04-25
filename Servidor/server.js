@@ -128,6 +128,28 @@ app.post('/api/citas', (req, res) => {
   });
 });
 
+// El cliente no coja horas ya ocupadas
+app.get('/api/citas/ocupadas', (req, res) => {
+  const { fecha } = req.query; // Recibe la fecha que el usuario pinchó
+
+  // Solo bloqueamos las que ya están confirmadas (o pendientes de revisión)
+  // para que nadie más pueda pedirlas en ese hueco.
+  const sql = "SELECT hora FROM citas WHERE fecha = ? AND estado IN ('pendiente', 'confirmada')";
+
+  conexion.query(sql, [fecha], (err, resultado) => {
+    if (err) {
+      console.error('Error al consultar disponibilidad:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+
+    // Convertimos de "09:00:00" a "09:00" para que Angular lo entienda
+    const horasOcupadas = resultado.map(fila => fila.hora.substring(0, 5));
+    
+    console.log(`Día ${fecha} - Horas no disponibles:`, horasOcupadas);
+    res.json(horasOcupadas); // Enviamos el array, ej: ["10:00", "16:00"]
+  });
+});
+
 // --- RUTAS DE ADMIN CITAS ---
 
 // 1. Obtener todas para la tabla general

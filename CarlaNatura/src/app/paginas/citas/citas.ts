@@ -42,91 +42,110 @@ export class Citas {
   }
 
   // Función principal cuando pinchan en un día
-  async dayClicked({ date }: { date: Date }): Promise<void> {
-    if (!this.isBrowser) return;
-    if (!this.comprobarAcceso()) return;
+async dayClicked({ date }: { date: Date }): Promise<void> {
+  if (!this.isBrowser) return;
+  if (!this.comprobarAcceso()) return;
 
-    const fechaFormateada = date.toLocaleDateString('es-ES', {
-      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-    });
+  // 1. Formateamos la fecha correctamente para la DB
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+  const fechaISO = `${year}-${month}-${day}`; 
 
-    // 1. Obtenemos los datos del usuario actual desde tu AuthService
-    const usuarioActivo = this.authService.getCurrentUser(); // Asumo que tienes este método
+  const fechaFormateada = date.toLocaleDateString('es-ES', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
 
+  try {
+    // 2. Preguntamos al servidor qué horas están pilladas ese día
+    const horasOcupadas = await this.http.get<string[]>(`http://localhost:3000/api/citas/ocupadas?fecha=${fechaISO}`)
+      .toPromise() || [];
+
+    const usuarioActivo = this.authService.getCurrentUser();
+
+    // 3. Creamos el menú de horas (se ponen grises/disabled si están en horasOcupadas)
+    const todasLasHoras = ['09:00', '10:00', '11:00', '16:00', '17:00'];
+    const opcionesHoraHtml = todasLasHoras.map(hora => {
+      const estaOcupada = horasOcupadas.includes(hora);
+      return `
+        <option value="${hora}" ${estaOcupada ? 'disabled style="color: #999; background-color: #eee;"' : ''}>
+          ${hora} ${estaOcupada ? ' 🔒 (Ocupada)' : ''}
+        </option>`;
+    }).join('');
+
+    // 4. Lanzamos el formulario superpuesto
     const { value: formValues } = await Swal.fire({
       title: 'Reserva tu cita',
       html: `
-      <p class="text-muted">Día seleccionado: <b>${fechaFormateada}</b></p>
-      <div class="mb-3 text-start">
-        <label class="form-label">Nombre completo</label>
-        <input id="swal-nombre" class="form-control" value="${usuarioActivo?.nombre || ''}">
-      </div>
-      
-      <div class="mb-3 text-start">
-        <label class="form-label">Servicio</label>
-        <select id="swal-servicio" class="form-select">
-          <option value="Consulta Nutricional">Consulta Nutricional</option>
-          <option value="Dieta Personalizada">Dieta Personalizada</option>
-          <option value="Seguimiento">Seguimiento</option>
-          <option value="Dudas generales">Dudas generales</option>
-        </select>
-      </div>
-
-      <div class="mb-3 text-start">
-        <label class="form-label">Hora disponible</label>
-        <select id="swal-hora" class="form-select">
-          <option value="09:00">09:00 AM</option>
-          <option value="10:00">10:00 AM</option>
-          <option value="11:00">11:00 AM</option>
-          <option value="16:00">04:00 PM</option>
-          <option value="17:00">05:00 PM</option>
-        </select>
-      </div>
-
-      <div class="mb-3 text-start">
-        <label class="form-label">Descripción / Notas</label>
-        <textarea id="swal-descripcion" class="form-control" rows="3" placeholder="Cuéntanos un poco más..."></textarea>
-      </div>
-    `,
-      focusConfirm: false,
+        <p class="text-muted">Día: <b>${fechaFormateada}</b></p>
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Nombre</label>
+          <input id="swal-nombre" class="form-control" value="${usuarioActivo?.nombre || ''}" readonly>
+        </div>
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Hora disponible</label>
+          <select id="swal-hora" class="form-select">
+            ${opcionesHoraHtml} </select>
+        </div>
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Servicio</label>
+          <select id="swal-servicio" class="form-select">
+            <option value="Consulta Nutricional">Consulta Nutricional</option>
+            <option value="Dieta Personalizada">Dieta Personalizada</option>
+            <option value="Seguimiento">Seguimiento</option>
+          </select>
+        </div>
+        <div class="mb-3 text-start">
+          <label class="form-label fw-bold">Notas</label>
+          <textarea id="swal-descripcion" class="form-control" rows="2" placeholder="Opcional..."></textarea>
+        </div>
+      `,
       showCancelButton: true,
       confirmButtonText: 'Confirmar Reserva',
       confirmButtonColor: '#198754',
-      cancelButtonText: 'Cancelar',
       preConfirm: () => {
-        const nombre = (document.getElementById('swal-nombre') as HTMLInputElement).value;
-        const servicio = (document.getElementById('swal-servicio') as HTMLSelectElement).value;
-        const hora = (document.getElementById('swal-hora') as HTMLSelectElement).value;
-        const descripcion = (document.getElementById('swal-descripcion') as HTMLTextAreaElement).value;
-
-        if (!nombre || !servicio || !hora) {
-          Swal.showValidationMessage('Por favor, rellena los campos obligatorios');
-          return false;
+        return {
+          nombre: (document.getElementById('swal-nombre') as HTMLInputElement).value,
+          servicio: (document.getElementById('swal-servicio') as HTMLSelectElement).value,
+          hora: (document.getElementById('swal-hora') as HTMLSelectElement).value,
+          descripcion: (document.getElementById('swal-descripcion') as HTMLTextAreaElement).value
         }
-        return { nombre, servicio, hora, descripcion };
       }
     });
 
-    // 2. Si el usuario confirma, enviamos al Backend
     if (formValues) {
-      this.enviarCita(date, formValues);
+      this.enviarCita(fechaISO, formValues);
     }
-  }
 
-  private enviarCita(date: Date, datos: any) {
-    const usuarioId = this.authService.getUserId();
-    
+  } catch (error) {
+    console.error("Error al cargar disponibilidad:", error);
+    Swal.fire('Error', 'No se pudo conectar con el servidor para ver las horas libres.', 'error');
+  }
+}
+
+  private enviarCita(fechaFinal: string, datos: any) {
     const payload = {
       ...datos,
-      email: this.authService.getUserEmail(), // Enviamos el email del usuario logueado automáticamente
-      cliente_id: usuarioId,
-      fecha: date.toISOString().split('T')[0],
-      estado: 'PENDIENTE' // Muy importante para el panel admin
+      email: this.authService.getUserEmail(),
+      cliente_id: this.authService.getUserId(),
+      fecha: fechaFinal,
+      estado: 'pendiente'
     };
 
     this.http.post('http://localhost:3000/api/citas', payload).subscribe({
-      next: () => Swal.fire('¡Solicitada!', 'Tu cita ha sido enviada. El administrador la revisará pronto.', 'success'),
-      error: () => Swal.fire('Error', 'No pudimos conectar con el servidor', 'error')
+      next: () => {
+        // Generar Link Google Calendar
+        const f = fechaFinal.replace(/-/g, '');
+        const h = datos.hora.replace(/:/g, '') + '00';
+        const googleUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=Cita+CarlaNatura&dates=${f}T${h}/${f}T${h}&details=${datos.descripcion}&sf=true&output=xml`;
+
+        Swal.fire({
+          title: '¡Reservado!',
+          html: `Cita enviada con éxito.<br><br><a href="${googleUrl}" target="_blank" class="btn btn-primary">Añadir a Google Calendar</a>`,
+          icon: 'success'
+        });
+      },
+      error: () => Swal.fire('Error', 'Error al guardar la cita', 'error')
     });
   }
 }
