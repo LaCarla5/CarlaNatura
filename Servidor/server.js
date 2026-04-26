@@ -1,9 +1,15 @@
+// Base de Datos
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
+// Correo
 const nodemailer = require('nodemailer');
 const path = require('path');
+// Imagenes
 const multer = require('multer');
+// Contraseñas
+const bcrypt = require('bcrypt');
+const saltRounds = 10; 
 
 const app = express();
 
@@ -54,32 +60,45 @@ const transporter = nodemailer.createTransport({
 
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
-  const sql = 'SELECT id, nombre, email, rol, foto_perfil FROM usuarios WHERE email = ? AND password = ?';
-  conexion.query(sql, [email, password], (err, resultado) => {
-    if (err) return res.status(500).json({ error: 'Error en el servidor' });
-    if (resultado.length > 0) {
-      const usuario = resultado[0];
-      res.json({ 
-        token: 'token-falso-generado', 
+  // Buscamos al usuario solo por email
+  const sql = "SELECT * FROM usuarios WHERE email = ?";
+  
+  conexion.query(sql, [email], (err, result) => {
+    if (err) return res.status(500).json({ error: "Error en el servidor" });
+    if (result.length === 0) return res.status(401).json({ error: "Usuario no encontrado" });
+
+    const usuario = result[0];
+
+    // 2. Comparamos la contraseña en texto plano (la que viene del login.ts)
+    // con la encriptada que guardamos en la DB
+    const esValida = bcrypt.compareSync(password, usuario.password);
+
+    if (esValida) {
+      // 3. Si es correcta, devolvemos los datos
+      res.json({
         id: usuario.id,
-        rol: usuario.rol, 
         nombre: usuario.nombre,
-        email: usuario.email,
-        foto: usuario.foto_perfil 
+        rol: usuario.rol,
+        mensaje: "Bienvenido"
       });
     } else {
-      res.status(401).json({ error: 'Credenciales incorrectas' });
+      res.status(401).json({ error: "Contraseña incorrecta" });
     }
   });
 });
 
 app.post('/api/registro', (req, res) => {
   const { nombre, email, password, rol } = req.body;
+  // Encriptamos la contraseña
+  const hash = bcrypt.hashSync(password, saltRounds);
   const rolFinal = rol || 'USER';
   const fotoDef = '/uploads/perfil/imagenUsuarioEjemplo.jpg';
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
-  conexion.query(sql, [nombre, email, password, rolFinal, fotoDef], (err, resultado) => {
-    if (err) return res.status(500).json({ error: 'Error al registrar' });
+  conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
+    if (err) {
+    console.log(err); // Mira la terminal donde corre Node
+    return res.status(500).json({ error: err.sqlMessage || 'Error al registrar' });
+    }
     res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
   });
 });
@@ -102,7 +121,7 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
   });
 });
 
-// --- RUTAS DE CITAS (CLIENTE) ---
+// --- RUTAS DE CITAS ---
 
 app.post('/api/citas', (req, res) => {
   const { nombre, email, servicio, fecha, hora, descripcion, cliente_id } = req.body;
@@ -152,7 +171,7 @@ app.get('/api/citas/ocupadas', (req, res) => {
 
 // --- RUTAS DE ADMIN CITAS ---
 
-// 1. Obtener todas para la tabla general
+// Obtener todas para la tabla general
 app.get('/api/admin/citas', (req, res) => {
   conexion.query('SELECT * FROM citas ORDER BY fecha DESC, hora DESC', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });
@@ -160,7 +179,7 @@ app.get('/api/admin/citas', (req, res) => {
   });
 });
 
-// 2. Obtener solo pendientes para la bandeja de entrada
+// Obtener solo pendientes para la bandeja de entrada
 app.get('/api/admin/citas/pendientes', (req, res) => {
   conexion.query("SELECT * FROM citas WHERE estado = 'pendiente' ORDER BY fecha, hora", (err, result) => {
       if (err) return res.status(500).send(err);
@@ -168,7 +187,7 @@ app.get('/api/admin/citas/pendientes', (req, res) => {
   });
 });
 
-// 3. Obtener solo confirmadas para el calendario
+// Obtener solo confirmadas para el calendario
 app.get('/api/admin/citas/calendario', (req, res) => {
   conexion.query("SELECT * FROM citas WHERE estado = 'confirmada'", (err, result) => {
       if (err) return res.status(500).send(err);
@@ -176,7 +195,7 @@ app.get('/api/admin/citas/calendario', (req, res) => {
   });
 });
 
-// 4. Actualizar estado y enviar mail de confirmación
+// Actualizar estado y enviar mail de confirmación
 app.patch('/api/admin/citas/:id', (req, res) => {
   const { id } = req.params;
   const { estado, email } = req.body;
@@ -197,8 +216,11 @@ app.patch('/api/admin/citas/:id', (req, res) => {
   });
 });
 
-// --- RUTAS DE CATÁLOGO ---
+// --- RUTAS DE ADMIN USUARIOS ---
 
+
+
+// --- RUTAS DE CATÁLOGO ---
 app.get('/api/catalogo', (req, res) => {
   conexion.query('SELECT * FROM productos', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });

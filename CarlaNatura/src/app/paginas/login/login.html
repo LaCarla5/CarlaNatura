@@ -1,22 +1,47 @@
 <div class="login-page d-flex justify-content-center align-items-center">
   <div class="card-container" [class.flipped]="isFlipped">
     
-    <div class="card-face card-front border shadow-sm">
-      <h2 class="text-verde text-center mb-4">Únete a CarlaNatura</h2>
-      <form class="d-flex flex-column gap-3">
-        <!-- Usar [(ngModel)] en los inputs hace que registerData se rellene -->
-        <input type="text" name="regNombre" class="form-control" [(ngModel)]="registerData.nombre" placeholder="Nombre">
-        <input type="email" name="regEmail" class="form-control" [(ngModel)]="registerData.email" placeholder="Correo">
-        <input type="password" name="regPass" class="form-control" [(ngModel)]="registerData.password" placeholder="Contraseña">
-        <!-- Añadir evento de CLICK -->
-        <button type="button" (click)="onRegister()" class="btn btn-primary w-100">
+  <div class="card-face card-front border shadow-sm">
+    <h2 class="text-verde text-center mb-4">Únete a CarlaNatura</h2>
+    <form class="d-flex flex-column gap-3">
+      
+      <input type="text" name="regNombre" class="form-control" 
+            [(ngModel)]="registerData.nombre" placeholder="Nombre">
+
+      <input type="email" name="regEmail" class="form-control" 
+            [(ngModel)]="registerData.email" placeholder="Correo">
+
+      <div class="position-relative">
+        <input type="password" name="regPass" class="form-control" 
+              [(ngModel)]="registerData.password" 
+              (input)="actualizarValidaciones()"
+              placeholder="Contraseña">
+        
+        <div class="mt-2" style="font-size: 0.75rem;">
+          <div [class.text-success]="validaciones.largo" [class.text-danger]="!validaciones.largo">
+            <i class="bi" [ngClass]="validaciones.largo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> 8+ caracteres
+          </div>
+          <div [class.text-success]="validaciones.mayuscula" [class.text-danger]="!validaciones.mayuscula">
+            <i class="bi" [ngClass]="validaciones.mayuscula ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> Una Mayúscula
+          </div>
+          <div [class.text-success]="validaciones.numero" [class.text-danger]="!validaciones.numero">
+            <i class="bi" [ngClass]="validaciones.numero ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> Un Número
+          </div>
+        </div>
+      </div>
+
+      <button type="button" 
+              (click)="onRegister()" 
+              class="btn btn-primary w-100"
+              [disabled]="!esFormularioValido()">
         Registrarse
-        </button>
-      </form>
-      <p class="mt-4 text-center">¿Ya tienes cuenta? 
-        <span class="text-verde fw-bold" (click)="toggleFlip()">Inicia sesión</span>
-      </p>
-    </div>
+      </button>
+    </form>
+
+    <p class="mt-4 text-center">¿Ya tienes cuenta? 
+      <span class="text-verde fw-bold" (click)="toggleFlip()" style="cursor: pointer;">Inicia sesión</span>
+    </p>
+  </div>
 
     <div class="card-face card-back border shadow-sm bg-light">
       <h2 class="text-verde text-center mb-4">Bienvenido</h2>

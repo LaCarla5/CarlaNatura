@@ -15,10 +15,15 @@ import Swal from 'sweetalert2';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
-  public authService = inject(AuthService); // Inyectamos el servicio
+export class App {    
+  public authService = inject(AuthService);
   protected readonly title = signal('CarlaNatura');
   private router = inject(Router);
+
+  // Función para checkear el rol en tiempo real
+  get userRole(): string | null {
+    return this.authService.getUserRole();
+  }
 
   // Usa el VerDetalle y le lleva donde quiere ir
   verDetalle(item: string) {

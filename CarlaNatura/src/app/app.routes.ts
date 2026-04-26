@@ -57,6 +57,14 @@ export const routes: Routes = [
         path: 'catalogo-admin', 
         loadComponent: () => import('../app/paginas/admin/catalogo-admin/catalogo-admin').then(m => m.CatalogoAdmin) 
       },
+      { 
+        path: 'usuarios-admin', 
+        loadComponent: () => import('../app/paginas/admin/usuarios-admin/usuarios-admin').then(m => m.UsuariosAdmin) 
+      },
+      { 
+        path: 'blog-admin', 
+        loadComponent: () => import('../app/paginas/admin/blog-admin/blog-admin').then(m => m.BlogAdmin) 
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

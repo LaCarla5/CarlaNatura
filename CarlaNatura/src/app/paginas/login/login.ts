@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Importante para capturar datos simples
 import { AuthService } from '../../services/auth'; 
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -24,38 +25,106 @@ export class Login {
 
   toggleFlip() { this.isFlipped = !this.isFlipped; }
   
+  // Validacion de contraseña
+  private validarPassword(pass: string): { valida: boolean; mensaje: string } {
+    if (pass.length < 8) {
+      return { valida: false, mensaje: 'La contraseña debe tener al menos 8 caracteres.' };
+    }
+    if (!/[A-Z]/.test(pass)) {
+      return { valida: false, mensaje: 'La contraseña debe incluir al menos una mayúscula.' };
+    }
+    if (!/[0-9]/.test(pass)) {
+      return { valida: false, mensaje: 'La contraseña debe incluir al menos un número.' };
+    }
+    return { valida: true, mensaje: '' };
+  }
+
+  validaciones = {
+  largo: false,
+  mayuscula: false,
+  numero: false
+  };
+
+  actualizarValidaciones() {
+    const pass = this.registerData.password || '';
+    this.validaciones.largo = pass.length >= 8;
+    this.validaciones.mayuscula = /[A-Z]/.test(pass);
+    this.validaciones.numero = /[0-9]/.test(pass);
+  }
+
+  esFormularioValido(): boolean {
+    return (
+      this.registerData.nombre.length > 2 &&
+      this.registerData.email.includes('@') &&
+      this.validaciones.largo &&
+      this.validaciones.mayuscula &&
+      this.validaciones.numero
+    );
+  }
+
   onLogin() {
-    const credenciales = { 
-      email: this.loginData.email, 
-      password: this.loginData.password 
-    };
+      this.authService.login(this.loginData).subscribe({
+        next: (res) => {
+          Swal.fire({
+            title: '¡Bienvenido de nuevo!',
+            text: `Hola ${res.nombre}, iniciando sesión...`,
+            icon: 'success',
+            timer: 1500, // Se cierra solo en 1.5 seg
+            showConfirmButton: false,
+            timerProgressBar: true
+          }).then(() => {
+            // Redirección según rol tras cerrar el aviso
+            const destino = res.rol === 'ADMIN' ? '/admin/citas-admin' : '/inicio';
+            this.router.navigate([destino]);
+          });
+        },
+        error: (err) => {
+          Swal.fire({
+            title: 'Error de acceso',
+            text: err.error?.error || 'Credenciales incorrectas',
+            icon: 'error',
+            confirmButtonColor: '#198754'
+          });
+        }
+      });
+    }
 
-    this.authService.login(credenciales).subscribe({
-      next: (res) => {
-        // 1. Verificamos qué rol nos devolvió la base de datos
-        // Importante: Si en tu DB es 'ADMIN' en mayúsculas, ponlo igual aquí
-        const destino = res.rol === 'ADMIN' ? '/admin-citas' : '/inicio';
-        
-        console.log('Login exitoso, redirigiendo a:', destino);
-        this.router.navigate([destino]);
-      },
-      error: (err) => alert(err.error.error || 'Correo o contraseña incorrectos')
-    });
-  }
   // .subscribe(), la petición nunca sale del navegador. Angular ignora las llamadas a servidores si nadie está "escuchando" la respuesta.
-  onRegister() {
-    // Mira si esto sale en la consola
-    // console.log('Enviando datos...', this.registerData); 
+onRegister() {
+  const chequeo = this.validarPassword(this.registerData.password);
+  if (!chequeo.valida) return;
 
-    this.authService.registro(this.registerData).subscribe({
-      next: (res) => {
-        alert('¡Registro exitoso!');
-        this.toggleFlip(); // Esto hace que la tarjeta gire al login
-      },
-      error: (err) => {
-        console.error('Fallo el registro:', err);
-        alert('Error al registrar: ' + (err.error?.error || 'Servidor no disponible'));
-      }
-    });
-  }
+  this.authService.registro(this.registerData).subscribe({
+    next: () => {
+      Swal.fire({
+        title: '¡Cuenta creada!',
+        text: 'Registro completado con éxito. Ahora puedes entrar.',
+        icon: 'success',
+        confirmButtonColor: '#2d5a27', // Tu color verde
+        confirmButtonText: 'Ir al Login'
+      }).then((result) => {
+        // Forzamos el giro manual asegurándonos de que sea true o false según necesites
+        // Si isFlipped = true significa "viendo el registro", debemos ponerlo en false para ver el login
+        this.isFlipped = false; 
+
+        // Pasamos el email para que el usuario no tenga que escribirlo otra vez
+        this.loginData.email = this.registerData.email;
+        
+        // Limpiamos los datos de registro
+        this.registerData = { nombre: '', email: '', password: '', rol: 'USER' };
+        
+        // Opcional: Limpiamos los checks visuales
+        this.validaciones = { largo: false, mayuscula: false, numero: false };
+      });
+    },
+    error: (err) => {
+      Swal.fire({
+        title: 'Fallo en el registro',
+        text: err.error?.error || 'No se pudo crear la cuenta',
+        icon: 'error',
+        confirmButtonColor: '#d33'
+      });
+    }
+  });
+}
 }

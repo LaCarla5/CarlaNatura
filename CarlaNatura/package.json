@@ -36,6 +36,7 @@
     "angular-calendar": "^0.32.0",
     "angular-draggable-droppable": "^9.0.1",
     "angular-resizable-element": "^8.0.1",
+    "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.8",
     "bootstrap-icons": "^1.13.1",
     "date-fns": "^4.1.0",
