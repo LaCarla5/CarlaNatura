@@ -73,9 +73,8 @@ export class Login {
             showConfirmButton: false,
             timerProgressBar: true
           }).then(() => {
-            // Redirección según rol tras cerrar el aviso
-            const destino = res.rol === 'ADMIN' ? '/admin/citas-admin' : '/inicio';
-            this.router.navigate([destino]);
+            // Independiente del ROL siempre se les llevara a inicio
+            this.router.navigate(['/inicio']);
           });
         },
         error: (err) => {

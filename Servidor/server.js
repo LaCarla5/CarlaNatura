@@ -216,12 +216,38 @@ app.patch('/api/admin/citas/:id', (req, res) => {
   });
 });
 
+
 // --- RUTAS DE ADMIN USUARIOS ---
+app.get('/api/admin/usuarios', (req, res) => {
+  conexion.query('SELECT * FROM usuarios ORDER BY fecha_registro DESC', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
+});
 
+app.delete('/api/admin/usuarios/:id', (req, res) => {
+  const { id } = req.params;
+  const sql = "DELETE FROM usuarios WHERE id = ?";
 
+  conexion.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Error al eliminar:", err);
+      return res.status(500).json({ error: "No se pudo eliminar el usuario" });
+    }
+    res.json({ mensaje: "Usuario eliminado con éxito" });
+  });
+});
 
 // --- RUTAS DE CATÁLOGO ---
 app.get('/api/catalogo', (req, res) => {
+  conexion.query('SELECT * FROM productos', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
+});
+
+// --- RUTAS DE CATÁLOGO ADMIN---
+app.get('/api/catalogo-admin', (req, res) => {
   conexion.query('SELECT * FROM productos', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });
     res.json(resultados);

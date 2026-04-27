@@ -54,8 +54,11 @@
               <span class="badge" [ngClass]="p.stock < 5 ? 'bg-danger' : 'bg-success'">{{ p.stock }}</span>
             </td>
             <td class="text-center">
-              <button class="btn btn-outline-danger btn-sm border-0" (click)="eliminar(p.id)">
-                <i class="bi bi-trash-fill"></i>
+              <button class="btn btn-danger btn-editado" (click)="eliminar(p.id)">
+                <i class="bi bi-trash-fill"> Eliminar</i>
+              </button>
+              <button class="btn btn-success btn-editado" (click)="eliminar(p.id)">
+                <i class="bi bi-trash-fill"> Editar</i>
               </button>
             </td>
           </tr>

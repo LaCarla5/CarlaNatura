@@ -14,8 +14,8 @@ export const adminGuard: CanActivateFn = (route, state) => {
     return true; 
   } else {
     // Si es un usuario normal intentando "colarse", lo mandamos al catálogo
-    console.warn('Acceso denegado: Se requiere rol de ADMIN');
-    router.navigate(['/catalogo']);
+    // console.warn('Acceso denegado: Se requiere rol de ADMIN');
+    router.navigate(['/inicio']);
     return false;
   }
 };

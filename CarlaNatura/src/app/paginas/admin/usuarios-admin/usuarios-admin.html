@@ -1,1 +1,48 @@
-<p>usuarios-admin works!</p>
+<div class="container mt-5">
+  <div class="header-admin d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-success">Gestión de Usuarios</h2>
+    <div class="search-box">
+      <input type="text" class="form-control rounded-pill shadow-sm" 
+             placeholder="🔍 Buscar por nombre o email..." 
+             [(ngModel)]="filtro" (input)="filtrarUsuarios()">
+    </div>
+  </div>
+
+  <div class="row">
+    @for (user of usuariosFiltrados; track user.id) {
+      <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm user-card h-100">
+          <div class="card-body text-center">
+            <div class="avatar-container mb-3">
+              <img [src]="user.foto_perfil || 'recursos/img/perfil-default.png'" 
+                   class="rounded-circle border border-3"
+                   [class.border-success]="user.rol === 'USER'"
+                   [class.border-danger]="user.rol === 'ADMIN'"
+                   style="width: 80px; height: 80px; object-fit: cover;">
+            </div>
+            
+            <h5 class="card-title fw-bold">{{ user.nombre }}</h5>
+            <p class="text-muted small mb-1">{{ user.email }}</p>
+            <p class="text-muted small mb-1">{{ user.fecha_registro }}</p>
+            <span class="badge" [ngClass]="user.rol === 'ADMIN' ? 'bg-danger' : 'bg-success'">
+              {{ user.rol }}
+            </span>
+
+            <hr class="my-3 opacity-25">
+
+            <div class="d-flex justify-content-center gap-2">
+                <button class="btn btn-outline-danger rounded-pill px-4 shadow-sm" 
+                        (click)="eliminarUsuario(user.id)">
+                <i class="bi bi-person-x-fill"></i> Eliminar permanentemente
+                </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-12 text-center py-5">
+        <p class="text-muted fs-4">No se encontraron usuarios con ese criterio.</p>
+      </div>
+    }
+  </div>
+</div>

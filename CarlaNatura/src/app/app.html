@@ -18,50 +18,39 @@
             <ng-container *ngIf="authService.getUserRole() === 'ADMIN'">
               <li class="nav-item">
                 <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
-                   style="cursor: pointer;" (click)="verDetalle('admin/catalogo-admin')">
+                   routerLink="/admin/catalogo-admin" routerLinkActive="active-link">
                   <i class="bi bi-shield-lock-fill"></i> Admin - Productos
                 </a>
               </li>
-
               <li class="nav-item">
                 <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
-                   style="cursor: pointer;" (click)="verDetalle('admin/usuarios-admin')">
-                  <i class="bi bi-shield-lock-fill"></i> Admin - Usuarios
+                   routerLink="/admin/usuarios-admin" routerLinkActive="active-link">
+                  <i class="bi bi-people-fill"></i> Admin - Usuarios
                 </a>
               </li>
-
               <li class="nav-item">
                 <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
-                   style="cursor: pointer;" (click)="verDetalle('admin/citas-admin')">
-                  <i class="bi bi-shield-lock-fill"></i> Admin - Citas
+                   routerLink="/admin/citas-admin" routerLinkActive="active-link">
+                  <i class="bi bi-calendar-check"></i> Admin - Citas
                 </a>
               </li>
-
-              <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
-                   style="cursor: pointer;" (click)="verDetalle('admin/blog-admin')">
-                  <i class="bi bi-shield-lock-fill"></i> Admin - Blog
-                </a>
-              </li>
-
-              </ng-container>
+            </ng-container>
 
             <ng-container *ngIf="authService.getUserRole() === 'USER'">
-              <li class="nav-item"><a class="nav-link" (click)="verDetalle('catalogo')">Catálogo</a></li>
-              <li class="nav-item"><a class="nav-link" (click)="verDetalle('citas')">Citas</a></li>
-              <li class="nav-item"><a class="nav-link" (click)="verDetalle('blog')">Blog</a></li>
-              <li class="nav-item"><a class="nav-link" (click)="verDetalle('dietas')">Dietas</a></li>
+              <li class="nav-item"><a class="nav-link" routerLink="/catalogo" routerLinkActive="active-link">Catálogo</a></li>
+              <li class="nav-item"><a class="nav-link" routerLink="/citas" routerLinkActive="active-link">Citas</a></li>
+              <li class="nav-item"><a class="nav-link" routerLink="/blog" routerLinkActive="active-link">Blog</a></li>
               
               <li class="nav-item">
-                <a class="nav-link position-relative" (click)="verDetalle('carrito')">
-                  <i class="bi bi-cart"></i> Carrito
+                <a class="nav-link position-relative" routerLink="/carrito">
+                  <i class="bi bi-cart"></i>
                   <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">0</span>
                 </a>
               </li>
             </ng-container>
 
             <li class="nav-item ms-lg-2">
-              <a class="nav-link" (click)="verDetalle('perfil')">
+              <a class="nav-link" routerLink="/perfil" routerLinkActive="active-link">
                 <i class="bi bi-person-circle fs-5"></i> Mi Perfil
               </a>
             </li>
@@ -71,10 +60,10 @@
           </ng-container>
 
           <ng-container *ngIf="!(authService.isLoggedIn$ | async)">
-            <li class="nav-item"><a class="nav-link" (click)="verDetalle('blog')">Blog Público</a></li>
+            <li class="nav-item"><a class="nav-link" routerLink="/blog">Blog</a></li>
             <li class="nav-item ms-lg-3">
-              <a class="btn btn-outline-success px-4 shadow-sm" (click)="verDetalle('login')">
-                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión / Registro
+              <a class="btn btn-outline-success px-4 shadow-sm" routerLink="/login">
+                Iniciar Sesión
               </a>
             </li>
           </ng-container>

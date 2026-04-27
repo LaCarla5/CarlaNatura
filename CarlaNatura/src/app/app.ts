@@ -1,57 +1,37 @@
-import { Injectable, Component, signal, inject } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { AuthService } from './services/auth'; // Ajusta la ruta
+import { Component, signal, inject, OnInit, PLATFORM_ID} from '@angular/core';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { AuthService } from './services/auth';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import Swal from 'sweetalert2';
-
-@Injectable({
-  providedIn: 'root'
-})
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
+  standalone: true, // Asegúrate de que sea standalone
   imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {    
+export class App implements OnInit {
   public authService = inject(AuthService);
-  protected readonly title = signal('CarlaNatura');
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
 
-  // Función para checkear el rol en tiempo real
+  protected readonly title = signal('CarlaNatura');
+
+  ngOnInit() {
+    // SOLO ejecutamos esto si estamos en el navegador
+    if (isPlatformBrowser(this.platformId)) {
+      window.addEventListener('beforeunload', () => {
+        this.authService.logout();
+      });
+    }
+  }
+  // Función sencilla para el HTML
   get userRole(): string | null {
     return this.authService.getUserRole();
   }
 
-  // Usa el VerDetalle y le lleva donde quiere ir
-  verDetalle(item: string) {
-    // 1. LISTA BLANCA: Rutas que NO necesitan login
-    const rutasPublicas = ['inicio', 'login', 'blog'];
-
-    if (rutasPublicas.includes(item)) {
-      this.router.navigate(['/' + item]);
-      return;
-    }
-
-    // 2. RESTO DE RUTAS: Sí necesitan login
-    if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/' + item]);
-    } else {
-      Swal.fire({
-        title: 'Acceso Restringido',
-        text: `Para acceder a ${item}, por favor inicia sesión.`,
-        icon: 'info',
-        iconColor: '#198754',
-        confirmButtonColor: '#2d5a27',
-        confirmButtonText: 'Ir al Login',
-        allowOutsideClick: false
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.router.navigate(['/login']);
-        }
-      });
-    }
+  navegarA(ruta: string) {
+    this.router.navigate([`/${ruta}`]);
   }
 }

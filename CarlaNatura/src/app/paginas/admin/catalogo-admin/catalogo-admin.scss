@@ -45,4 +45,27 @@ $verde-claro: #f4f9f4;
   .animate__animated {
     animation-duration: 0.5s;
   }
+
+  // Botones de accion
+  .btn-editado {
+  width: 45px;
+  height: 45px;
+  padding: 0px;
+  margin: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px; // Bordes redondeados modernos
+  transition: all 0.3s ease;
+  border: none;
+
+  i {
+    font-size: 1.4rem; // Tamaño del icono
+  }
+
+  &:hover {
+    transform: scale(1.1); // Efecto de crecimiento al pasar el ratón
+    color: white;
+  }
+}
 }
