@@ -31,10 +31,10 @@ export class CitasAdmin implements OnInit {
     this.http.get<any[]>('http://localhost:3000/api/admin/citas/pendientes').subscribe({
       next: (res) => {
         this.citasPendientes = res;
-        console.log("Citas recibidas en el componente:", this.citasPendientes);
+        //console.log("Citas recibidas en el componente:", this.citasPendientes);
       },
       error: (err) => {
-        console.error("Error al conectar con el API de admin", err);
+        //console.error("Error al conectar con el API de admin", err);
       }
     });
   }

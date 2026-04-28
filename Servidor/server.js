@@ -92,7 +92,7 @@ app.post('/api/registro', (req, res) => {
   // Encriptamos la contraseña
   const hash = bcrypt.hashSync(password, saltRounds);
   const rolFinal = rol || 'USER';
-  const fotoDef = '/uploads/perfil/imagenUsuarioEjemplo.jpg';
+  const fotoDef = 'recursos/img/perfil/imagenUsuarioEjemplo.jpg';
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
     if (err) {
@@ -246,7 +246,71 @@ app.get('/api/catalogo', (req, res) => {
   });
 });
 
+
+// --- RUTAS DE BLOG ---
+
+// Obtener todas para la tabla general
+app.get('/api/blog', (req, res) => {
+  conexion.query('SELECT * FROM blog_posts ORDER BY fecha_publicacion DESC', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
+});
+
+// --- RUTAS DE ADMIN BLOG ---
+
+app.get('/api/admin/blog', (req, res) => {
+  conexion.query('SELECT * FROM blog_posts ORDER BY fecha_publicacion DESC', (err, resultados) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json(resultados);
+  });
+});
+
+app.post('/api/admin/blog', (req, res) => {
+  const { titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion } = req.body;
+
+  // Verificamos que los datos mínimos existan
+  if (!titulo || !contenido || !categoria) {
+    return res.status(400).json({ error: 'Título y contenido son obligatorios' });
+  }
+
+  // SQL con los 7 parámetros correspondientes
+  const sql = 'INSERT INTO blog_posts (titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion) VALUES (?, ?, ?, ?, ?, ?, ?)';
+  
+  const fechaFormateada = new Date(fecha_publicacion)
+    .toISOString()
+    .slice(0, 19)
+    .replace('T', ' ');
+
+  const valores = [
+    titulo, 
+    categoria, 
+    contenido, 
+    imagen || null, 
+    urlExterna || null, 
+    autor_id || 1, // Si no llega autor, le ponemos el 1 por defecto (Admin)
+    fechaFormateada
+  ];
+
+  conexion.query(sql, valores, (err, resultado) => {
+    if (err) {
+      console.error("Error en el INSERT:", err);
+      return res.status(500).json({ error: 'No se pudo guardar el post' });
+    }
+    res.status(201).json({ mensaje: 'Post creado', id: resultado.insertId });
+  });
+});
+
+app.delete('/api/admin/blog/:id', (req, res) => {
+  conexion.query('DELETE FROM blog_post WHERE id = ?', [req.params.id], (err) => {
+    if (err) return res.status(500).json({ error: 'Error' });
+    res.json({ mensaje: 'Eliminado' });
+  });
+});
+
+
 // --- RUTAS DE CATÁLOGO ADMIN---
+
 app.get('/api/catalogo-admin', (req, res) => {
   conexion.query('SELECT * FROM productos', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });

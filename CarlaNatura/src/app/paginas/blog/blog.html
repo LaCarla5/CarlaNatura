@@ -8,7 +8,7 @@
 
     <section id="blog-list" class="container py-5">
         <div class="row g-4">
-            @for (post of articulos; track post.id) {
+            @for (post of posts; track post.id) {
             <div class="col-12 col-md-6 col-lg-4">
                 <article class="card h-100 blog-card border-0 shadow-sm">
                     <div class="blog-img-wrapper">
@@ -17,26 +17,16 @@
                     </div>
 
                     <div class="card-body p-4">
-                        <small class="text-muted">{{ post.fecha }} • {{ post.lectura }} min</small>
+                        <small class="text-muted">{{ post.fecha_publicacion }}</small>
                         <h3 class="h5 fw-bold mt-2 mb-3 text-dark">{{ post.titulo }}</h3>
-                        <p class="text-muted small">{{ post.resumen }}</p>
+                        <p class="text-muted small">{{ post.contenido }}</p>
                     </div>
 
                     <div class="card-footer bg-transparent border-0 p-4 pt-0">
-                        <!-- Si el post es externo lo redirige sino no -->
-                        @if (post.esExterno) {
                         <a [href]="post.urlExterna" target="_blank" rel="noopener noreferrer" class="btn-leer externo">
                             Saber más
                             <i class="bi bi-box-arrow-up-right ms-1"></i>
                         </a>
-                        }
-                        @else {
-                        <a [routerLink]="['/blog', post.id]" class="btn-leer">
-                            Leer artículo
-                            <i class="bi bi-arrow-right ms-1"></i>
-                        </a>
-                        }
-
                     </div>
                 </article>
             </div>
