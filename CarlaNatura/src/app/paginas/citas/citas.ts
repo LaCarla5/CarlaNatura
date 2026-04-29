@@ -41,12 +41,13 @@ export class Citas {
     return true;
   }
 
+  
   // Función principal cuando pinchan en un día
 async dayClicked({ date }: { date: Date }): Promise<void> {
   if (!this.isBrowser) return;
   if (!this.comprobarAcceso()) return;
 
-  // 1. Formateamos la fecha correctamente para la DB
+  // Formateamos la fecha correctamente para la DB
   const year = date.getFullYear();
   const month = (date.getMonth() + 1).toString().padStart(2, '0');
   const day = date.getDate().toString().padStart(2, '0');
@@ -57,13 +58,13 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
   });
 
   try {
-    // 2. Preguntamos al servidor qué horas están pilladas ese día
+    // Preguntamos al servidor qué horas están reservadas ese día
     const horasOcupadas = await this.http.get<string[]>(`http://localhost:3000/api/citas/ocupadas?fecha=${fechaISO}`)
       .toPromise() || [];
 
     const usuarioActivo = this.authService.getCurrentUser();
 
-    // 3. Creamos el menú de horas (se ponen grises/disabled si están en horasOcupadas)
+    // Creamos el menú de horas (se ponen grises/disabled si están en horasOcupadas)
     const todasLasHoras = ['09:00', '10:00', '11:00', '16:00', '17:00'];
     const opcionesHoraHtml = todasLasHoras.map(hora => {
       const estaOcupada = horasOcupadas.includes(hora);
@@ -122,6 +123,7 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
     Swal.fire('Error', 'No se pudo conectar con el servidor para ver las horas libres.', 'error');
   }
 }
+  
 
   private enviarCita(fechaFinal: string, datos: any) {
     const payload = {

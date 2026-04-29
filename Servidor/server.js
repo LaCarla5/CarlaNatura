@@ -16,10 +16,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Servir imágenes
+// Servir imágenes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// 2. Configuración de Multer
+// Configuración de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'uploads/perfil/'); 
@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage: storage });
 
-// 3. Conexión MySQL
+// Conexión MySQL
 const conexion = mysql.createConnection({
   host: 'localhost',
   user: 'lacarla',
@@ -47,7 +47,7 @@ conexion.connect((err) => {
   console.log('✅ ¡Conectado con éxito a MySQL Workbench!');
 });
 
-// 4. Configuración Nodemailer
+// Configuración Nodemailer
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -79,7 +79,8 @@ app.post('/api/login', (req, res) => {
         id: usuario.id,
         nombre: usuario.nombre,
         rol: usuario.rol,
-        mensaje: "Bienvenido"
+        foto: usuario.foto,
+        email: usuario.email
       });
     } else {
       res.status(401).json({ error: "Contraseña incorrecta" });
@@ -125,7 +126,13 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
 
 app.post('/api/citas', (req, res) => {
   const { nombre, email, servicio, fecha, hora, descripcion, cliente_id } = req.body;
-  // Usamos 'usuario_id' para que coincida con tu tabla SQL
+
+  // Validación de seguridad: Si no hay email, no intentamos enviar correo
+  if (!email) {
+    console.error('❌ Intento de reserva sin email');
+    // Guardamos la cita igualmente o devolvemos error según prefieras
+  }
+
   const sql = "INSERT INTO citas (usuario_id, nombre, email, servicio, descripcion, fecha, hora, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
   
   conexion.query(sql, [cliente_id, nombre, email, servicio, descripcion, fecha, hora], (err, result) => {
@@ -134,16 +141,27 @@ app.post('/api/citas', (req, res) => {
       return res.status(500).json({ error: "Error al guardar la cita" });
     }
 
-    // Nodemailer
-    const mailOptions = {
-      from: 'CarlaNatura <carlanatura2026@gmail.com>',
-      to: email,
-      subject: 'Reserva Recibida - CarlaNatura 🌿',
-      html: `<h2>¡Hola ${nombre}!</h2><p>Hemos recibido tu solicitud para <b>${servicio}</b> el día ${fecha}. Estás en estado <b>PENDIENTE</b>.</p>`
-    };
+    // Solo intentamos enviar el correo si existe el email
+    if (email) {
+      const mailOptions = {
+        from: 'CarlaNatura <carlanatura2026@gmail.com>',
+        to: email, // 👈 Si esto es undefined, Nodemailer falla
+        subject: 'Reserva Recibida - CarlaNatura 🌿',
+        html: `<h2>¡Hola ${nombre}!</h2><p>Hemos recibido tu solicitud para <b>${servicio}</b> el día ${fecha} a las ${hora}.</p>`
+      };
 
-    transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "Cita guardada y correo enviado" });
+      // USAR CALLBACK para capturar errores sin que caiga el servidor
+      transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+          console.error('❌ Error al enviar el correo:', error);
+        } else {
+          console.log('✅ Correo enviado con éxito:', info.response);
+        }
+      });
+    }
+
+    // Respondemos al cliente de Angular inmediatamente
+    res.status(200).json({ message: "Cita guardada correctamente" });
   });
 });
 

@@ -22,7 +22,7 @@ export class AuthService {
 
   private apiUrl = 'http://localhost:3000/api';
 
-  // 1. Estado de autenticación
+  // Estado de autenticación
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public isLoggedIn$ = this.loggedInSubject.asObservable();
 
