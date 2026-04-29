@@ -22,13 +22,26 @@
     button {
       padding: 8px 16px;
       cursor: pointer;
-      background: #4a90e2;
+      background: #198754;
       color: white;
       border: none;
       border-radius: 4px;
-      &:hover { background: #357abd; }
+      &:hover { background: #136941; }
     }
   }
+}
+
+/* Estilo para los días pasados en la vista de mes */
+::ng-deep .cal-month-view .cal-day-cell.cal-past {
+    background-color: #f8f9fa !important; /* Gris clarito */
+    pointer-events: none; /* Desactiva los clics */
+    opacity: 0.6;
+}
+
+/* Opcional: tachar el número del día */
+::ng-deep .cal-month-view .cal-day-cell.cal-past .cal-day-number {
+    text-decoration: line-through;
+    color: #adb5bd;
 }
 
 // Estilo para que el día seleccionado resalte

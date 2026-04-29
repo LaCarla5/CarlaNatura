@@ -30,6 +30,8 @@ export class Citas {
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
+    // Ponemos la hora a 00:00:00 para comparar solo el día
+    this.viewDate.setHours(0, 0, 0, 0);
   }
 
   // Esta función protege los botones de Anterior/Siguiente
@@ -45,6 +47,18 @@ export class Citas {
   // Función principal cuando pinchan en un día
 async dayClicked({ date }: { date: Date }): Promise<void> {
   if (!this.isBrowser) return;
+
+  // Bloquear fechas anteriores al dia de hoy
+  if (date < this.viewDate) {
+    Swal.fire({
+      title: 'Fecha no válida',
+      text: 'No puedes reservar citas en días pasados.',
+      icon: 'info',
+      confirmButtonColor: '#198754'
+    });
+    return;
+  }
+
   if (!this.comprobarAcceso()) return;
 
   // Formateamos la fecha correctamente para la DB
@@ -65,7 +79,7 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
     const usuarioActivo = this.authService.getCurrentUser();
 
     // Creamos el menú de horas (se ponen grises/disabled si están en horasOcupadas)
-    const todasLasHoras = ['09:00', '10:00', '11:00', '16:00', '17:00'];
+    const todasLasHoras = ['08:00','09:00', '10:00', '11:00','12:00','13:00','16:00', '17:00','18:00'];
     const opcionesHoraHtml = todasLasHoras.map(hora => {
       const estaOcupada = horasOcupadas.includes(hora);
       return `

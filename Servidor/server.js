@@ -69,7 +69,7 @@ app.post('/api/login', (req, res) => {
 
     const usuario = result[0];
 
-    // 2. Comparamos la contraseña en texto plano (la que viene del login.ts)
+    // Comparamos la contraseña en texto plano (la que viene del login.ts)
     // con la encriptada que guardamos en la DB
     const esValida = bcrypt.compareSync(password, usuario.password);
 
@@ -149,15 +149,6 @@ app.post('/api/citas', (req, res) => {
         subject: 'Reserva Recibida - CarlaNatura 🌿',
         html: `<h2>¡Hola ${nombre}!</h2><p>Hemos recibido tu solicitud para <b>${servicio}</b> el día ${fecha} a las ${hora}.</p>`
       };
-
-      // USAR CALLBACK para capturar errores sin que caiga el servidor
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('❌ Error al enviar el correo:', error);
-        } else {
-          console.log('✅ Correo enviado con éxito:', info.response);
-        }
-      });
     }
 
     // Respondemos al cliente de Angular inmediatamente
@@ -182,7 +173,7 @@ app.get('/api/citas/ocupadas', (req, res) => {
     // Convertimos de "09:00:00" a "09:00" para que Angular lo entienda
     const horasOcupadas = resultado.map(fila => fila.hora.substring(0, 5));
     
-    console.log(`Día ${fecha} - Horas no disponibles:`, horasOcupadas);
+    // console.log(`Día ${fecha} - Horas no disponibles:`, horasOcupadas);
     res.json(horasOcupadas); // Enviamos el array, ej: ["10:00", "16:00"]
   });
 });

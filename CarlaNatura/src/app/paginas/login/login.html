@@ -1,72 +1,98 @@
 <div class="login-page d-flex justify-content-center align-items-center">
   <div class="card-container" [class.flipped]="isFlipped">
-    
-  <div class="card-face card-front border shadow-sm">
-    <h2 class="text-verde text-center mb-4">Únete a CarlaNatura</h2>
-    <form class="d-flex flex-column gap-3">
-      
-      <input type="text" name="regNombre" class="form-control" 
-            [(ngModel)]="registerData.nombre" placeholder="Nombre">
 
-      <input type="email" name="regEmail" class="form-control" 
-            [(ngModel)]="registerData.email" placeholder="Correo">
+    <div class="card-face card-front border shadow-sm">
+      <h2 class="text-center mb-4">Únete a CarlaNatura</h2>
 
-      <div class="position-relative">
-        <input type="password" name="regPass" class="form-control" 
-              [(ngModel)]="registerData.password" 
-              (input)="actualizarValidaciones()"
-              placeholder="Contraseña">
-        
-        <div class="mt-2" style="font-size: 0.75rem;">
-          <div [class.text-success]="validaciones.largo" [class.text-danger]="!validaciones.largo">
-            <i class="bi" [ngClass]="validaciones.largo ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> 8+ caracteres
+      <form (ngSubmit)="onRegister()">
+
+        <div class="form-group">
+          <label class="form-label fw-bold">Nombre de Usuario</label>
+          <input type="text" name="regNombre" class="form-control" [(ngModel)]="registerData.nombre"
+            placeholder="Tu nombre">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label fw-bold">Correo Electrónico</label>
+          <input type="email" name="regEmail" class="form-control" [(ngModel)]="registerData.email"
+            placeholder="ejemplo@web.com">
+        </div>
+
+        @if (registerData.email.length > 0 && !registerData.email.includes('.')) {
+        <div class="text-danger" style="font-size: 0.7rem;">
+          <i class="bi bi-exclamation-triangle"></i> Formato de correo inválido (ejemplo@web.com)
+        </div>
+        }
+
+        <div class="form-group mb-2">
+          <label class="form-label fw-bold">Contraseña</label>
+          <div class="input-group">
+            <input [type]="mostrarPasswordReg ? 'text' : 'password'" name="regPass" class="form-control"
+              [(ngModel)]="registerData.password" (input)="actualizarValidaciones()" placeholder="Mín. 8 caracteres">
+            <button class="btn-ojo" type="button" (click)="mostrarPasswordReg = !mostrarPasswordReg">
+              <i class="bi" [ngClass]="mostrarPasswordReg ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
           </div>
-          <div [class.text-success]="validaciones.mayuscula" [class.text-danger]="!validaciones.mayuscula">
-            <i class="bi" [ngClass]="validaciones.mayuscula ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> Una Mayúscula
-          </div>
-          <div [class.text-success]="validaciones.numero" [class.text-danger]="!validaciones.numero">
-            <i class="bi" [ngClass]="validaciones.numero ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i> Un Número
+
+          <div class="password-requirements">
+            <div class="requirement" [class.text-success]="validaciones.largo"
+              [class.text-muted-custom]="!validaciones.largo">
+              <i class="bi" [ngClass]="validaciones.largo ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+              <span>8+ caracteres</span>
+            </div>
+            <div class="requirement" [class.text-success]="validaciones.mayuscula"
+              [class.text-muted-custom]="!validaciones.mayuscula">
+              <i class="bi" [ngClass]="validaciones.mayuscula ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+              <span>Una Mayúscula</span>
+            </div>
+            <div class="requirement" [class.text-success]="validaciones.numero"
+              [class.text-muted-custom]="!validaciones.numero">
+              <i class="bi" [ngClass]="validaciones.numero ? 'bi-check-circle-fill' : 'bi-circle'"></i>
+              <span>Un Número</span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button type="button" 
-              (click)="onRegister()" 
-              class="btn btn-primary w-100"
-              [disabled]="!esFormularioValido()">
-        Registrarse
-      </button>
-    </form>
-
-    <p class="mt-4 text-center">¿Ya tienes cuenta? 
-      <span class="text-verde fw-bold" (click)="toggleFlip()" style="cursor: pointer;">Inicia sesión</span>
-    </p>
-  </div>
-
-    <div class="card-face card-back border shadow-sm bg-light">
-      <h2 class="text-verde text-center mb-4">Bienvenido</h2>
-      <form class="d-flex flex-column gap-3">
-        
-        <input type="email" 
-              name="loginEmail" 
-              class="form-control" 
-              [(ngModel)]="loginData.email" 
-              placeholder="Email">
-
-        <input type="password" 
-              name="loginPass" 
-              class="form-control" 
-              [(ngModel)]="loginData.password" 
-              placeholder="Contraseña">
-
-        <button type="button" (click)="onLogin()" class="btn btn-primary w-100">
-          Iniciar Sesion
+        <button type="submit" class="btn btn-primary w-100 mt-4" [disabled]="!esFormularioValido()">
+          REGISTRARSE
         </button>
+
+        <p class="mt-4 text-center mb-0">
+          ¿Ya tienes cuenta?
+          <span class="text-verde" (click)="toggleFlip()">Inicia sesión</span>
+        </p>
       </form>
-      
-      <p class="mt-4 text-center">¿Eres nuevo? 
-        <span class="text-verde fw-bold" (click)="toggleFlip()" style="cursor: pointer;">Crea una cuenta</span>
-      </p>
+    </div>
+
+    <div class="card-face card-back border shadow-sm bg-light d-flex flex-column justify-content-center">
+      <h2 class="text-verde text-center mb-4">Bienvenido</h2>
+
+      <form class="d-flex flex-column gap-3">
+        <div class="form-group">
+          <label class="form-label fw-bold">Email</label>
+          <input type="email" name="loginEmail" class="form-control" [(ngModel)]="loginData.email" placeholder="Email">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label fw-bold">Contraseña</label>
+          <div class="input-group">
+            <input [type]="mostrarPasswordLogin ? 'text' : 'password'" name="loginPass" class="form-control"
+              [(ngModel)]="loginData.password" placeholder="Contraseña">
+
+            <button class="btn-ojo" type="button" (click)="mostrarPasswordLogin = !mostrarPasswordLogin">
+              <i class="bi" [ngClass]="mostrarPasswordLogin ? 'bi-eye-slash' : 'bi-eye'"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="button" (click)="onLogin()" class="btn btn-primary w-100 mt-2">
+          Iniciar Sesión
+        </button>
+
+        <p class="mt-4 text-center mb-0">¿Eres nuevo?
+          <span class="text-verde fw-bold" (click)="toggleFlip()" style="cursor: pointer;">Crea una cuenta</span>
+        </p>
+      </form>
     </div>
 
   </div>

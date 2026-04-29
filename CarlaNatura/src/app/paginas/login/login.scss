@@ -1,24 +1,24 @@
-// 1. TUS VARIABLES
+// VARIABLES
 $verde: #2d5a27;
 $verde-claro: #f1f8f1;
 $blanco-puro: #ffffff;
+$gris-borde: #e0e0e0;
 $sombra-suave: 0 15px 35px rgba(0, 0, 0, 0.1);
 $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
-// 2. ESTILOS DE PÁGINA (Sin fondo)
 .login-page {
-  min-height: 80vh; // Ajustado para que no ocupe toda la pantalla si no quieres
+  min-height: 80vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: transparent; // 👈 Eliminamos cualquier color de fondo
   perspective: 1200px;
+  padding: 20px;
 }
 
-// 3. CONTENEDOR DE LA CARTA
 .card-container {
-  width: 420px;
-  height: 620px;
+  width: 100%;
+  max-width: 420px;
+  height: 650px;
   position: relative;
   transition: $transicion-flip;
   transform-style: preserve-3d;
@@ -28,25 +28,24 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-// 4. CARAS DE LA CARTA
 .card-face {
   position: absolute;
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
   border-radius: 24px;
-  padding: 2.5rem;
-  background: $blanco-puro; // La carta en sí sigue siendo blanca para que se vea el texto
+  background: $blanco-puro;
   border: 1px solid rgba($verde, 0.1);
   box-shadow: $sombra-suave;
+  padding: 2.5rem 3rem;
   display: flex;
   flex-direction: column;
-  justify-content: center;
 
   h2 {
     font-weight: 800;
     color: $verde;
     margin-bottom: 1.5rem;
+    text-align: center;
   }
 }
 
@@ -54,46 +53,130 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transform: rotateY(180deg);
 }
 
-// 5. INPUTS Y BOTONES (Adaptados)
+// FORMULARIO
+.form-group {
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: #444;
+  display: block;
+}
+
+// ESTILO ÚNICO PARA INPUTS (Normales y en grupo)
 .form-control {
-  border-radius: 12px;
-  padding: 0.75rem 1rem;
-  border: 1.5px solid lighten($verde, 60%);
+  height: 48px;
+  border-radius: 10px;
+  border: 1.5px solid $gris-borde;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
 
   &:focus {
     border-color: $verde;
-    box-shadow: 0 0 0 4px rgba($verde, 0.1);
+    box-shadow: 0 0 0 3px rgba($verde, 0.1);
     outline: none;
   }
 }
 
+// EL OJO (INPUT GROUP)
+.input-group {
+  display: flex;
+
+  .form-control {
+    flex: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+  }
+
+  .btn-ojo {
+    background-color: #ffffff !important; // 👈 Forzamos el blanco para quitar el gris
+    border: 1.5px solid #e0e0e0;
+    border-left: none;
+    color: #999;
+    padding: 0 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    transition: all 0.2s ease;
+    outline: none;
+    box-shadow: none; // Quita posibles sombras que den aspecto gris
+
+    i {
+      font-size: 1.2rem;
+      line-height: 1;
+    }
+
+    &:hover {
+      color: $verde;
+      background-color: #ffffff !important;
+    }
+  }
+}
+
+// VALIDACIONES
+.password-requirements {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .requirement {
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #aaa; // Por defecto gris
+
+    &.text-success {
+      color: $verde !important;
+    }
+
+    &.text-danger {
+      color: #dc3545 !important;
+    }
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+}
+
+// BOTONES
 .btn-primary {
   background-color: $verde;
+  color: white;
   border: none;
   border-radius: 12px;
-  padding: 0.8rem;
-  font-weight: 600;
-  color: $blanco-puro;
+  padding: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 1px;
   transition: all 0.3s ease;
+  margin-top: 1rem;
 
   &:hover:not(:disabled) {
     background-color: darken($verde, 5%);
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba($verde, 0.3);
+    box-shadow: 0 8px 20px rgba($verde, 0.3);
   }
 
   &:disabled {
-    background-color: #bdc3c7;
+    background-color: #d5dbdb;
     cursor: not-allowed;
   }
 }
 
 .text-verde {
   color: $verde;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: 600;
-  
+
   &:hover {
     text-decoration: underline;
   }
