@@ -28,13 +28,13 @@ export class AuthService {
 
   // 2. NUEVO: Estado de los datos del usuario (Nombre y Foto)
   // Esto permite que el Navbar se actualice cuando cambias tu foto o nombre
-  private userDataSubject = new BehaviorSubject<{nombre: string | null, foto: string | null}>({
+  private userDataSubject = new BehaviorSubject<{ nombre: string | null, foto: string | null }>({
     nombre: this.getStoredItem('userName'),
     foto: this.getStoredItem('userPhoto')
   });
   public userData$ = this.userDataSubject.asObservable();
 
-  constructor() {}
+  constructor() { }
 
   private hasToken(): boolean {
     return isPlatformBrowser(this.platformId) && !!localStorage.getItem('token');
@@ -45,7 +45,7 @@ export class AuthService {
   }
 
   // --- LOGIN ---
-login(credentials: any): Observable<any> {
+  login(credentials: any): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/login`, credentials).pipe(
       tap(res => {
         if (isPlatformBrowser(this.platformId)) {
@@ -98,28 +98,46 @@ login(credentials: any): Observable<any> {
   getUserId(): string | null {
     return this.getStoredItem('userId');
   }
-  
+
   getUserRole(): UserRole {
     return this.getStoredItem('rol') as UserRole;
   }
 
+  obtenerPerfil(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/perfil/${id}`);
+  }
+
   // --- ACTUALIZAR PERFIL ---
-  actualizarPerfil(id: number, nombre: string, foto: File | null): Observable<any> {
+  actualizarPerfil(id: number, nombre: string, foto: File | null, genero: string,
+    telefono: string, domicilio: string, cp: string, ciudad: string,
+    ca: string, pais: string): Observable<any> {
     const formData = new FormData();
     formData.append('nombre', nombre);
     if (foto) formData.append('foto', foto);
+    formData.append('genero', genero);
+    formData.append('telefono', telefono);
+    formData.append('domicilio', domicilio);
+    formData.append('cp', cp);
+    formData.append('ciudad', ciudad);
+    formData.append('ca', ca);
+    formData.append('pais', pais);
 
     return this.http.put<any>(`${this.apiUrl}/perfil/${id}`, formData).pipe(
       tap(res => {
         if (isPlatformBrowser(this.platformId)) {
-          // Actualizamos LocalStorage
+          // Guardamos TODO en LocalStorage para que al recargar no se pierda nada
           localStorage.setItem('userName', res.nombre);
+          localStorage.setItem('userPhone', res.telefono);
+          localStorage.setItem('userStreet', res.domicilio);
+          localStorage.setItem('userCP', res.cp);
+          localStorage.setItem('userCity', res.ciudad);
+          localStorage.setItem('userComunity', res.comunidad_autonoma); // Lo que devuelva el server
+          localStorage.setItem('userCountry', res.pais);
           if (res.foto) localStorage.setItem('userPhoto', res.foto);
 
-          // ¡IMPORTANTE! Notificamos el cambio para que el Navbar se actualice solo
-          this.userDataSubject.next({ 
-            nombre: res.nombre, 
-            foto: res.foto || localStorage.getItem('userPhoto') 
+          this.userDataSubject.next({
+            nombre: res.nombre,
+            foto: res.foto || localStorage.getItem('userPhoto')
           });
         }
       })

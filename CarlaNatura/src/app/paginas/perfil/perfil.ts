@@ -23,6 +23,16 @@ export class Perfil implements OnInit {
   userName: string | null = 'Usuario';
   userRole: string | null = 'USER';
   userPhoto: string | null = null;
+  userGender: string | null = 'indefinido';
+  // String para facilitar manejo de inputs
+  userPhone: string | null = '';
+  userStreet: string | null = '';
+  // String para facilitar manejo de inputs
+  userCP: string | null = '';
+  userCity: string | null = '';
+  userComunity: string | null = '';
+  userCountry: string | null = '';
+
 
   // Configuración de rutas e imágenes
   apiUrl = 'http://localhost:3000'; // Tu servidor Node
@@ -31,6 +41,13 @@ export class Perfil implements OnInit {
   // Variables para el modo edición
   editMode = false;
   nombreEditado: string = '';
+  generoEditado: string = '';
+  telefonoEditado: string = '';
+  domicilioEditado: string = '';
+  cpEditado: string = '';
+  ciudadEditado: string = '';
+  caEditado: string = '';
+  paisEditado: string = '';
   fotoSeleccionada: File | null = null;
   fotoPreview: string | null = null;
 
@@ -41,39 +58,57 @@ export class Perfil implements OnInit {
   }
 
   cargarDatos() {
-    // Verificamos si hay sesión
+    // Comprobar si esta iniciado sesion
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
-
-    // Recuperamos todo lo que guardamos en el login
+    
+    // obligatoria para obtener el id del usuario
     this.userId = localStorage.getItem('userId');
-    this.userRole = localStorage.getItem('rol');
-    this.userName = localStorage.getItem('userName') || 'Usuario Distinguido';
-    this.nombreEditado = this.userName; // Preparamos el nombre para el input de edición
 
-    // Lógica de la foto
-    const fotoDB = localStorage.getItem('userPhoto');
-    // La ruta estática real
-    const serverUrl = 'http://localhost:3000/uploads/perfil/';
-    if (fotoDB && fotoDB !== 'null' && fotoDB !== '') {
-      // Si la foto ya es una URL de Google/Facebook, no le añadimos el prefijo del servidor
-      if (fotoDB.startsWith('http')) {
-        this.userPhoto = fotoDB;
-      } else {
-        // Si es un nombre de archivo (ej: user-123.jpg o default.jpg)
-        this.userPhoto = `${serverUrl}${fotoDB}`;
-      }
-    } else {
-      this.userPhoto = this.fotoPorDefecto; // Una imagen en tu carpeta assets de Angular
+    if (this.userId) {
+      // LLAMADA AL SERVIDOR PARA OBTENER DATOS REALES
+      this.authService.obtenerPerfil(this.userId).subscribe({
+        next: (user) => {
+          // Asignamos lo que viene de la BASE DE DATOS
+          this.userName = user.nombre;
+          this.userRole = user.rol;
+          this.userGender = user.genero || 'indefinido';
+          this.userPhone = user.telefono || 'indefinido';
+          this.userStreet = user.domicilio || 'indefinido';
+          this.userCP = user.cp || 'indefinido';
+          this.userCity = user.ciudad || 'indefinido';
+          this.userComunity = user.comunidad_autonoma || 'indefinido';
+          this.userCountry = user.pais || 'indefinido';
+
+          // Actualizamos la foto con la lógica que ya tenías
+          const serverUrl = 'http://localhost:3000/uploads/perfil/';
+          if (user.foto_perfil) {
+            this.userPhoto = user.foto_perfil.startsWith('http')
+              ? user.foto_perfil
+              : `${serverUrl}${user.foto_perfil}`;
+          } else {
+            this.userPhoto = this.fotoPorDefecto;
+          }
+
+          // Sincronizamos el formulario de edición
+          this.resetFormulario();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error("Error al obtener datos de la DB", err);
+        }
+      });
     }
   }
 
   // --- MÉTODOS DE EDICIÓN ---
 
   activarEdicion() {
+    this.resetFormulario(); // Esto copia userName -> nombreEditado, etc.
     this.editMode = true;
+    this.cdr.detectChanges();
   }
 
   cancelarEdicion() {
@@ -103,27 +138,27 @@ export class Perfil implements OnInit {
 
     // Usamos un pequeño delay para que el navegador "dibuje" el Swal
     setTimeout(() => {
-        try {
-          this.fotoSeleccionada = archivo;
-          
-          // Liberamos memoria de la previsualización anterior si existía
-          if (this.fotoPreview && typeof this.fotoPreview === 'string' && this.fotoPreview.startsWith('blob:')) {
-            URL.revokeObjectURL(this.fotoPreview);
-          }
+      try {
+        this.fotoSeleccionada = archivo;
 
-          // Creamos la nueva previsualización (es casi instantáneo)
-          this.fotoPreview = URL.createObjectURL(archivo);
-
-          // Forzamos a Angular a darse cuenta del cambio
-          this.cdr.detectChanges();
-
-          // 3. Cerramos el mensaje de carga cuando la imagen ya está lista en el círculo
-          Swal.close();
-        } catch (error) {
-          console.error("Error:", error);
-          Swal.fire('Error', 'No se pudo procesar la imagen', 'error');
+        // Liberamos memoria de la previsualización anterior si existía
+        if (this.fotoPreview && typeof this.fotoPreview === 'string' && this.fotoPreview.startsWith('blob:')) {
+          URL.revokeObjectURL(this.fotoPreview);
         }
-      }, 200);
+
+        // Creamos la nueva previsualización (es casi instantáneo)
+        this.fotoPreview = URL.createObjectURL(archivo);
+
+        // Forzamos a Angular a darse cuenta del cambio
+        this.cdr.detectChanges();
+
+        // 3. Cerramos el mensaje de carga cuando la imagen ya está lista en el círculo
+        Swal.close();
+      } catch (error) {
+        console.error("Error:", error);
+        Swal.fire('Error', 'No se pudo procesar la imagen', 'error');
+      }
+    }, 200);
   }
 
   guardarCambios() {
@@ -131,44 +166,81 @@ export class Perfil implements OnInit {
 
     Swal.fire({
       title: 'Guardando...',
+      allowOutsideClick: false,
       didOpen: () => { Swal.showLoading(); }
     });
 
-    this.authService.actualizarPerfil(Number(this.userId), this.nombreEditado, this.fotoSeleccionada)
-      .subscribe({
-        next: (res) => {
-          // 2. Actualizar LocalStorage inmediatamente
-          localStorage.setItem('userName', res.nombre);
-          if (res.foto) {
-            localStorage.setItem('userPhoto', res.foto);
-          }
+    this.authService.actualizarPerfil(
+      Number(this.userId),
+      this.nombreEditado,
+      this.fotoSeleccionada,
+      this.generoEditado,
+      this.telefonoEditado,
+      this.domicilioEditado,
+      this.cpEditado,
+      this.ciudadEditado,
+      this.caEditado,
+      this.paisEditado
+    ).subscribe({
+      next: (res) => {
+        // 'res' debe traer los valores actualizados desde la base de datos
 
-          // 3. Actualizar variables de la vista para que el cambio sea instantáneo
-          this.userName = res.nombre;
-          if (res.foto) {
-            const serverUrl = 'http://localhost:3000/uploads/perfil/';
-            this.userPhoto = `${serverUrl}${res.foto}`;
-          }
+        // Actualizar LocalStorage (Usamos los valores que enviamos o los que devuelve el server)
+        localStorage.setItem('userName', this.nombreEditado);
+        localStorage.setItem('userGender', this.generoEditado);
+        localStorage.setItem('userPhone', this.telefonoEditado);
+        localStorage.setItem('userStreet', this.domicilioEditado);
+        localStorage.setItem('userCP', this.cpEditado);
+        localStorage.setItem('userCity', this.ciudadEditado);
+        localStorage.setItem('userComunity', this.caEditado);
+        localStorage.setItem('userCountry', this.paisEditado);
 
-          // Salir del modo edición y limpiar previews
-          this.editMode = false;
-          this.fotoPreview = null;
-          this.fotoSeleccionada = null;
-          this.cdr.detectChanges();
-
-          Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500 });
-
-        },
-        error: (err) => {
-          console.error('Error:', err);
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudieron guardar los cambios.',
-            confirmButtonColor: '#d33'
-          });
+        if (res.foto) {
+          localStorage.setItem('userPhoto', res.foto);
         }
-      });
+
+        // 2. Actualizar variables de la vista vinculadas al HTML
+        this.userName = this.nombreEditado;
+        this.userGender = this.generoEditado;
+        this.userPhone = this.telefonoEditado;
+        this.userStreet = this.domicilioEditado;
+        this.userCP = this.cpEditado;
+        this.userCity = this.ciudadEditado;
+        this.userComunity = this.caEditado;
+        this.userCountry = this.paisEditado;
+
+        if (res.foto) {
+          const serverUrl = 'http://localhost:3000/uploads/perfil/';
+          this.userPhoto = `${serverUrl}${res.foto}`;
+        }
+
+        // 3. Limpieza y refresco de UI
+        this.editMode = false;
+        this.fotoPreview = null;
+        this.fotoSeleccionada = null;
+
+        // Forzamos a Angular a renderizar los nuevos valores inmediatamente
+        this.cdr.detectChanges();
+
+        Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
+      },
+      error: (err) => {
+        console.error('Error al guardar:', err);
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el perfil.' });
+      }
+    });
+  }
+
+  // Función auxiliar para resetear el formulario al estado actual del usuario
+  resetFormulario() {
+    this.nombreEditado = this.userName || '';
+    this.generoEditado = this.userGender || 'indefinido';
+    this.telefonoEditado = this.userPhone || '';
+    this.domicilioEditado = this.userStreet || '';
+    this.cpEditado = this.userCP || '';
+    this.ciudadEditado = this.userCity || '';
+    this.caEditado = this.userComunity || '';
+    this.paisEditado = this.userCountry || '';
   }
 
   onLogout() {

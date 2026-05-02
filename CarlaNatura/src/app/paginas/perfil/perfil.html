@@ -7,15 +7,16 @@
 
         <!-- 1. AVATAR -->
         <div class="profile-avatar-container mb-4 position-relative d-inline-block">
-          <div class="avatar-circle rounded-circle shadow-sm d-flex align-items-center justify-content-center border border-2"
+          <div
+            class="avatar-circle rounded-circle shadow-sm d-flex align-items-center justify-content-center border border-2"
             style="width: 180px; height: 180px; overflow: hidden; background-color: #f8f9fa; border-color: #2d6a4f !important;">
-            
-           <img *ngIf="fotoPreview" [src]="fotoPreview" class="img-fluid rounded-circle" 
-            style="object-fit: cover; width: 100%; height: 100%;">
-            
+
+            <img *ngIf="fotoPreview" [src]="fotoPreview" class="img-fluid rounded-circle"
+              style="object-fit: cover; width: 100%; height: 100%;">
+
             <img *ngIf="!fotoPreview && userPhoto" [src]="userPhoto" class="img-fluid rounded-circle"
               style="object-fit: cover; width: 100%; height: 100%;" alt="Foto actual">
-            
+
             <i *ngIf="!fotoPreview && !userPhoto" class="bi bi-person-circle text-muted" style="font-size: 8rem;"></i>
           </div>
 
@@ -35,59 +36,156 @@
 
         <!-- 3. MODO LECTURA -->
         <ng-container *ngIf="!editMode">
-          <div class="info-wrapper mx-auto" style="max-width: 600px;">
-            <p class="text-muted mb-4 fs-4 text-start text-sm-center">
+          <div class="info-wrapper mx-auto" style="max-width: 700px;">
+            <p class="text-muted mb-4 fs-4 text-center">
               Hola, <span class="text-dark fw-bold">{{ userName }}</span>
             </p>
 
-            <div class="account-box bg-light rounded-4 p-4 mb-5 border-0 shadow-sm text-start">
-              <div class="row align-items-center">
-                <div class="col-sm-6">
-                  <span class="text-secondary small text-uppercase fw-bold">Tipo de Usuario</span>
-                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userRole }}</p>
+            <div class="account-box bg-light rounded-4 p-4 mb-5 border-0 shadow-sm">
+              <!-- Fila 1: Rol y Teléfono -->
+              <div class="row mb-4 border-bottom pb-3">
+                <div class="col-sm-6 border-end-sm">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Tipo de Usuario</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde text-capitalize">{{ userRole }}</p>
                 </div>
-                <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
-                  <span class="badge bg-verde-opaco text-verde rounded-pill px-4 py-2">Cuenta Activa</span>
+                <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Teléfono Móvil</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userPhone || 'No asignado' }}</p>
+                </div>
+              </div>
+
+              <!-- Fila 2: Género y Domicilio -->
+              <div class="row mb-4 border-bottom pb-3">
+                <div class="col-sm-6 border-end-sm">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Género</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde text-capitalize">{{ userGender }}</p>
+                </div>
+                <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Domicilio</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userStreet || 'Sin dirección' }}</p>
+                </div>
+              </div>
+
+              <!-- Fila 3: CP y Ciudad -->
+              <div class="row mb-4 border-bottom pb-3">
+                <div class="col-sm-6 border-end-sm">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Código Postal</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userCP }}</p>
+                </div>
+                <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Ciudad</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userCity }}</p>
+                </div>
+              </div>
+
+              <!-- Fila 4: Comunidad y País -->
+              <div class="row">
+                <div class="col-sm-6 border-end-sm">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Comunidad Autónoma</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userComunity }}</p>
+                </div>
+                <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
+                  <span class="text-secondary small text-uppercase fw-bold d-block mb-1">País</span>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userCountry }}</p>
                 </div>
               </div>
             </div>
-
-            <!-- BOTONES LECTURA (Alineados horizontalmente) -->
-            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-              <button class="btn btn-outline-success btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto" (click)="activarEdicion()">
-                <i class="bi bi-pencil-square me-2"></i>Editar Perfil
-              </button>
-              <button class="btn btn-outline-danger btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto" (click)="onLogout()">
-                <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
-              </button>
-            </div>
           </div>
-        </ng-container>
+          <!-- BOTONES LECTURA (Alineados horizontalmente) -->
+          <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+            <button class="btn btn-outline-success btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto"
+              (click)="activarEdicion()">
+              <i class="bi bi-pencil-square me-2"></i>Editar Perfil
+            </button>
+            <button class="btn btn-outline-danger btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto"
+              (click)="onLogout()">
+              <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
+            </button>
+          </div>
+      </ng-container>
 
-        <!-- 4. MODO EDICIÓN -->
-        <ng-container *ngIf="editMode">
-          <form (ngSubmit)="guardarCambios()" class="text-start mt-4 mx-auto" style="max-width: 550px;">
-            <div class="form-floating mb-4">
-              <input type="text" id="nombre" name="nombre" [(ngModel)]="nombreEditado"
-                class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-                placeholder="Nombre completo">
-              <label for="nombre" class="ps-0 text-muted">Nombre Completo</label>
-            </div>
+      <!-- MODO EDICIÓN -->
+      <ng-container *ngIf="editMode">
+        <form (ngSubmit)="guardarCambios()" class="text-start mt-4 mx-auto" style="max-width: 550px;">
 
-            <!-- BOTONES EDICIÓN -->
-            <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-5">
-              <button type="button" class="btn btn-light btn-lg rounded-pill px-5 w-100 w-sm-auto" (click)="cancelarEdicion()">
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm fw-bold w-100 w-sm-auto"
-                [disabled]="!nombreEditado?.trim()" style="background-color: #2d6a4f;">
-                Guardar Cambios
-              </button>
-            </div>
-          </form>
-        </ng-container>
+          <!-- Campo nombre-->
+          <div class="form-floating mb-4">
+            <input type="text" id="nombre" name="nombre" [(ngModel)]="nombreEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Nombre completo">
+            <label for="nombre" class="ps-0 text-muted">Nombre Completo</label>
+          </div>
 
-      </div> <!-- CIERRE CORRECTO DE PROFILE-CARD -->
+          <!-- Campo Genero-->
+          <div class="form-floating mb-4">
+            <input type="text" id="genero" name="genero" [(ngModel)]="generoEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Genero">
+            <label for="genero" class="ps-0 text-muted">Genero</label>
+          </div>
+
+          <!-- Campo Telefono-->
+          <div class="form-floating mb-4">
+            <input type="tel" id="telefono" name="telefono" [(ngModel)]="telefonoEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Telfono movil">
+            <label for="telefono" class="ps-0 text-muted">Telfono movil</label>
+          </div>
+
+          <!-- Campo Domicilio-->
+          <div class="form-floating mb-4">
+            <input type="text" id="domicilio" name="domicilio" [(ngModel)]="domicilioEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Domicilio fiscal">
+            <label for="domicilio" class="ps-0 text-muted">Domicilio fiscal</label>
+          </div>
+
+          <!-- Campo CP-->
+          <div class="form-floating mb-4">
+            <input type="number" id="cp" name="cp" [(ngModel)]="cpEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Codigo Postal">
+            <label for="cp" class="ps-0 text-muted">Codigo Postal</label>
+          </div>
+
+          <!-- Campo Ciudad-->
+          <div class="form-floating mb-4">
+            <input type="text" id="ciudad" name="ciudad" [(ngModel)]="ciudadEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Ciudad">
+            <label for="ciudad" class="ps-0 text-muted">Ciudad</label>
+          </div>
+
+          <!-- Campo Comunidad Autonoma-->
+          <div class="form-floating mb-4">
+            <input type="text" id="ca" name="ca" [(ngModel)]="caEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Comunidad autonoma">
+            <label for="ca" class="ps-0 text-muted">Comunidad autonoma</label>
+          </div>
+
+          <!-- Campo Pais-->
+          <div class="form-floating mb-4">
+            <input type="text" id="pais" name="pais" [(ngModel)]="paisEditado"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              placeholder="Pais">
+            <label for="pais" class="ps-0 text-muted">Pais</label>
+          </div>
+
+          <!-- BOTONES EDICIÓN -->
+          <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-5">
+            <button type="button" class="btn btn-light btn-lg rounded-pill px-5 w-100 w-sm-auto"
+              (click)="cancelarEdicion()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm fw-bold w-100 w-sm-auto"
+              [disabled]="!nombreEditado?.trim()" style="background-color: #2d6a4f;">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </ng-container>
+
     </div>
   </div>
 </div>

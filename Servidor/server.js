@@ -85,7 +85,7 @@ app.post('/api/login', (req, res) => {
         domicilio: usuario.domicilio,
         cp: usuario.cp,
         ciudad: usuario.ciudad,
-        comunidad_autonoma: usuario.comunidad_autonoma,
+        comunidad: usuario.comunidad_autonoma,
         pais: usuario.pais,
         rol: usuario.rol,
         foto: usuario.foto_perfil
@@ -113,23 +113,50 @@ app.post('/api/registro', (req, res) => {
   });
 });
 
-// Cambiar imagen de perfil
+
+// RUTA PARA OBTENER LOS DATOS 
+app.get('/api/perfil/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = "SELECT * FROM usuarios WHERE id = ?";
+    conexion.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error("Error en GET:", err);
+            return res.status(500).json({ error: err.message });
+        }
+        if (result.length === 0) return res.status(404).json({ error: "No existe" });
+        res.json(result[0]);
+    });
+});
+
+// RUTA PARA GUARDAR 
 app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
-  const { id } = req.params;
-  const { nombre } = req.body;
-  let foto_perfil = req.file ? req.file.filename : null;
-  let sql = 'UPDATE usuarios SET nombre = ?';
-  let params = [nombre];
-  if (foto_perfil) {
-    sql += ', foto_perfil = ?';
-    params.push(foto_perfil);
-  }
-  sql += ' WHERE id = ?';
-  params.push(id);
-  conexion.query(sql, params, (err) => {
-    if (err) return res.status(500).json({ error: 'Error al actualizar' });
-    res.json({ mensaje: 'Perfil actualizado', nombre, foto: foto_perfil });
-  });
+    const { id } = req.params;
+    // IMPORTANTE: Extraemos 'ca' (como lo enviamos desde Angular)
+    const { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
+    let foto_perfil = req.file ? req.file.filename : null;
+
+    // Consulta SQL con el nombre exacto de tu columna: comunidad_autonoma
+    let sql = `UPDATE usuarios SET 
+               nombre = ?, genero = ?, telefono = ?, domicilio = ?, 
+               cp = ?, ciudad = ?, comunidad_autonoma = ?, pais = ?`;
+    
+    let params = [nombre, genero, telefono, domicilio, cp, ciudad, ca, pais];
+
+    if (foto_perfil) {
+        sql += ", foto_perfil = ?";
+        params.push(foto_perfil);
+    }
+
+    sql += " WHERE id = ?";
+    params.push(id);
+
+    conexion.query(sql, params, (err, result) => {
+        if (err) {
+            console.error("ERROR SQL AL GUARDAR:", err); // MIRA TU TERMINAL DE NODE AQUÍ
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ mensaje: "OK", foto: foto_perfil });
+    });
 });
 
 // --- RUTAS DE CITAS ---
