@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { CarritoS } from '../../services/carrito-s'; // Asumiendo que tienes un servicio
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-carrito',
-  imports: [],
+  imports: [CurrencyPipe],
   templateUrl: './carrito.html',
   styleUrl: './carrito.scss',
 })
@@ -12,5 +13,5 @@ export class Carrito {
   public miCarrito = inject(CarritoS);
   productos: any[] = [];
   constructor() {}
-  
+
 }
