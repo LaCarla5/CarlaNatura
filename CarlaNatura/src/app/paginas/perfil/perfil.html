@@ -1,36 +1,49 @@
 <div class="perfil-container container py-5">
   <div class="row justify-content-center">
     <div class="col-12 col-md-11 col-lg-10 col-xl-9">
-      
+
+      <!-- TODO debe ir dentro de esta tarjeta blanca -->
       <div class="profile-card border-0 shadow-lg p-4 p-md-5 text-center bg-white rounded-4">
-        
+
+        <!-- 1. AVATAR -->
         <div class="profile-avatar-container mb-4 position-relative d-inline-block">
           <div class="avatar-circle rounded-circle shadow-sm d-flex align-items-center justify-content-center border border-2"
-               style="width: 180px; height: 180px; overflow: hidden; background-color: #f8f9fa; border-color: #2d6a4f !important;">
+            style="width: 180px; height: 180px; overflow: hidden; background-color: #f8f9fa; border-color: #2d6a4f !important;">
             
-            <img *ngIf="fotoPreview" [src]="fotoPreview" class="img-fluid rounded-circle" style="object-fit: cover; width: 100%; height: 100%;" alt="Previsualización">
-            <img *ngIf="!fotoPreview && userPhoto" [src]="userPhoto" class="img-fluid rounded-circle" style="object-fit: cover; width: 100%; height: 100%;" alt="Foto">
+           <img *ngIf="fotoPreview" [src]="fotoPreview" class="img-fluid rounded-circle" 
+            style="object-fit: cover; width: 100%; height: 100%;">
+            
+            <img *ngIf="!fotoPreview && userPhoto" [src]="userPhoto" class="img-fluid rounded-circle"
+              style="object-fit: cover; width: 100%; height: 100%;" alt="Foto actual">
+            
             <i *ngIf="!fotoPreview && !userPhoto" class="bi bi-person-circle text-muted" style="font-size: 8rem;"></i>
           </div>
 
-          <label *ngIf="editMode" for="fotoInput" class="btn btn-success rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center" 
-                 style="width: 45px; height: 45px; margin-bottom: 10px; border: 3px solid white;">
-            <i class="bi bi-camera-fill"></i>
+          <!-- Botón de cámara (Solo en modo edición) -->
+          <label *ngIf="editMode" for="fotoInput"
+            class="btn btn-success rounded-circle position-absolute bottom-0 end-0 shadow-sm d-flex align-items-center justify-content-center"
+            style="width: 45px; height: 45px; margin-bottom: 10px; border: 3px solid white; background-color: #2d6a4f; cursor: pointer;">
+            <i class="bi bi-camera-fill text-white"></i>
             <input type="file" id="fotoInput" (change)="onFileSelected($event)" accept="image/*" class="d-none">
           </label>
         </div>
 
+        <!-- 2. TÍTULO Y SEPARADOR -->
         <h1 class="text-verde fw-bold display-6 mb-2">Mi Perfil Natura</h1>
-        <hr class="mx-auto mb-4 opacity-10" style="width: 100px; height: 4px; background-color: #2d6a4f; border-radius: 2px;">
+        <hr class="mx-auto mb-4 opacity-10"
+          style="width: 100px; height: 4px; background-color: #2d6a4f; border-radius: 2px;">
 
+        <!-- 3. MODO LECTURA -->
         <ng-container *ngIf="!editMode">
           <div class="info-wrapper mx-auto" style="max-width: 600px;">
-            <p class="text-muted mb-4 fs-4">Hola, <span class="text-dark fw-bold">{{ userName }}</span></p>
-            
+            <p class="text-muted mb-4 fs-4 text-start text-sm-center">
+              Hola, <span class="text-dark fw-bold">{{ userName }}</span>
+            </p>
+
             <div class="account-box bg-light rounded-4 p-4 mb-5 border-0 shadow-sm text-start">
               <div class="row align-items-center">
                 <div class="col-sm-6">
-                  <span class="text-secondary small text-uppercase fw-bold letter-spacing-1">Tipo de Usuario</span>
+                  <span class="text-secondary small text-uppercase fw-bold">Tipo de Usuario</span>
                   <p class="mb-0 fs-5 fw-semibold text-verde">{{ userRole }}</p>
                 </div>
                 <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
@@ -39,40 +52,42 @@
               </div>
             </div>
 
+            <!-- BOTONES LECTURA (Alineados horizontalmente) -->
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
-              <button class="btn btn-outline-success btn-lg rounded-pill px-5 fw-bold" (click)="activarEdicion()">
+              <button class="btn btn-outline-success btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto" (click)="activarEdicion()">
                 <i class="bi bi-pencil-square me-2"></i>Editar Perfil
               </button>
-              <button class="btn btn-outline-danger btn-lg rounded-pill px-5 fw-bold" (click)="authService.logout()">
+              <button class="btn btn-outline-danger btn-lg rounded-pill px-5 fw-bold w-100 w-sm-auto" (click)="onLogout()">
                 <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
               </button>
             </div>
           </div>
         </ng-container>
 
+        <!-- 4. MODO EDICIÓN -->
         <ng-container *ngIf="editMode">
           <form (ngSubmit)="guardarCambios()" class="text-start mt-4 mx-auto" style="max-width: 550px;">
             <div class="form-floating mb-4">
-              <input type="text" id="nombre" name="nombre" [(ngModel)]="nombreEditado" 
-                     class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0" 
-                     placeholder="Nombre completo">
+              <input type="text" id="nombre" name="nombre" [(ngModel)]="nombreEditado"
+                class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+                placeholder="Nombre completo">
               <label for="nombre" class="ps-0 text-muted">Nombre Completo</label>
             </div>
 
+            <!-- BOTONES EDICIÓN -->
             <div class="d-flex flex-column flex-sm-row justify-content-center gap-3 mt-5">
-              <button type="button" class="btn btn-light btn-lg rounded-pill px-5" (click)="cancelarEdicion()">
+              <button type="button" class="btn btn-light btn-lg rounded-pill px-5 w-100 w-sm-auto" (click)="cancelarEdicion()">
                 Cancelar
               </button>
-              <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm fw-bold" 
-                      [disabled]="!nombreEditado?.trim()" 
-                      style="background-color: #2d6a4f;">
+              <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow-sm fw-bold w-100 w-sm-auto"
+                [disabled]="!nombreEditado?.trim()" style="background-color: #2d6a4f;">
                 Guardar Cambios
               </button>
             </div>
           </form>
         </ng-container>
 
-      </div>
+      </div> <!-- CIERRE CORRECTO DE PROFILE-CARD -->
     </div>
   </div>
 </div>

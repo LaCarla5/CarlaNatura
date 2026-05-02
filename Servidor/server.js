@@ -74,13 +74,21 @@ app.post('/api/login', (req, res) => {
     const esValida = bcrypt.compareSync(password, usuario.password);
 
     if (esValida) {
-      // 3. Si es correcta, devolvemos los datos
+      // Si es correcta, devolvemos los datos
       res.json({
+        // Llammos a cada columna de nuestra base de datos
         id: usuario.id,
         nombre: usuario.nombre,
+        email: usuario.email, 
+        telefono: usuario.telefono,
+        genero: usuario.genero,
+        domicilio: usuario.domicilio,
+        cp: usuario.cp,
+        ciudad: usuario.ciudad,
+        comunidad_autonoma: usuario.comunidad_autonoma,
+        pais: usuario.pais,
         rol: usuario.rol,
-        foto: usuario.foto,
-        email: usuario.email
+        foto: usuario.foto_perfil
       });
     } else {
       res.status(401).json({ error: "Contraseña incorrecta" });
@@ -93,7 +101,8 @@ app.post('/api/registro', (req, res) => {
   // Encriptamos la contraseña
   const hash = bcrypt.hashSync(password, saltRounds);
   const rolFinal = rol || 'USER';
-  const fotoDef = 'recursos/img/perfil/imagenUsuarioEjemplo.jpg';
+  // En lugar de una ruta larga, usa solo el nombre del archivo y la carpeta donde esta
+  const fotoDef = 'imagenUsuarioEjemplo.jpg';
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
     if (err) {
@@ -104,10 +113,11 @@ app.post('/api/registro', (req, res) => {
   });
 });
 
+// Cambiar imagen de perfil
 app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
   const { id } = req.params;
   const { nombre } = req.body;
-  let foto_perfil = req.file ? `/uploads/perfil/${req.file.filename}` : null;
+  let foto_perfil = req.file ? req.file.filename : null;
   let sql = 'UPDATE usuarios SET nombre = ?';
   let params = [nombre];
   if (foto_perfil) {

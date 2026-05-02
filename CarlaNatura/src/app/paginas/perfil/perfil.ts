@@ -1,8 +1,9 @@
-import { Component, inject, PLATFORM_ID, OnInit } from '@angular/core';
+import { Component, inject, PLATFORM_ID, OnInit, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Para usar el nombre en el input de edición
-import { AuthService } from '../../services/auth'; 
+import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-perfil',
@@ -12,20 +13,21 @@ import { Router } from '@angular/router';
   styleUrl: './perfil.scss',
 })
 export class Perfil implements OnInit {
+  private cdr = inject(ChangeDetectorRef);
   public authService = inject(AuthService);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
-  
+
   // Datos del usuario
   userId: string | null = null;
   userName: string | null = 'Usuario';
   userRole: string | null = 'USER';
   userPhoto: string | null = null;
-  
+
   // Configuración de rutas e imágenes
   apiUrl = 'http://localhost:3000'; // Tu servidor Node
   fotoPorDefecto = 'assets/img/default-user.png'; // Asegúrate de tener esta imagen en assets
-  
+
   // Variables para el modo edición
   editMode = false;
   nombreEditado: string = '';
@@ -39,24 +41,32 @@ export class Perfil implements OnInit {
   }
 
   cargarDatos() {
-    // 1. Verificamos si hay sesión
+    // Verificamos si hay sesión
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // 2. Recuperamos todo lo que guardamos en el login
+    // Recuperamos todo lo que guardamos en el login
     this.userId = localStorage.getItem('userId');
-    this.userRole = localStorage.getItem('rol'); 
+    this.userRole = localStorage.getItem('rol');
     this.userName = localStorage.getItem('userName') || 'Usuario Distinguido';
     this.nombreEditado = this.userName; // Preparamos el nombre para el input de edición
 
-    // 3. Lógica de la foto
+    // Lógica de la foto
     const fotoDB = localStorage.getItem('userPhoto');
+    // La ruta estática real
+    const serverUrl = 'http://localhost:3000/uploads/perfil/';
     if (fotoDB && fotoDB !== 'null' && fotoDB !== '') {
-      this.userPhoto = `${this.apiUrl}${fotoDB}`;
+      // Si la foto ya es una URL de Google/Facebook, no le añadimos el prefijo del servidor
+      if (fotoDB.startsWith('http')) {
+        this.userPhoto = fotoDB;
+      } else {
+        // Si es un nombre de archivo (ej: user-123.jpg o default.jpg)
+        this.userPhoto = `${serverUrl}${fotoDB}`;
+      }
     } else {
-      this.userPhoto = this.fotoPorDefecto;
+      this.userPhoto = this.fotoPorDefecto; // Una imagen en tu carpeta assets de Angular
     }
   }
 
@@ -68,6 +78,10 @@ export class Perfil implements OnInit {
 
   cancelarEdicion() {
     this.editMode = false;
+    // Si existe una URL temporal, la liberamos para no gastar RAM
+    if (this.fotoPreview && this.fotoPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(this.fotoPreview);
+    }
     this.fotoPreview = null;
     this.fotoSeleccionada = null;
     this.nombreEditado = this.userName || '';
@@ -76,41 +90,83 @@ export class Perfil implements OnInit {
   // Se activa cuando el usuario elige una foto en el input file
   onFileSelected(event: any) {
     const archivo = event.target.files[0];
-    if (archivo) {
-      this.fotoSeleccionada = archivo;
+    if (!archivo) return;
 
-      // Crear una previsualización para que el usuario vea cómo queda antes de guardar
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.fotoPreview = e.target.result;
-      };
-      reader.readAsDataURL(archivo);
-    }
+    // Mostrar el cargando de SweetAlert inmediatamente
+    Swal.fire({
+      title: 'Cargando previsualización...',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+    // Usamos un pequeño delay para que el navegador "dibuje" el Swal
+    setTimeout(() => {
+        try {
+          this.fotoSeleccionada = archivo;
+          
+          // Liberamos memoria de la previsualización anterior si existía
+          if (this.fotoPreview && typeof this.fotoPreview === 'string' && this.fotoPreview.startsWith('blob:')) {
+            URL.revokeObjectURL(this.fotoPreview);
+          }
+
+          // Creamos la nueva previsualización (es casi instantáneo)
+          this.fotoPreview = URL.createObjectURL(archivo);
+
+          // Forzamos a Angular a darse cuenta del cambio
+          this.cdr.detectChanges();
+
+          // 3. Cerramos el mensaje de carga cuando la imagen ya está lista en el círculo
+          Swal.close();
+        } catch (error) {
+          console.error("Error:", error);
+          Swal.fire('Error', 'No se pudo procesar la imagen', 'error');
+        }
+      }, 200);
   }
 
   guardarCambios() {
-    if (!this.userId) return;
+    if (!this.userId || !this.nombreEditado.trim()) return;
 
-    // Llamamos al servicio pasando el ID, el nuevo nombre y la foto (si hay)
+    Swal.fire({
+      title: 'Guardando...',
+      didOpen: () => { Swal.showLoading(); }
+    });
+
     this.authService.actualizarPerfil(Number(this.userId), this.nombreEditado, this.fotoSeleccionada)
       .subscribe({
         next: (res) => {
-          alert('¡Perfil actualizado con éxito!');
-          
-          // Actualizamos el estado local y el localStorage
-          this.userName = res.nombre;
+          // 2. Actualizar LocalStorage inmediatamente
           localStorage.setItem('userName', res.nombre);
-          
           if (res.foto) {
-            this.userPhoto = `${this.apiUrl}${res.foto}`;
             localStorage.setItem('userPhoto', res.foto);
           }
 
-          this.cancelarEdicion();
+          // 3. Actualizar variables de la vista para que el cambio sea instantáneo
+          this.userName = res.nombre;
+          if (res.foto) {
+            const serverUrl = 'http://localhost:3000/uploads/perfil/';
+            this.userPhoto = `${serverUrl}${res.foto}`;
+          }
+
+          // Salir del modo edición y limpiar previews
+          this.editMode = false;
+          this.fotoPreview = null;
+          this.fotoSeleccionada = null;
+          this.cdr.detectChanges();
+
+          Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500 });
+
         },
         error: (err) => {
-          console.error('Error al actualizar:', err);
-          alert('No se pudo actualizar el perfil');
+          console.error('Error:', err);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudieron guardar los cambios.',
+            confirmButtonColor: '#d33'
+          });
         }
       });
   }
