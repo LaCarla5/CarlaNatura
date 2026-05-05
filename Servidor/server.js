@@ -272,16 +272,14 @@ app.get('/api/admin/usuarios', (req, res) => {
 });
 
 app.delete('/api/admin/usuarios/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = "DELETE FROM usuarios WHERE id = ?";
-
-  conexion.query(sql, [id], (err, result) => {
-    if (err) {
-      console.error("Error al eliminar:", err);
-      return res.status(500).json({ error: "No se pudo eliminar el usuario" });
-    }
-    res.json({ mensaje: "Usuario eliminado con éxito" });
-  });
+    const { id } = req.params;
+    conexion.query("DELETE FROM Usuarios WHERE id = ?", [id], (err, result) => {
+        if (err) {
+            console.log("EL ERROR ES ESTE:", err.message); // Mira esto en la terminal negra
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ mensaje: "Usuario borrado" });
+    });
 });
 
 // --- RUTAS DE CATÁLOGO ---
@@ -378,6 +376,61 @@ app.delete('/api/catalogo-admin/:id', (req, res) => {
     if (err) return res.status(500).json({ error: 'Error' });
     res.json({ mensaje: 'Eliminado' });
   });
+});
+
+// --- RUTAS DE CARRITO AÑADIR PEDIDOS ---
+app.post('/api/pedidos', (req, res) => {
+    const { usuario_id, total, productos } = req.body;
+
+    // Insertamos primero el Pedido principal
+    const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
+    
+    conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        const pedidoId = result.insertId; // Recuperamos el ID que se acaba de generar
+
+        // Preparamos los datos para los detalles del pedido
+        // Queremos insertar todas las filas de golpe: [[pedidoId, prodId, cant, precio], [...]]
+        const valoresDetalles = productos.map(p => [
+            pedidoId, 
+            p.id, 
+            p.cantidad, 
+            p.precio
+        ]);
+
+        const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
+
+        // 3. Insertamos todos los productos en Detalle_Pedidos
+        conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
+            if (errDetalle) return res.status(500).json({ error: errDetalle.message });
+
+            // 4. Devolvemos el pedidoId al frontend para que Angular genere el PDF
+            res.json({ 
+                success: true, 
+                message: "Pedido guardado", 
+                pedidoId: pedidoId 
+            });
+        });
+    });
+});
+
+// --- RUTAS DE PEDIDOS ADMIN---
+// Ruta para enviar el correo y "desbloquear" la edición
+app.get('/api/admin/pedidos', (req, res) => {
+    const sql = `
+        SELECT p.*, u.nombre AS nombre_usuario, u.email 
+        FROM Pedidos p
+        INNER JOIN Usuarios u ON p.usuario_id = u.id
+        ORDER BY p.fecha_pedido DESC`;
+
+    conexion.query(sql, (err, result) => {
+        if (err) {
+            console.error("Error en la consulta:", err);
+            return res.status(500).json({ error: "Error en la base de datos" });
+        }
+        res.json(result);
+    });
 });
 
 app.listen(3000, () => {

@@ -7,13 +7,16 @@
     </div>
 
     <div class="card-body">
-      @for (item of miCarrito.productos(); track item.id) {
+      @for (item of miCarrito.productos(); track $index) {
         <div class="d-flex align-items-center justify-content-between border-bottom py-3">
           <div class="d-flex align-items-center">
             <img [src]="item.imagen" [alt]="item.nombre" class="rounded-3 shadow-sm me-3" width="70">
             <div>
               <h5 class="mb-0 fw-bold">{{ item.nombre }}</h5>
-              <p class="text-primary mb-0 fw-semibold">{{ item.precio }}€</p>
+             <p class="text-muted mb-0">
+              {{ item.cantidad }} x {{ item.precio }}€ 
+              <span class="text-primary fw-bold ms-2">({{ item.cantidad * item.precio }}€)</span>
+            </p>
             </div>
           </div>
           <button (click)="miCarrito.eliminar(item.id)" class="btn btn-outline-danger btn-sm rounded-pill">
@@ -36,12 +39,12 @@
         </div>
         <div class="row g-2">
           <div class="col-md-6">
-            <button (click)="miCarrito.limpiar()" class="btn btn-outline-secondary w-100 rounded-pill">
+            <button (click)="vaciarDesdeComponente()" class="btn btn-outline-secondary w-100 rounded-pill">
               Vaciar carrito
             </button>
           </div>
           <div class="col-md-6">
-            <button class="btn btn-success w-100 rounded-pill fw-bold shadow">
+            <button (click)="finalizarCompra()" class="btn btn-success w-100 rounded-pill fw-bold shadow">
               Finalizar Pedido
             </button>
           </div>
@@ -49,4 +52,5 @@
       </div>
     }
   </section>
+
 </main>

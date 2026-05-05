@@ -1,0 +1,148 @@
+// Variables de temática Natura
+$primary: #2d7a4d;    // Verde bosque
+$secondary: #a8d5ba;  // Verde pastel
+$accent: #f4a261;     // Naranja suave para alertas
+$text-dark: #1f2937;
+$white: #ffffff;
+$shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+
+.admin-container {
+  padding: 2rem;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+
+  h2 {
+    color: $primary;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid $secondary;
+    display: inline-block;
+  }
+}
+
+// Estilos de la Tabla
+.table-container {
+  background: $white;
+  border-radius: 12px;
+  box-shadow: $shadow;
+  overflow: hidden;
+  margin-bottom: 2rem;
+
+  .table {
+    margin-bottom: 0;
+    
+    thead {
+      background-color: $primary;
+      color: $white;
+      
+      th {
+        padding: 1rem;
+        font-weight: 500;
+        border: none;
+      }
+    }
+
+    tbody tr {
+      transition: background 0.3s;
+      &:hover {
+        background-color: rgba($secondary, 0.1);
+      }
+      
+      td {
+        padding: 1rem;
+        vertical-align: middle;
+        color: $text-dark;
+      }
+    }
+  }
+}
+
+// Badges de estado
+.badge {
+  padding: 0.5em 0.8em;
+  border-radius: 20px;
+  font-weight: 500;
+  text-transform: capitalize;
+
+  &.bg-success { background-color: #d1fae5 !important; color: #065f46 !important; }
+  &.bg-warning { background-color: #fef3c7 !important; color: #92400e !important; }
+  &.bg-danger { background-color: #fee2e2 !important; color: #991b1b !important; }
+}
+
+// Panel de Edición "Obligatorio"
+.edit-card {
+  border: 2px solid $secondary;
+  border-radius: 15px;
+  background: $white;
+  overflow: hidden;
+  animation: slideUp 0.4s ease-out;
+
+  .card-header {
+    background-color: $primary;
+    color: $white;
+    font-weight: 600;
+    padding: 1rem;
+  }
+
+  .step-box {
+    background: rgba($secondary, 0.1);
+    border-left: 4px solid $accent;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0 8px 8px 0;
+
+    h5 {
+      color: $primary;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  }
+
+  .form-control, .form-select {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    &:focus {
+      border-color: $primary;
+      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    }
+  }
+}
+
+// Botones Natura
+.btn-natura {
+  background-color: $primary;
+  color: $white;
+  border-radius: 8px;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  font-weight: 600;
+  transition: all 0.3s;
+
+  &:hover:not(:disabled) {
+    background-color: darken($primary, 10%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.2);
+  }
+
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+
+  &-outline {
+    background: transparent;
+    border: 2px solid $primary;
+    color: $primary;
+    &:hover {
+      background: $primary;
+      color: $white;
+    }
+  }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

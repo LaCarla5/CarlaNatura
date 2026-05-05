@@ -40,12 +40,19 @@
                   <i class="bi bi-calendar-check"></i> Admin - Blog
                 </a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                   routerLink="/admin/compras-admin" routerLinkActive="active-link">
+                  <i class="bi bi-calendar-check"></i> Admin - Pedidos
+                </a>
+              </li>
             </ng-container>
 
             <ng-container *ngIf="authService.getUserRole() === 'USER'">
               <li class="nav-item"><a class="nav-link" routerLink="/catalogo" routerLinkActive="active-link">Catálogo</a></li>
               <li class="nav-item"><a class="nav-link" routerLink="/citas" routerLinkActive="active-link">Citas</a></li>
               <li class="nav-item"><a class="nav-link" routerLink="/blog" routerLinkActive="active-link">Blog</a></li>
+              <li class="nav-item"><a class="nav-link" routerLink="/dietas" routerLinkActive="active-link">Dietas</a></li>
               
               <li class="nav-item">
                 <a class="nav-link position-relative" routerLink="/carrito">
