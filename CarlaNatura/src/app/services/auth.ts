@@ -3,7 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
-
+import { CarritoS } from './carrito-s';
+import { Injector } from '@angular/core';
 
 export interface UserCredentials {
   email: string;
@@ -19,6 +20,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
+  private injector = inject(Injector);
 
   private apiUrl = 'http://localhost:3000/api';
 
@@ -74,11 +76,15 @@ export class AuthService {
   // --- LOGOUT ---
   logout() {
     if (isPlatformBrowser(this.platformId)) {
-      localStorage.clear(); // Limpia todo de golpe
+      localStorage.clear();
       this.loggedInSubject.next(false);
-      this.userDataSubject.next({ nombre: null, foto: null });
+
+      // 3. Obtenemos el CarritoS AQUÍ, no arriba. Así rompemos el bucle.
+      const carritoS = this.injector.get(CarritoS); 
+      carritoS.productos.set([]); 
+
+      this.router.navigate(['/login']);
     }
-    this.router.navigate(['/login']);
   }
 
   getUserEmail(): string | null {

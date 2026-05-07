@@ -1,9 +1,12 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { AuthService } from './auth';
+import { Injector } from '@angular/core';
 
 export interface Producto {
   id: number;
@@ -16,62 +19,80 @@ export interface Producto {
 @Injectable({
   providedIn: 'root',
 })
-
 export class CarritoS {
-  private http = inject(HttpClient); // Inyectamos el cliente HTTP
+private http = inject(HttpClient);
+  private authService = inject(AuthService);
+  private platformId = inject(PLATFORM_ID);
+  private apiUrl = 'http://localhost:3000/api/carrito';
 
-  // Exponemos los productos como lectura
   public productos = signal<any[]>([]);
 
-  // Vaciar todo el carrito
-  limpiar() {
-      console.log("Vaciando carrito real. Cantidad anterior:", this.productos().length);
-      this.productos.set([]);
+  constructor() {
+    const auth = inject(AuthService);
+    const platformId = inject(PLATFORM_ID);
+
+    // 1. Reacción automática (cuando el usuario cambia)
+    effect(() => {
+      const user = auth.getCurrentUser(); // O la señal que tengas de usuario
+      if (user && user.id) {
+        this.cargarCarritoBD();
+      }
+    }, { allowSignalWrites: true });
+
+    // 2. DISPARO INICIAL (Para cuando refrescas la página F5)
+    if (isPlatformBrowser(platformId)) {
+      const token = localStorage.getItem('token');
+      if (token) {
+        this.cargarCarritoBD(); 
+      }
+    }
   }
 
-   // Eliminar un producto por su ID
-  eliminar(id: number) {
-    this.productos.update(actuales => actuales.filter(p => p.id !== id));
+  cargarCarritoBD() {
+    this.http.get<any[]>(this.apiUrl).subscribe({
+      next: (res) => this.productos.set(res),
+      error: () => this.productos.set([])
+    });
   }
 
-  // Cantidad total de artículos (computado)
-  cantidadTotal = computed(() =>
-    this.productos().reduce((acc, p) => acc + (p.cantidad || 1), 0)
-  );
+  añadir(producto: any) {
+    // IMPORTANTE: Solo mandamos el producto_id. El servidor saca el usuario_id del token.
+    const body = { producto_id: producto.id, cantidad: 1 };
+    
+    this.http.post(this.apiUrl, body).subscribe({
+      next: () => this.cargarCarritoBD(),
+      error: (err) => console.error('Error al añadir:', err)
+    });
+  }
 
-  // Precio total (computado)
-  precioTotal = computed(() =>
-    this.productos().reduce((acc, p) => acc + (p.precio * (p.cantidad || 1)), 0)
-  );
-
-  // Añadir un producto al carrito
-  añadir(productoNuevo: any) {
-    this.productos.update(lista => {
-      // 1. Buscamos si el producto ya está en el carrito
-      const indice = lista.findIndex(p => p.id === productoNuevo.id);
-
-      if (indice !== -1) {
-        // 2. Si existe, creamos una copia de la lista y actualizamos la cantidad
-        const nuevaLista = [...lista];
-        // Incrementamos la cantidad (asegurándonos de que sea un número)
-        nuevaLista[indice] = {
-          ...nuevaLista[indice],
-          cantidad: (nuevaLista[indice].cantidad || 1) + 1
-        };
-        return nuevaLista;
-      } else {
-        // 3. Si no existe, lo añadimos con cantidad inicial de 1
-        return [...lista, { ...productoNuevo, cantidad: 1 }];
+  eliminar(productoId: number) {
+    // CORRECCIÓN: Ya no pasamos /id_usuario/id_producto
+    // Solo pasamos el id del producto, el servidor ya sabe quién es el usuario por el token
+    this.http.delete(`${this.apiUrl}/${productoId}`).subscribe({
+      next: () => {
+        this.productos.update(lista => lista.filter(p => p.producto_id !== productoId));
       }
     });
   }
- 
+
+  vaciarTodo() {
+    // CORRECCIÓN: Limpia el carrito del usuario identificado por el token
+    this.http.delete(`${this.apiUrl}/vaciar/todo`).subscribe({
+      next: () => this.productos.set([]),
+      error: (err) => console.error('Error al vaciar:', err)
+    });
+  }
+
+  // --- FINLIZAR COMPRA Y PDF ---
+
   finalizarCompra(pedido: any): Observable<any> {
     return this.http.post('http://localhost:3000/api/pedidos', pedido).pipe(
       tap((res: any) => {
         if (res.success) {
+          // 1. Generamos el PDF con los datos actuales
           this.generarFacturaPDF(res.pedidoId, pedido);
-          this.limpiar();
+          // 2. Limpiamos la señal local (la BD ya la limpia el servidor)
+          this.productos.set([]);
         }
       })
     );
@@ -79,13 +100,7 @@ export class CarritoS {
 
   private generarFacturaPDF(idPedido: number, datos: any) {
     const doc = new jsPDF();
-
-    // El error daba aquí porque 'datos.productos' era undefined
-    // Añadimos una validación de seguridad:
-    if (!datos || !datos.productos) {
-      console.error("No hay productos para generar el PDF", datos);
-      return;
-    }
+    if (!datos || !datos.productos) return;
 
     const filas = datos.productos.map((p: any) => [
       p.nombre,
@@ -102,4 +117,7 @@ export class CarritoS {
     doc.save(`Factura_Natura_${idPedido}.pdf`);
   }
 
+  // --- TOTALES ---
+  cantidadTotal = computed(() => this.productos().reduce((acc, p) => acc + (p.cantidad || 1), 0));
+  precioTotal = computed(() => this.productos().reduce((acc, p) => acc + (p.precio * (p.cantidad || 1)), 0));
 }

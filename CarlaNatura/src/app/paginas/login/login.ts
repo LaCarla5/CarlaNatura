@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms'; // Importante para capturar datos 
 import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { CarritoS } from '../../services/carrito-s';
 
 @Component({
   selector: 'app-login',
@@ -27,6 +28,8 @@ export class Login {
   loginData = { email: '', password: '' };
   // Obtener datos de registro
   registerData = { nombre: '', email: '', password: '', rol: 'USER' };
+  // Inyectamos carrito
+  private carritoS = inject(CarritoS);
 
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -79,31 +82,39 @@ export class Login {
     );
   }
 
-  onLogin() {
-    this.authService.login(this.loginData).subscribe({
-      next: (res) => {
-        Swal.fire({
-          title: '¡Bienvenido de nuevo!',
-          text: `Hola ${res.nombre}, iniciando sesión...`,
-          icon: 'success',
-          timer: 1500, // Se cierra solo en 1.5 seg
-          showConfirmButton: false,
-          timerProgressBar: true
-        }).then(() => {
-          // Independiente del ROL siempre se les llevara a inicio
-          this.router.navigate(['/inicio']);
-        });
-      },
-      error: (err) => {
-        Swal.fire({
-          title: 'Error de acceso',
-          text: err.error?.error || 'Credenciales incorrectas',
-          icon: 'error',
-          confirmButtonColor: '#198754'
-        });
+onLogin() {
+  this.authService.login(this.loginData).subscribe({
+    next: (res) => {
+      // 1. Guardamos el token en el LocalStorage
+      if (res.token) {
+        localStorage.setItem('token', res.token);
       }
-    });
-  }
+
+      // Como el token ya está en el localStorage, el interceptor lo enviará correctamente.
+      this.carritoS.cargarCarritoBD();
+
+      // 3. Mostramos el mensaje de éxito
+      Swal.fire({
+        title: '¡Bienvenido de nuevo!',
+        text: `Hola ${res.nombre || ''}, iniciando sesión...`,
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false,
+        timerProgressBar: true
+      }).then(() => {
+        this.router.navigate(['/inicio']);
+      });
+    },
+    error: (err) => {
+      Swal.fire({
+        title: 'Error de acceso',
+        text: err.error?.error || 'Credenciales incorrectas',
+        icon: 'error',
+        confirmButtonColor: '#198754'
+      });
+    }
+  });
+}
 
   // .subscribe(), la petición nunca sale del navegador. Angular ignora las llamadas a servidores si nadie está "escuchando" la respuesta.
   onRegister() {

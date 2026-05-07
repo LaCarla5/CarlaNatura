@@ -3,6 +3,7 @@ import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/rou
 import { AuthService } from './services/auth';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
+import { CarritoS } from './services/carrito-s';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { isPlatformBrowser } from '@angular/common';
 export class App implements OnInit {
   public authService = inject(AuthService);
   private router = inject(Router);
+  public miCarrito = inject(CarritoS);
   private platformId = inject(PLATFORM_ID);
 
   protected readonly title = signal('CarlaNatura');

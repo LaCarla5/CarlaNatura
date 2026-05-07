@@ -57,7 +57,9 @@
               <li class="nav-item">
                 <a class="nav-link position-relative" routerLink="/carrito">
                   <i class="bi bi-cart">Carrito</i>
-                  <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">0</span>
+                  <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
+                    {{ miCarrito.cantidadTotal() }}
+                  </span>
                 </a>
               </li>
             </ng-container>

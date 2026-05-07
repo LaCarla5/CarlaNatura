@@ -1,15 +1,19 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 // Base de Datos
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 // Correo
 const nodemailer = require('nodemailer');
-const path = require('path');
+//const path = require('path');
 // Imagenes
 const multer = require('multer');
 // Contraseñas
 const bcrypt = require('bcrypt');
 const saltRounds = 10; 
+// Tokens
+const jwt = require('jsonwebtoken');
 
 const app = express();
 
@@ -33,10 +37,10 @@ const upload = multer({ storage: storage });
 
 // Conexión MySQL
 const conexion = mysql.createConnection({
-  host: 'localhost',
-  user: 'lacarla',
-  password: 'Carla1234',
-  database: 'carlaNatura' 
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME
 });
 
 conexion.connect((err) => {
@@ -75,6 +79,12 @@ app.post('/api/login', (req, res) => {
 
     if (esValida) {
       // Si es correcta, devolvemos los datos
+      const token = jwt.sign(
+                { id: usuario.id, email: usuario.email }, 
+                process.env.JWT_SECRET, 
+                { expiresIn: '24h' } // El token durará un día
+      );
+
       res.json({
         // Llammos a cada columna de nuestra base de datos
         id: usuario.id,
@@ -88,7 +98,9 @@ app.post('/api/login', (req, res) => {
         comunidad: usuario.comunidad_autonoma,
         pais: usuario.pais,
         rol: usuario.rol,
-        foto: usuario.foto_perfil
+        foto: usuario.foto_perfil,
+        // Añadimos el token y lo "enviamos" al front
+        token: token
       });
     } else {
       res.status(401).json({ error: "Contraseña incorrecta" });
@@ -382,36 +394,107 @@ app.delete('/api/catalogo-admin/:id', (req, res) => {
 app.post('/api/pedidos', (req, res) => {
     const { usuario_id, total, productos } = req.body;
 
-    // Insertamos primero el Pedido principal
+    // Insertamos el Pedido principal
     const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
     
     conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
 
-        const pedidoId = result.insertId; // Recuperamos el ID que se acaba de generar
+        const pedidoId = result.insertId;
 
-        // Preparamos los datos para los detalles del pedido
-        // Queremos insertar todas las filas de golpe: [[pedidoId, prodId, cant, precio], [...]]
-        const valoresDetalles = productos.map(p => [
-            pedidoId, 
-            p.id, 
-            p.cantidad, 
-            p.precio
-        ]);
-
+        // Preparamos los detalles
+        const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio]);
         const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
 
-        // 3. Insertamos todos los productos en Detalle_Pedidos
+        // Insertamos los detalles
         conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
             if (errDetalle) return res.status(500).json({ error: errDetalle.message });
 
-            // 4. Devolvemos el pedidoId al frontend para que Angular genere el PDF
-            res.json({ 
-                success: true, 
-                message: "Pedido guardado", 
-                pedidoId: pedidoId 
+            // Limpiamos el carrito SOLO cuando lo anterior ha salido bien
+            const sqlBorrarCarrito = 'DELETE FROM carrito WHERE usuario_id = ?';
+            conexion.query(sqlBorrarCarrito, [usuario_id], (errBorrar) => {
+                if (errBorrar) console.error("Error al limpiar carrito:", errBorrar);
+                
+                // 5. UNA SOLA RESPUESTA AL FINAL
+                res.json({ 
+                    success: true, 
+                    message: "Pedido completado y carrito limpio", 
+                    pedidoId: pedidoId 
+                });
             });
         });
+    });
+});
+
+// --- RUTAS DE CARRITO---
+
+const verificarToken = (req, res, next) => {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    //console.log("Token recibido para validar:", token);
+
+    if (!token) return res.status(403).json({ error: "No se proporcionó un token" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if (err) {
+            console.error("Error al verificar token:", err.message);
+            return res.status(401).json({ error: "Token inválido o expirado" });
+        }
+        
+        // Guardamos el ID que viene dentro del token para usarlo en las rutas
+        req.userId = decoded.id; 
+        next();
+    });
+};
+
+app.get('/api/carrito', verificarToken, (req, res) => {
+    const sql = `
+        SELECT c.*, p.nombre, p.precio, p.imagen 
+        FROM carrito c 
+        INNER JOIN Productos p ON c.producto_id = p.id 
+        WHERE c.usuario_id = ?`;
+    
+    conexion.query(sql, [req.userId], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json(result);
+    });
+});
+
+// Añadir o actualizar producto en el carrito
+app.post('/api/carrito', verificarToken, (req, res) => {
+    const { producto_id, cantidad } = req.body;
+    const usuario_id = req.userId;
+
+    if (!usuario_id) return res.status(401).json({ error: "No se identificó al usuario" });
+
+    const sql = `
+      INSERT INTO carrito (usuario_id, producto_id, cantidad) 
+      VALUES (?, ?, ?) 
+      ON DUPLICATE KEY UPDATE cantidad = cantidad + ?`;
+    
+    conexion.query(sql, [usuario_id, producto_id, cantidad, cantidad], (err) => {
+        if (err) return res.status(500).json(err);
+        res.json({ success: true });
+    });
+});
+
+// Vaciar el carrito completo de un usuario
+app.delete('/api/carrito/vaciar/todo', verificarToken, (req, res) => {
+    const sql = 'DELETE FROM carrito WHERE usuario_id = ?';
+    conexion.query(sql, [req.userId], (err) => {
+        if (err) return res.status(500).json(err);
+        res.json({ success: true, mensaje: "Carrito vaciado" });
+    });
+});
+
+// Eliminar un único producto del carrito
+app.delete('/api/carrito/:producto_id', verificarToken, (req, res) => {
+    const { producto_id } = req.params;
+    const sql = 'DELETE FROM carrito WHERE usuario_id = ? AND producto_id = ?';
+    conexion.query(sql, [req.userId, producto_id], (err) => {
+        if (err) return res.status(500).json(err);
+        res.json({ success: true });
     });
 });
 

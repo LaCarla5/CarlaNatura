@@ -3,19 +3,23 @@ import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { CalendarModule, DateAdapter } from 'angular-calendar';
 import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
+import { authInterceptor } from '../../src/app/interceptores/auth-interceptor'; // Importa tu función
 
 // 2. REGISTRA EL IDIOMA (Fuera de la constante appConfig)
 registerLocaleData(localeEs);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideHttpClient(
+      withInterceptors([authInterceptor]) // <--- ¡Aquí se activa!
+    ),
     { provide: LOCALE_ID, useValue: 'es-ES' }, // calendario en español
     provideRouter(
       routes, 
@@ -34,5 +38,6 @@ export const appConfig: ApplicationConfig = {
         useFactory: adapterFactory,
       })
     )
+    
   ]
 };
