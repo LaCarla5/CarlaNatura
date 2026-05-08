@@ -3,8 +3,8 @@ $bg-light: #f9fbf9;
 
 .blog-header {
   height: 300px;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), 
-              url('/assets/bg-blog.jpg') center/cover;
+  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+    url('/assets/bg-blog.jpg') center/cover;
   margin-top: -20px; // Ajuste si tienes el navbar fijo
 }
 
@@ -49,17 +49,32 @@ $bg-light: #f9fbf9;
   }
 
   .btn-leer {
-    color: $primary-nature;
-    text-decoration: none;
-    font-weight: 700;
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 5px;
-    transition: gap 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
 
-    &:hover {
-      gap: 10px;
-      color: darken($primary-nature, 10%);
+    &.externo {
+      background-color: #f8f9fa;
+      color: #212529;
+      border-color: #dee2e6;
+
+      &:hover {
+        background-color: #e2e6ea;
+      }
+    }
+
+    &.interno {
+      background-color: #2d7a4d; // Tu verde
+      color: white;
+      border: none;
+
+      &:hover {
+        background-color: #24633e;
+      }
     }
   }
 }

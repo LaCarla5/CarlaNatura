@@ -9,11 +9,13 @@ import { Inicio } from './paginas/inicio/inicio';
 import { Login } from './paginas/login/login';
 import { Perfil } from './paginas/perfil/perfil';
 import { Dietas } from './paginas/dietas/dietas';
+import { PostDetalle } from './paginas/post-detalle/post-detalle';
 
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../app/services/auth';
 import { adminGuard } from '../app/guards/admin-guard';
+
 
 // 1. Creamos una función Guard rápida
 const authGuard = () => {
@@ -44,6 +46,8 @@ export const routes: Routes = [
   { path: 'citas', component: Citas, canActivate: [authGuard]},
   { path: 'carrito', component: Carrito, canActivate: [authGuard]},
 
+  // RUTA DINAMICA PARA VER CON DETALLE LOS BLOGS
+  { path: 'blog/:id', component: PostDetalle }, // Ruta dinámica
   // Zona de admin
   {
     path: 'admin',

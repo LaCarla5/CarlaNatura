@@ -1,36 +1,46 @@
 <main>
-    <header class="blog-header text-center text-white d-flex align-items-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Bienestar & Naturaleza</h1>
-            <p class="lead">Consejos para una vida más equilibrada con CarlaNatura</p>
-        </div>
-    </header>
+  <header class="blog-header text-center text-white d-flex align-items-center">
+    <div class="container">
+      <h1 class="display-4 fw-bold">Bienestar & Naturaleza</h1>
+      <p class="lead">Consejos para una vida más equilibrada con CarlaNatura</p>
+    </div>
+  </header>
 
-    <section id="blog-list" class="container py-5">
-        <div class="row g-4">
-            @for (post of posts; track post.id) {
-            <div class="col-12 col-md-6 col-lg-4">
-                <article class="card h-100 blog-card border-0 shadow-sm">
-                    <div class="blog-img-wrapper">
-                        <img [src]="post.imagen" [alt]="post.titulo" class="card-img-top">
-                        <span class="badge-categoria">{{ post.categoria }}</span>
-                    </div>
+  <section id="blog-list" class="container py-5">
+    <div class="row g-4">
+      
+      @for (post of posts; track post.id) {
+      <div class="col-12 col-md-6 col-lg-4">
+        
+        <article class="card h-100 blog-card border-0 shadow-sm" [class.noticia-interna]="!post.urlExterna">
+          <div class="blog-img-wrapper">
+            <img [src]="post.imagen_url" [alt]="post.titulo" class="post-img">
+            <span class="badge-categoria" [class.bg-success]="!post.urlExterna">
+              {{ post.categoria }}
+            </span>
+          </div>
 
-                    <div class="card-body p-4">
-                        <small class="text-muted">{{ post.fecha_publicacion }}</small>
-                        <h3 class="h5 fw-bold mt-2 mb-3 text-dark">{{ post.titulo }}</h3>
-                        <p class="text-muted small">{{ post.contenido }}</p>
-                    </div>
+          <div class="card-body p-4">
+            <small class="text-muted">{{ post.fecha_publicacion | date:'dd/MM/yyyy' }}</small>
+            <h3 class="h5 fw-bold mt-2 mb-3 text-dark">{{ post.titulo }}</h3>
+            <p class="text-muted small">{{ post.contenido | slice:0:100 }}...</p>
+          </div>
 
-                    <div class="card-footer bg-transparent border-0 p-4 pt-0">
-                        <a [href]="post.urlExterna" target="_blank" rel="noopener noreferrer" class="btn-leer externo">
-                            Saber más
-                            <i class="bi bi-box-arrow-up-right ms-1"></i>
-                        </a>
-                    </div>
-                </article>
-            </div>
+          <div class="card-footer bg-transparent border-0 p-4 pt-0">
+            @if (post.urlExterna && post.urlExterna !== '') {
+              <a [href]="post.urlExterna" target="_blank" class="btn-leer externo w-100 text-center">
+                Saber más <i class="bi bi-box-arrow-up-right ms-1"></i>
+              </a>
+            } @else {
+              <button (click)="verNoticiaInterna(post)" class="btn-leer interno w-100">
+                Leer artículo completo <i class="bi bi-book-half ms-1"></i>
+              </button>
             }
+          </div>
+        </article>
         </div>
-    </section>
+      }
+
+    </div>
+  </section>
 </main>

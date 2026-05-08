@@ -57,7 +57,6 @@ export class Carrito {
               icon: 'success',
               confirmButtonColor: '#2d7a4d'
             });
-            console.log('Compra procesada con ID:', res.pedidoId);
           },
           error: (err) => {
             // Cerramos el loading y mostramos error
@@ -75,16 +74,11 @@ export class Carrito {
   }
 
   confirmarVaciar() {
-    if (confirm("¿Quieres eliminar todos los productos del carrito?")) {
       this.miCarrito.vaciarTodo();
-    }
   }
 
   confirmarEliminar(idProducto: number) {
-    // idProducto es el id del producto en la tabla Productos
-    if (confirm("¿Eliminar este producto?")) {
       this.miCarrito.eliminar(idProducto);
-    }
   }
 }
 

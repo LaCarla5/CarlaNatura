@@ -20,20 +20,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
 // Servir imágenes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Configuración de Multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'uploads/perfil/'); 
+    // Si la ruta es para el blog, va a uploads/blog, si no a uploads/perfil
+    const folder = req.baseUrl.includes('blog') ? 'uploads/blog/' : 'uploads/perfil/';
+    cb(null, folder);
   },
   filename: (req, file, cb) => {
-    const extension = path.extname(file.originalname);
-    cb(null, `user-${Date.now()}${extension}`);
+    cb(null, Date.now() + '-' + file.originalname);
   }
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({ storage });
 
 // Conexión MySQL
 const conexion = mysql.createConnection({
@@ -311,6 +314,16 @@ app.get('/api/blog', (req, res) => {
     if (err) return res.status(500).json({ error: 'Error' });
     res.json(resultados);
   });
+});
+
+// Obtener noticias individialmente
+app.get('/api/blog/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = "SELECT * FROM blog_posts WHERE id = ?";
+    conexion.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).send(err);
+        res.json(result[0]); // Devolvemos solo el primer objeto
+    });
 });
 
 // --- RUTAS DE ADMIN BLOG ---
