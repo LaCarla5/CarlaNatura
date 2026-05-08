@@ -8,32 +8,30 @@
 
     @if (mostrarFormulario) {
     <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 bg-light">
-        <form (ngSubmit)="agregarPost()"> <div class="row g-3">
+        <form (ngSubmit)="agregarPost()">
+            <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Título</label>
-                    <input type="text" [(ngModel)]="nuevoPost.titulo" name="titulo" class="form-control"
-                        placeholder="Título del Post" required>
+                    <input type="text" [(ngModel)]="nuevoPost.titulo" name="titulo" class="form-control" placeholder="Título del Post" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Categoría</label>
-                    <input type="text" [(ngModel)]="nuevoPost.categoria" name="categoria" class="form-control"
-                        placeholder="Ej: Salud, Nutrición..." required>
+                    <input type="text" [(ngModel)]="nuevoPost.categoria" name="categoria" class="form-control" placeholder="Ej: Salud, Nutrición..." required>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-bold">Contenido del Post</label>
-                    <textarea [(ngModel)]="nuevoPost.contenido" name="contenido" class="form-control" rows="5" 
-                            placeholder="Escribe aquí tu post..." required>
-                    </textarea>
+                    <textarea [(ngModel)]="nuevoPost.contenido" name="contenido" class="form-control" rows="5" placeholder="Escribe aquí tu post..." required></textarea>
                 </div>
+
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">URL Imagen</label>
-                    <input type="text" [(ngModel)]="nuevoPost.imagen" name="imagen" class="form-control"
-                        placeholder="assets/recursos/img/blog/foto.jpg">
+                    <label class="form-label fw-bold">Imagen del Post (Archivo)</label>
+                    <input type="file" (change)="onFileSelected($event)" class="form-control" accept="image/*">
+                    <small class="text-muted">Selecciona una foto de tu ordenador</small>
                 </div>
+
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Enlace Externo (Opcional)</label>
-                    <input type="text" [(ngModel)]="nuevoPost.urlExterna" name="urlExterna" class="form-control"
-                        placeholder="https://...">
+                    <input type="text" [(ngModel)]="nuevoPost.urlExterna" name="urlExterna" class="form-control" placeholder="https://...">
                 </div>
                 <div class="col-12 text-end mt-4">
                     <button type="submit" class="btn btn-success px-5 rounded-pill shadow-sm">
@@ -61,8 +59,9 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img [src]="p.imagen" class="rounded me-3 shadow-sm"
-                                style="width: 50px; height: 50px; object-fit: cover;">
+                            <img [src]="p.imagen_url" class="rounded me-3 shadow-sm"
+                                 style="width: 50px; height: 50px; object-fit: cover;"
+                                 onerror="this.src='assets/img/no-image.png'"> 
                             <span class="fw-bold">{{ p.titulo }}</span>
                         </div>
                     </td>

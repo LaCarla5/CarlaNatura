@@ -20,23 +20,29 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Necesario para crear carpetas si no existen
+const fs = require('fs'); 
 
-// Servir imágenes
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Configuración de Multer
-const storage = multer.diskStorage({
+// Configuración de almacenamiento inteligente
+const universalStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Si la ruta es para el blog, va a uploads/blog, si no a uploads/perfil
-    const folder = req.baseUrl.includes('blog') ? 'uploads/blog/' : 'uploads/perfil/';
+    let folder = 'uploads/otros/';
+    if (req.originalUrl.includes('blog')) folder = 'uploads/blog/';
+    else if (req.originalUrl.includes('perfil')) folder = 'uploads/perfil/';
+    else if (req.originalUrl.includes('productos')) folder = 'uploads/productos/';
+
+    if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
     cb(null, folder);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + path.extname(file.originalname));
   }
 });
 
-const upload = multer({ storage });
+// ESTA ES LA VARIABLE CLAVE
+const upload = multer({ storage: universalStorage });
 
 // Conexión MySQL
 const conexion = mysql.createConnection({
@@ -146,17 +152,33 @@ app.get('/api/perfil/:id', (req, res) => {
 // RUTA PARA GUARDAR 
 app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
     const { id } = req.params;
-    // IMPORTANTE: Extraemos 'ca' (como lo enviamos desde Angular)
-    const { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
+    let { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
+
+    const limpiar = (valor) => (valor === 'indefinido' || valor === '' || valor === 'null' ? null : valor);
+    
+    // 1. Limpiamos campos
+    nombre = limpiar(nombre);
+    genero = limpiar(genero);
+    domicilio = limpiar(domicilio);
+    cp = limpiar(cp);
+    ciudad = limpiar(ciudad);
+    ca = limpiar(ca);
+    pais = limpiar(pais);
+
+    // 2. Aquí está la clave: usamos la variable limpia
+    const valorTelefono = (telefono === 'indefinido' || !telefono || telefono === 'null') ? null : parseInt(telefono);
+
     let foto_perfil = req.file ? req.file.filename : null;
 
-    // Consulta SQL con el nombre exacto de tu columna: comunidad_autonoma
+    // 3. Consulta SQL
     let sql = `UPDATE usuarios SET 
                nombre = ?, genero = ?, telefono = ?, domicilio = ?, 
                cp = ?, ciudad = ?, comunidad_autonoma = ?, pais = ?`;
     
-    let params = [nombre, genero, telefono, domicilio, cp, ciudad, ca, pais];
+    // 4. IMPORTANTE: He cambiado 'telefono' por 'valorTelefono' aquí abajo
+    let params = [nombre, genero, valorTelefono, domicilio, cp, ciudad, ca, pais];
 
+    // Solo actualizamos la foto si realmente se ha subido una nueva
     if (foto_perfil) {
         sql += ", foto_perfil = ?";
         params.push(foto_perfil);
@@ -167,7 +189,7 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
 
     conexion.query(sql, params, (err, result) => {
         if (err) {
-            console.error("ERROR SQL AL GUARDAR:", err); // MIRA TU TERMINAL DE NODE AQUÍ
+            console.error("ERROR SQL AL GUARDAR:", err);
             return res.status(500).json({ error: err.message });
         }
         res.json({ mensaje: "OK", foto: foto_perfil });
@@ -197,7 +219,7 @@ app.post('/api/citas', (req, res) => {
     if (email) {
       const mailOptions = {
         from: 'CarlaNatura <carlanatura2026@gmail.com>',
-        to: email, // 👈 Si esto es undefined, Nodemailer falla
+        to: email, // Si esto es undefined, Nodemailer falla
         subject: 'Reserva Recibida - CarlaNatura 🌿',
         html: `<h2>¡Hola ${nombre}!</h2><p>Hemos recibido tu solicitud para <b>${servicio}</b> el día ${fecha} a las ${hora}.</p>`
       };
@@ -335,45 +357,48 @@ app.get('/api/admin/blog', (req, res) => {
   });
 });
 
-app.post('/api/admin/blog', (req, res) => {
-  const { titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion } = req.body;
+// Usamos el "disparador" de Multer para el blog que configuramos antes
+app.post('/api/admin/blog', upload.single('imagen'), (req, res) => {
+  // Los textos vienen en req.body
+  const { titulo, categoria, contenido, urlExterna, autor_id, fecha_publicacion } = req.body;
 
-  // Verificamos que los datos mínimos existan
+  // El nombre del archivo viene de Multer (si se subió uno)
+  const nombreImagen = req.file ? req.file.filename : null;
+
   if (!titulo || !contenido || !categoria) {
-    return res.status(400).json({ error: 'Título y contenido son obligatorios' });
+    return res.status(400).json({ error: 'Datos incompletos' });
   }
 
-  // SQL con los 7 parámetros correspondientes
   const sql = 'INSERT INTO blog_posts (titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion) VALUES (?, ?, ?, ?, ?, ?, ?)';
   
-  const fechaFormateada = new Date(fecha_publicacion)
-    .toISOString()
-    .slice(0, 19)
-    .replace('T', ' ');
+  const fechaFormateada = new Date(fecha_publicacion || Date.now())
+    .toISOString().slice(0, 19).replace('T', ' ');
 
   const valores = [
     titulo, 
     categoria, 
     contenido, 
-    imagen || null, 
+    nombreImagen, // <--- Solo el nombre del archivo
     urlExterna || null, 
-    autor_id || 1, // Si no llega autor, le ponemos el 1 por defecto (Admin)
+    autor_id || 1, 
     fechaFormateada
   ];
 
   conexion.query(sql, valores, (err, resultado) => {
     if (err) {
       console.error("Error en el INSERT:", err);
-      return res.status(500).json({ error: 'No se pudo guardar el post' });
+      return res.status(500).json({ error: 'Error al guardar' });
     }
-    res.status(201).json({ mensaje: 'Post creado', id: resultado.insertId });
+    res.status(201).json({ mensaje: 'Post creado', id: resultado.insertId, foto: nombreImagen });
   });
 });
 
 app.delete('/api/admin/blog/:id', (req, res) => {
-  conexion.query('DELETE FROM blog_post WHERE id = ?', [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: 'Error' });
-    res.json({ mensaje: 'Eliminado' });
+  const id = req.params.id;
+  // Asegúrate de si la tabla es 'blog_posts' o 'blog_post'
+  conexion.query('DELETE FROM blog_posts WHERE id = ?', [id], (err) => {
+    if (err) return res.status(500).json({ error: 'No se pudo eliminar' });
+    res.json({ mensaje: 'Post eliminado correctamente' });
   });
 });
 

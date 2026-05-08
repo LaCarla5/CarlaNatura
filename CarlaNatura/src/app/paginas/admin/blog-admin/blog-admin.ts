@@ -21,6 +21,14 @@ export class BlogAdmin implements OnInit {
   post: any[] = [];
   mostrarFormulario = false;
   fechaActual = new Date();
+  archivoSeleccionado: File | null = null;
+
+  onFileSelected(event: any) {
+    const file: File = event.target.files[0];
+    if (file) {
+      this.archivoSeleccionado = file;
+    }
+  }
 
   nuevoPost = {
     titulo: '',
@@ -39,60 +47,74 @@ export class BlogAdmin implements OnInit {
   cargarPosts() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (res) => {
-        this.post = res;
-        this.cdr.detectChanges(); // Fuerza la actualización de la vista al recibir los datos
+        console.log("Datos recibidos del servidor:", res);
+        
+        // Mapeamos y asignamos a una variable nueva para asegurar la reactividad
+        const postsMapeados = res.map(p => ({
+          ...p,
+          imagen_url: `http://localhost:3000/uploads/blog/${p.imagen}`
+        }));
+
+        this.post = postsMapeados; // Actualizamos el array principal
+        this.cdr.detectChanges();  // Forzamos a Angular a "pintar" los cambios
       },
-      error: (err) => console.error("Error al cargar post:", err)
+      error: (err) => {
+        console.error("Error al obtener los posts:", err);
+      }
     });
   }
 
   agregarPost() {
     const idUsuario = this.authService.getUserId();
+    if (!idUsuario) return;
 
-    if (!idUsuario) {
-      Swal.fire('Error', 'No se pudo identificar al autor. Inicia sesión de nuevo.', 'error');
-      return;
+    const formData = new FormData();
+    formData.append('titulo', this.nuevoPost.titulo);
+    formData.append('categoria', this.nuevoPost.categoria);
+    formData.append('contenido', this.nuevoPost.contenido);
+    formData.append('urlExterna', this.nuevoPost.urlExterna || '');
+    formData.append('autor_id', idUsuario.toString());
+    formData.append('fecha_publicacion', new Date().toISOString());
+
+    if (this.archivoSeleccionado) {
+      formData.append('imagen', this.archivoSeleccionado);
     }
 
-    this.nuevoPost.autor_id = idUsuario;
-
-    this.http.post(this.apiUrl, this.nuevoPost).subscribe({
+    this.http.post(this.apiUrl, formData).subscribe({
       next: () => {
-        Swal.fire('¡Éxito!', 'Post añadido correctamente al blog', 'success');
-        this.cargarPosts();
-        this.resetForm();
-        this.mostrarFormulario = false;
+        Swal.fire('¡Éxito!', 'Noticia publicada', 'success');
+
+        // --- PASOS DE RECARGA ---
+        this.cargarPosts();       // 1. Vuelve a pedir la lista al servidor
+        this.resetForm();         // 2. Limpia los inputs del formulario
+        this.mostrarFormulario = false; // 3. Cierra el panel de agregar
+        this.archivoSeleccionado = null; // 4. Olvida el archivo anterior
       },
-      error: (err) => {
-        console.error("Error al guardar:", err);
-        Swal.fire('Error', 'No se pudo guardar el Post en la base de datos', 'error');
-      }
+      error: (err) => Swal.fire('Error', 'No se pudo guardar', 'error')
     });
   }
 
   eliminar(id: number) {
     Swal.fire({
-      title: '¿Estás seguro?',
-      text: "El producto desaparecerá del blog",
+      title: '¿Eliminar noticia?',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#2d5a27',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: 'Sí, borrar',
       cancelButtonText: 'Cancelar'
     }).then((result) => {
       if (result.isConfirmed) {
         this.http.delete(`${this.apiUrl}/${id}`).subscribe({
           next: () => {
-            this.cargarPosts();
-            Swal.fire('Eliminado', 'El posts ha sido borrado', 'success');
+            Swal.fire('Eliminado', 'La noticia ha sido borrada', 'success');
+
+            // --- PASO DE RECARGA ---
+            this.cargarPosts(); // Actualiza la tabla quitando el elemento borrado
           },
-          error: (err) => Swal.fire('Error', 'No se pudo eliminar el posts', 'error')
+          error: (err) => Swal.fire('Error', 'No se pudo eliminar', 'error')
         });
       }
     });
   }
-
   resetForm() {
     this.nuevoPost = {
       titulo: '',
