@@ -675,6 +675,27 @@ app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
   });
 });
 
+app.put('/api/admin/pedidos/:id', (req, res) => {
+    const { id } = req.params; // Aquí Node recoge el "3" de la URL
+    const { total, estado_pago } = req.body;
+
+    const sql = "UPDATE pedidos SET total = ?, estado_pago = ? WHERE id = ?";
+    
+    conexion.query(sql, [total, estado_pago, id], (err, result) => {
+        if (err) {
+            console.error("Error al actualizar:", err);
+            return res.status(500).json({ success: false, error: err.message });
+        }
+        
+        // Si el ID no existe en la DB, result.affectedRows será 0
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, mensaje: "Pedido no encontrado" });
+        }
+
+        res.json({ success: true, mensaje: "Pedido actualizado correctamente" });
+    });
+});
+
 // -- PERMITIR EL USO DE LA API Y USAR MI SERVIDOR DE PUENTE --
 app.get('/api/proxy/cp/:cp', async (req, res) => {
   try {
