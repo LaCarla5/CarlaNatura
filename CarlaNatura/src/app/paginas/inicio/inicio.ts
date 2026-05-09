@@ -1,7 +1,7 @@
 import { Component, signal, inject } from '@angular/core'; // Añadimos inject
 import { Router } from '@angular/router'; // Importante para navegar
-import { AuthService } from '../../services/auth';
 import Swal from 'sweetalert2'; // Mensaje mas suaves
+import { AuthService } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-inicio',

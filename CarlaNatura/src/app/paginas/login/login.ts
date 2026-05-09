@@ -1,10 +1,10 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Importante para capturar datos simples
-import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { CarritoS } from '../../services/carrito-s';
+import { CarritoS } from '../../services/carrito/carrito-s';
+import { AuthService } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-login',

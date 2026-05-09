@@ -1,9 +1,9 @@
 import { Component, signal, inject, OnInit, PLATFORM_ID} from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { AuthService } from './services/auth';
+import { AuthService } from './services/auth/auth';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
-import { CarritoS } from './services/carrito-s';
+import { CarritoS } from './services/carrito/carrito-s';
 
 @Component({
   selector: 'app-root',

@@ -4,7 +4,8 @@ import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 // Obtener los datos del formulario  [(ngModel)]="nuevoPost.titulo"
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { AuthService } from '../../../services/auth';
+import { AuthService } from '../../../services/auth/auth';
+
 
 @Component({
   selector: 'app-blog-admin',

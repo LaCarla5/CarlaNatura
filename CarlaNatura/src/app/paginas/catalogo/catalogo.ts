@@ -1,8 +1,8 @@
 import { Component, signal, inject, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/auth/auth';
 import { CommonModule } from '@angular/common';
-import { CarritoS, Producto } from '../../services/carrito-s';
+import { CarritoS, Producto } from '../../services/carrito/carrito-s';
 import { HttpClient } from '@angular/common/http';
 // Para las alerta
 import Swal from 'sweetalert2';
@@ -60,7 +60,6 @@ export class Catalogo {
     });
   }
 
-  // ESTA ES LA FUNCIÓN QUE TE FALTABA O NO DETECTABA
   cambiarCantidad(item: any, cambio: number) {
     if (!item.cantidadSeleccionada) item.cantidadSeleccionada = 1;
 

@@ -1,9 +1,9 @@
 import { Component, inject } from '@angular/core';
-import { CarritoS } from '../../services/carrito-s'; // Asumiendo que tienes un servicio
+import { CarritoS } from '../../services/carrito/carrito-s'; // Asumiendo que tienes un servicio
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import Swal from 'sweetalert2';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/auth/auth';
 
 
 @Component({

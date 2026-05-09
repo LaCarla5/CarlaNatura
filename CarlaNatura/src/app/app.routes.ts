@@ -10,11 +10,12 @@ import { Login } from './paginas/login/login';
 import { Perfil } from './paginas/perfil/perfil';
 import { Dietas } from './paginas/dietas/dietas';
 import { PostDetalle } from './paginas/post-detalle/post-detalle';
+import { AuthService } from './services/auth/auth';
 
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../app/services/auth';
 import { adminGuard } from '../app/guards/admin-guard';
+
 
 
 // 1. Creamos una función Guard rápida

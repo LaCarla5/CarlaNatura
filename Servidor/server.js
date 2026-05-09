@@ -29,9 +29,13 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const universalStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     let folder = 'uploads/otros/';
+
+    // Añadimos 'catalogo-admin' a la condición
     if (req.originalUrl.includes('blog')) folder = 'uploads/blog/';
     else if (req.originalUrl.includes('perfil')) folder = 'uploads/perfil/';
-    else if (req.originalUrl.includes('productos')) folder = 'uploads/productos/';
+    else if (req.originalUrl.includes('productos') || req.originalUrl.includes('catalogo-admin')) {
+      folder = 'uploads/productos/';
+    }
 
     if (!fs.existsSync(folder)) fs.mkdirSync(folder, { recursive: true });
     cb(null, folder);
@@ -141,7 +145,7 @@ app.post('/api/registro', (req, res) => {
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
     if (err) {
-      console.log(err); // Mira la terminal donde corre Node
+      console.log(err);
       return res.status(500).json({ error: err.sqlMessage || 'Error al registrar' });
     }
     res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
@@ -436,8 +440,9 @@ app.delete('/api/admin/blog/:id', (req, res) => {
 });
 
 
-// --- RUTAS DE CATÁLOGO ADMIN---
+// --- RUTAS DE CATÁLOGO ADMIN ---
 
+// Obtener productos
 app.get('/api/catalogo-admin', (req, res) => {
   conexion.query('SELECT * FROM productos', (err, resultados) => {
     if (err) return res.status(500).json({ error: 'Error' });
@@ -445,15 +450,48 @@ app.get('/api/catalogo-admin', (req, res) => {
   });
 });
 
-app.post('/api/catalogo-admin', (req, res) => {
-  const { nombre, precio, stock, imagen, descripcion } = req.body;
+// Guardar nuevo producto (con imagen Multer)
+app.post('/api/catalogo-admin', upload.single('imagen'), (req, res) => {
+  // console.log("Archivo recibido:", req.file); // Si esto sale 'undefined', el problema es el FormData
+  // console.log("Cuerpo recibido:", req.body);
+
+  // if (!req.file) {
+  //     return res.status(400).json({ error: "No se ha subido ninguna imagen" });
+  // }
+
+  const { nombre, precio, stock, descripcion } = req.body;
+  const nombreImagen = req.file ? req.file.filename : 'imagen_articulo_por_defecto.jpg';
+
   const sql = 'INSERT INTO productos (nombre, precio, stock, imagen, descripcion) VALUES (?, ?, ?, ?, ?)';
-  conexion.query(sql, [nombre, precio, stock, imagen, descripcion], (err, resultado) => {
-    if (err) return res.status(500).json({ error: 'Error' });
-    res.status(201).json({ id: resultado.insertId });
+  conexion.query(sql, [nombre, precio, stock, nombreImagen, descripcion], (err, resultado) => {
+    if (err) return res.status(500).json({ error: 'Error al guardar' });
+    res.status(201).json({ mensaje: 'Producto creado', id: resultado.insertId });
   });
 });
 
+// Editar producto existente
+app.put('/api/catalogo-admin/:id', upload.single('imagen'), (req, res) => {
+  const { id } = req.params;
+  const { nombre, precio, stock, descripcion } = req.body;
+  let sql = "UPDATE productos SET nombre = ?, precio = ?, stock = ?, descripcion = ?";
+  let params = [nombre, precio, stock, descripcion];
+
+  if (req.file) {
+    // SI HAY FOTO NUEVA, SOLO GUARDAMOS EL NOMBRE
+    sql += ", imagen = ?";
+    params.push(req.file.filename);
+  }
+
+  sql += " WHERE id = ?";
+  params.push(id);
+
+  conexion.query(sql, params, (err) => {
+    if (err) return res.status(500).json({ error: 'Error al actualizar' });
+    res.json({ mensaje: 'Producto actualizado' });
+  });
+});
+
+// Eliminar producto
 app.delete('/api/catalogo-admin/:id', (req, res) => {
   conexion.query('DELETE FROM productos WHERE id = ?', [req.params.id], (err) => {
     if (err) return res.status(500).json({ error: 'Error' });
@@ -461,11 +499,12 @@ app.delete('/api/catalogo-admin/:id', (req, res) => {
   });
 });
 
+
 // --- RUTAS DE CARRITO  ---
 app.post('/api/pedidos', (req, res) => {
   const { usuario_id, total, productos } = req.body;
-  console.log("ID de usuario recibido:", usuario_id);
-  
+  //console.log("ID de usuario recibido:", usuario_id);
+
   const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
 
   conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
@@ -571,6 +610,72 @@ app.get('/api/admin/pedidos', (req, res) => {
     }
     res.json(result);
   });
+});
+
+// Ruta para enviar el aviso por correo al cliente
+app.post('/api/admin/pedidos/notificar', (req, res) => {
+  const { pedidoId, emailCliente, motivo } = req.body;
+
+  // Configuración del mensaje
+  const mailOptions = {
+    from: 'CarlaNatura <carlanatura2026@gmail.com>',
+    to: emailCliente,
+    subject: `⚠️ Información sobre su pedido #${pedidoId} - CarlaNatura`,
+    html: `
+            <div style="font-family: sans-serif; color: #333;">
+                <h2 style="color: #2d7a4d;">Hola,</h2>
+                <p>Le escribimos desde <b>CarlaNatura</b> en relación a su pedido con número de referencia <b>#${pedidoId}</b>.</p>
+                <p>Nuestro equipo de administración necesita realizar un ajuste manual en su pedido por el siguiente motivo:</p>
+                <blockquote style="background: #f4f4f4; padding: 15px; border-left: 5px solid #2d7a4d;">
+                    ${motivo}
+                </blockquote>
+                <p>No es necesario que realice ninguna acción. Este correo es puramente informativo para mantener la transparencia en nuestra gestión.</p>
+                <p>Gracias por su confianza.</p>
+                <hr>
+                <small>Atentamente, el equipo de CarlaNatura.</small>
+            </div>
+        `
+  };
+
+  // Envío real del correo
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      //console.error("Error al enviar email de notificación:", error);
+      return res.status(500).json({ success: false, error: "Error al enviar el correo" });
+    }
+    //console.log("Email enviado: " + info.response);
+    res.json({ success: true, message: "Correo enviado correctamente" });
+  });
+});
+
+// Ruta para obtener los productos de UN pedido específico
+app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = `
+        SELECT d.*, p.nombre, p.imagen 
+        FROM Detalle_Pedidos d
+        INNER JOIN Productos p ON d.producto_id = p.id
+        WHERE d.pedido_id = ?`;
+
+    conexion.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        res.json(result);
+    });
+});
+
+app.put('/api/admin/pedidos/:id', (req, res) => {
+    const { id } = req.params;
+    const { total, estado_pago } = req.body;
+
+    const sql = "UPDATE Pedidos SET total = ?, estado_pago = ? WHERE id = ?";
+    
+    conexion.query(sql, [total, estado_pago, id], (err, result) => {
+        if (err) {
+            console.error("Error SQL:", err);
+            return res.status(500).json({ error: "Error al actualizar" });
+        }
+        res.json({ success: true, mensaje: "Pedido actualizado" });
+    });
 });
 
 app.listen(3000, () => {

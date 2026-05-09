@@ -1,9 +1,10 @@
 import { Component, inject, PLATFORM_ID, OnInit, ChangeDetectorRef } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Para usar el nombre en el input de edición
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/auth/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+
 
 @Component({
   selector: 'app-perfil',
