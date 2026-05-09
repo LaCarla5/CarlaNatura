@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms'; // Para usar el nombre en el input
 import { AuthService } from '../../services/auth/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { UbicacionS } from '../../services/ubicacion/ubicacion-s';
 
 
 @Component({
@@ -17,6 +18,7 @@ export class Perfil implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   public authService = inject(AuthService);
   private router = inject(Router);
+  private ubicacionS = inject(UbicacionS);
   private platformId = inject(PLATFORM_ID);
 
   // Datos del usuario
@@ -64,7 +66,7 @@ export class Perfil implements OnInit {
       this.router.navigate(['/login']);
       return;
     }
-    
+
     // obligatoria para obtener el id del usuario
     this.userId = localStorage.getItem('userId');
 
@@ -105,7 +107,6 @@ export class Perfil implements OnInit {
   }
 
   // --- MÉTODOS DE EDICIÓN ---
-
   activarEdicion() {
     this.resetFormulario(); // Esto copia userName -> nombreEditado, etc.
     this.editMode = true;
@@ -164,6 +165,22 @@ export class Perfil implements OnInit {
 
   guardarCambios() {
     if (!this.userId || !this.nombreEditado.trim()) return;
+
+    if (this.nombreEditado.length < 3) {
+      Swal.fire('Nombre inválido', 'El nombre debe tener al menos 3 caracteres', 'warning');
+      return;
+    }
+
+    const regexTelefono = /^[679]\d{8}$/; // Empieza por 6, 7 o 9 y tiene 9 dígitos
+    if (!regexTelefono.test(this.telefonoEditado)) {
+      Swal.fire('Teléfono inválido', 'Introduce un número de teléfono español válido (9 dígitos)', 'warning');
+      return;
+    }
+
+    if (this.cpEditado.length !== 5) {
+      Swal.fire('CP inválido', 'El código postal debe tener 5 dígitos', 'warning');
+      return;
+    }
 
     Swal.fire({
       title: 'Guardando...',
@@ -226,9 +243,28 @@ export class Perfil implements OnInit {
         Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
       },
       error: (err) => {
-        console.error('Error al guardar:', err);
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo actualizar el perfil.' });
-      }
+      // Cerramos el "Guardando..." de Swal para mostrar el error
+          Swal.close();
+
+          // 1. Si el servidor nos dice que el teléfono ya existe (Status 400)
+          if (err.status === 400 && err.error.error_type === 'DUPLICADO_TELEFONO') {
+            Swal.fire({
+              icon: 'error',
+              title: 'Registro Duplicado',
+              text: err.error.mensaje, // "No se pueden guardar los cambios porque este número..."
+              confirmButtonColor: '#2d7a4d'
+            });
+          } 
+          // 2. Si es cualquier otro error (Status 500, conexión, etc.)
+          else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error al guardar',
+              text: 'Hubo un problema al conectar con el servidor. Inténtalo más tarde.',
+              confirmButtonColor: '#d33'
+            });
+          }
+        }
     });
   }
 
@@ -242,6 +278,37 @@ export class Perfil implements OnInit {
     this.ciudadEditado = this.userCity || '';
     this.caEditado = this.userComunity || '';
     this.paisEditado = this.userCountry || '';
+  }
+
+  buscarCP() {
+    if (this.cpEditado && this.cpEditado.length === 5) {
+      //console.log("Buscando CP:", this.cpEditado); // <-- LOG 1
+
+      this.ubicacionS.getInfoPorCP(this.cpEditado).subscribe({
+        next: (data: any) => {
+          //console.log("Respuesta de la API:", data);
+
+          if (data && data.places && data.places.length > 0) {
+            const info = data.places[0];
+
+            // Asignación con nombres de propiedades exactos de Zippopotam
+            this.ciudadEditado = info['place name'];
+            this.caEditado = info['state'];
+            this.paisEditado = 'España';
+
+            //console.log("Campos asignados:", this.ciudadEditado, this.caEditado); // <-- LOG 3
+
+            this.cdr.markForCheck();
+            this.cdr.detectChanges();
+          } else {
+            //console.warn("La API respondió pero no encontró lugares.");
+          }
+        },
+        error: (err) => {
+          console.error("Error en la petición a la API:", err);
+        }
+      });
+    }
   }
 
   onLogout() {

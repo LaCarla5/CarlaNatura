@@ -14,6 +14,8 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 // Tokens
 const jwt = require('jsonwebtoken');
+// Permitir usar api
+const axios = require('axios');
 
 const app = express();
 
@@ -207,10 +209,20 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
 
   conexion.query(sql, params, (err, result) => {
     if (err) {
-      console.error("ERROR SQL AL GUARDAR:", err);
-      return res.status(500).json({ error: err.message });
+      // CAPTURAMOS EL ERROR DE DUPLICADO (ER_DUP_ENTRY)
+      if (err.code === 'ER_DUP_ENTRY') {
+        console.log("Conflicto detectado: Teléfono duplicado");
+        return res.status(400).json({
+          error_type: 'DUPLICADO_TELEFONO',
+          mensaje: 'Este número de teléfono ya está registrado por otro usuario.'
+        });
+      }
+
+      // Si es otro error, enviamos 500
+      console.error("Error en MySQL:", err);
+      return res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
-    res.json({ mensaje: "OK", foto: foto_perfil });
+    res.json({ success: true, mensaje: 'Perfil actualizado' });
   });
 });
 
@@ -650,32 +662,28 @@ app.post('/api/admin/pedidos/notificar', (req, res) => {
 
 // Ruta para obtener los productos de UN pedido específico
 app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = `
+  const { id } = req.params;
+  const sql = `
         SELECT d.*, p.nombre, p.imagen 
         FROM Detalle_Pedidos d
         INNER JOIN Productos p ON d.producto_id = p.id
         WHERE d.pedido_id = ?`;
 
-    conexion.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json(result);
-    });
+  conexion.query(sql, [id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
+  });
 });
 
-app.put('/api/admin/pedidos/:id', (req, res) => {
-    const { id } = req.params;
-    const { total, estado_pago } = req.body;
-
-    const sql = "UPDATE Pedidos SET total = ?, estado_pago = ? WHERE id = ?";
-    
-    conexion.query(sql, [total, estado_pago, id], (err, result) => {
-        if (err) {
-            console.error("Error SQL:", err);
-            return res.status(500).json({ error: "Error al actualizar" });
-        }
-        res.json({ success: true, mensaje: "Pedido actualizado" });
-    });
+// -- PERMITIR EL USO DE LA API Y USAR MI SERVIDOR DE PUENTE --
+app.get('/api/proxy/cp/:cp', async (req, res) => {
+  try {
+    const { cp } = req.params;
+    const response = await axios.get(`https://api.zippopotam.us/es/${cp}`);
+    res.json(response.data);
+  } catch (error) {
+    res.status(404).json({ error: 'CP no encontrado' });
+  }
 });
 
 app.listen(3000, () => {

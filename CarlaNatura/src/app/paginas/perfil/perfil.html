@@ -111,23 +111,25 @@
           <!-- Campo nombre-->
           <div class="form-floating mb-4">
             <input type="text" id="nombre" name="nombre" [(ngModel)]="nombreEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm"
               placeholder="Nombre completo">
             <label for="nombre" class="ps-0 text-muted">Nombre Completo</label>
           </div>
 
           <!-- Campo Genero-->
           <div class="form-floating mb-4">
-            <input type="text" id="genero" name="genero" [(ngModel)]="generoEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-              placeholder="Genero">
+              <select name="genero" id="genero" [(ngModel)]="generoEditado"  class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm">
+              <option value="indefinido" selected>Indefinido</option>
+              <option value="femenino" >Femenino</option>
+              <option value="masculino">Masculino</option>
+            </select>
             <label for="genero" class="ps-0 text-muted">Genero</label>
           </div>
 
           <!-- Campo Telefono-->
           <div class="form-floating mb-4">
             <input type="tel" id="telefono" name="telefono" [(ngModel)]="telefonoEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm"
               placeholder="Telfono movil">
             <label for="telefono" class="ps-0 text-muted">Telfono movil</label>
           </div>
@@ -135,40 +137,48 @@
           <!-- Campo Domicilio-->
           <div class="form-floating mb-4">
             <input type="text" id="domicilio" name="domicilio" [(ngModel)]="domicilioEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm"
               placeholder="Domicilio fiscal">
             <label for="domicilio" class="ps-0 text-muted">Domicilio fiscal</label>
           </div>
 
           <!-- Campo CP-->
+          <!-- (input): Busca mientras escribes -->
+         <!-- (keydown.enter): Evita que se guarde el perfil al dar a Enter -->
           <div class="form-floating mb-4">
-            <input type="number" id="cp" name="cp" [(ngModel)]="cpEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-              placeholder="Codigo Postal">
+            <input type="text" 
+            [(ngModel)]="cpEditado" 
+            name="cp" 
+            class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm"
+            maxlength="5"
+            (input)="buscarCP()" 
+            (keydown.enter)="$event.preventDefault(); buscarCP()">
             <label for="cp" class="ps-0 text-muted">Codigo Postal</label>
           </div>
 
           <!-- Campo Ciudad-->
           <div class="form-floating mb-4">
-            <input type="text" id="ciudad" name="ciudad" [(ngModel)]="ciudadEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-              placeholder="Ciudad">
+            <input type="text" 
+            [(ngModel)]="ciudadEditado" 
+            name="ciudad" 
+            class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm ">
             <label for="ciudad" class="ps-0 text-muted">Ciudad</label>
           </div>
 
           <!-- Campo Comunidad Autonoma-->
           <div class="form-floating mb-4">
-            <input type="text" id="ca" name="ca" [(ngModel)]="caEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-              placeholder="Comunidad autonoma">
+            <input type="text" 
+            [(ngModel)]="caEditado" 
+            name="comunidad" 
+            class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm">
             <label for="ca" class="ps-0 text-muted">Comunidad autonoma</label>
           </div>
 
           <!-- Campo Pais-->
           <div class="form-floating mb-4">
             <input type="text" id="pais" name="pais" [(ngModel)]="paisEditado"
-              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0"
-              placeholder="Pais">
+              class="form-control border-0 border-bottom border-2 rounded-0 border-success shadow-none ps-0 camposForm"
+              placeholder="España">
             <label for="pais" class="ps-0 text-muted">Pais</label>
           </div>
 

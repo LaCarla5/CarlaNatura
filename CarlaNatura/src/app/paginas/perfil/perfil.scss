@@ -54,7 +54,7 @@ $blanco: #ffffff;
   background-color: #fcfdfc;
   border: 1px solid rgba(45, 90, 39, 0.1);
   border-radius: 1.5rem;
-  padding: 2rem;
+  padding: 3rem;
   
   strong {
     color: $verde-oscuro;
@@ -114,6 +114,13 @@ $blanco: #ffffff;
   border-radius: 50px !important;
 }
 
+.camposForm{
+  margin: 8px;
+}
+
+label{
+  font-weight: bold;
+}
 // Ajuste para móviles: que no pierda el estilo
 @media (max-width: 768px) {
   .profile-card {
