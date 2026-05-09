@@ -15,6 +15,9 @@ export interface Producto {
   precio: number;
   imagen: string;
   descripcion: string;
+  stock: number;
+  stockEfectivo?: number;
+  cantidadSeleccionada?: number;
 }
 
 @Injectable({
@@ -56,9 +59,12 @@ export class CarritoS {
     });
   }
 
-  añadir(producto: any) {
-    // IMPORTANTE: Solo mandamos el producto_id. El servidor saca el usuario_id del token.
-    const body = { producto_id: producto.id, cantidad: 1 };
+  añadir(producto: Producto, cantidad: number = 1) {
+    // Ahora usamos la cantidad que viene por parámetro del componente
+    const body = { 
+      producto_id: producto.id, 
+      cantidad: cantidad 
+    };
 
     this.http.post(this.apiUrl, body).subscribe({
       next: () => this.cargarCarritoBD(),
@@ -129,18 +135,26 @@ export class CarritoS {
 
   // --- FINLIZAR COMPRA Y PDF ---
 
-  finalizarCompra(pedido: any): Observable<any> {
-    return this.http.post('http://localhost:3000/api/pedidos', pedido).pipe(
-      tap((res: any) => {
-        if (res.success) {
-          // 1. Generamos el PDF con los datos actuales
-          this.generarFacturaPDF(res.pedidoId, pedido);
-          // 2. Limpiamos la señal local (la BD ya la limpia el servidor)
-          this.productos.set([]);
-        }
-      })
-    );
-  }
+finalizarCompra(pedido: any): Observable<any> {
+  return this.http.post('http://localhost:3000/api/pedidos', pedido).pipe(
+    tap((res: any) => {
+      if (res.success) {
+        // Generar Factura
+        this.generarFacturaPDF(res.pedidoId, pedido);
+        
+        // VACIAR LA SIGNAL (Esto quita el número 6 de la pantalla)
+        this.productos.set([]); 
+        
+        // Confirmar con la BD por si acaso
+        this.cargarCarritoBD(); 
+
+        setTimeout(() => {
+          this.cargarCarritoBD(); 
+        }, 300);
+      }
+    })
+  );
+}
 
   private generarFacturaPDF(idPedido: number, datos: any) {
     const doc = new jsPDF();

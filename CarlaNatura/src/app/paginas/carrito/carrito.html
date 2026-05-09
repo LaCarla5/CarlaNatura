@@ -2,35 +2,42 @@
   <h2 class="text-success mb-4">Tu Carrito</h2>
 
   @for (item of miCarrito.productos(); track item.id) {
-    <div class="card mb-3 shadow-sm border-0">
-      <div class="card-body d-flex align-items-center">
-        <img [src]="item.imagen" class="rounded me-3" width="80">
-        <div class="flex-grow-1">
-          <h5 class="mb-0">{{ item.nombre }}</h5>
-          <p class="text-muted">{{ item.cantidad }} x {{ item.precio }}€</p>
-        </div>
-        <button (click)="confirmarEliminar(item.producto_id)" class="btn btn-outline-danger btn-sm">
-          <i class="bi bi-trash"></i>
-        </button>
+  <div class="card mb-3 shadow-sm border-0">
+    <div class="card-body d-flex align-items-center">
+      <img [src]="item.imagen" class="rounded me-3" width="80">
+      <div class="flex-grow-1">
+        <h5 class="mb-0">{{ item.nombre }}</h5>
+        <p class="text-muted">{{ item.cantidad }} x {{ item.precio }}€</p>
       </div>
+      <button (click)="confirmarEliminar(item.producto_id)" class="btn btn-outline-danger btn-sm">
+        <i class="bi bi-trash"></i>
+      </button>
     </div>
+  </div>
   } @empty {
-    <div class="text-center py-5">
-      <p class="fs-4 text-muted">El carrito de tu usuario está vacío.</p>
-      <a routerLink="/catalogo" class="btn btn-success">Ver Catálogo</a>
-    </div>
+  <div class="text-center py-5">
+    <p class="fs-4 text-muted">El carrito de tu usuario está vacío.</p>
+    <a routerLink="/catalogo" class="btn btn-success">Ver Catálogo</a>
+  </div>
   }
 
   @if (miCarrito.productos().length > 0) {
-    <div class="mt-4 p-4 bg-light rounded shadow-sm">
-      <div class="d-flex justify-content-between mb-3">
-        <span class="fs-4">Total:</span>
-        <span class="fs-4 fw-bold text-success">{{ miCarrito.precioTotal() }}€</span>
-      </div>
-      <div class="d-flex gap-2">
-        <button (click)="confirmarVaciar()" class="btn btn-outline-secondary w-50">Vaciar Carrito</button>
-        <button class="btn btn-success w-50 fw-bold" (click)="finalizarCompra()">Finalizar Compra</button>
-      </div>
+  <div class="mt-4 p-4 bg-light rounded shadow-sm">
+    <div class="d-flex justify-content-between mb-3">
+      <span class="fs-4">Total:</span>
+      <span class="fs-4 fw-bold text-success">{{ miCarrito.precioTotal() }}€</span>
     </div>
+    <div class="d-flex gap-2">
+      <button (click)="confirmarVaciar()" class="btn btn-outline-secondary w-50">Vaciar Carrito</button>
+      <div class="alert alert-warning d-flex align-items-center mt-3" role="alert" style="font-size: 0.85rem;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+        <div>
+          <strong>Aviso:</strong> Los artículos en el carrito no están reservados. ¡Finaliza tu pedido antes de que se
+          agoten!
+        </div>
+      </div>
+      <button class="btn btn-success w-50 fw-bold" (click)="finalizarCompra()">Finalizar Compra</button>
+    </div>
+  </div>
   }
 </div>

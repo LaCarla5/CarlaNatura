@@ -3,6 +3,7 @@ import { CarritoS } from '../../services/carrito-s'; // Asumiendo que tienes un 
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import Swal from 'sweetalert2';
+import { AuthService } from '../../services/auth';
 
 
 @Component({
@@ -12,8 +13,10 @@ import Swal from 'sweetalert2';
   styleUrl: './carrito.scss',
 })
 export class Carrito {
-  // Inyectamos el servicio con un nombre en español para el HTML
+  // Inyectamos el servicio de carrito
   public miCarrito = inject(CarritoS);
+  // Inyectamos el servicio del auth
+  private authService = inject(AuthService);
   productos: any[] = [];
   constructor() { }
 
@@ -31,6 +34,9 @@ export class Carrito {
     }).then((result) => {
       if (result.isConfirmed) {
 
+        // Obtén el usuario logueado
+       const usuarioActual = this.authService.getCurrentUser();
+
         // Mostramos un spinner de "Procesando..."
         Swal.fire({
           title: 'Procesando pedido',
@@ -43,6 +49,7 @@ export class Carrito {
 
         // Creamos el objeto con los datos que pide el servicio
         const datosParaEnviar = {
+            usuario_id: usuarioActual?.id,
             total: this.miCarrito.precioTotal(),
             productos: this.miCarrito.productos() 
           };

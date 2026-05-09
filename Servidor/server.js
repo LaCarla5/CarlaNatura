@@ -11,7 +11,7 @@ const nodemailer = require('nodemailer');
 const multer = require('multer');
 // Contraseñas
 const bcrypt = require('bcrypt');
-const saltRounds = 10; 
+const saltRounds = 10;
 // Tokens
 const jwt = require('jsonwebtoken');
 
@@ -21,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 // Necesario para crear carpetas si no existen
-const fs = require('fs'); 
+const fs = require('fs');
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -65,9 +65,23 @@ const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'carlanatura2026@gmail.com',
-    pass: 'mfmnmsssyhhozggl' 
+    pass: 'mfmnmsssyhhozggl'
   }
 });
+
+// Verificacion de token
+const verificarToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) return res.status(403).json({ error: "No se proporcionó un token" });
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) return res.status(401).json({ error: "Token inválido o expirado" });
+    req.userId = decoded.id;
+    next();
+  });
+};
 
 // --- RUTAS DE USUARIOS ---
 
@@ -75,7 +89,7 @@ app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
   // Buscamos al usuario solo por email
   const sql = "SELECT * FROM usuarios WHERE email = ?";
-  
+
   conexion.query(sql, [email], (err, result) => {
     if (err) return res.status(500).json({ error: "Error en el servidor" });
     if (result.length === 0) return res.status(401).json({ error: "Usuario no encontrado" });
@@ -89,16 +103,16 @@ app.post('/api/login', (req, res) => {
     if (esValida) {
       // Si es correcta, devolvemos los datos
       const token = jwt.sign(
-                { id: usuario.id, email: usuario.email }, 
-                process.env.JWT_SECRET, 
-                { expiresIn: '24h' } // El token durará un día
+        { id: usuario.id, email: usuario.email },
+        process.env.JWT_SECRET,
+        { expiresIn: '24h' } // El token durará un día
       );
 
       res.json({
         // Llammos a cada columna de nuestra base de datos
         id: usuario.id,
         nombre: usuario.nombre,
-        email: usuario.email, 
+        email: usuario.email,
         telefono: usuario.telefono,
         genero: usuario.genero,
         domicilio: usuario.domicilio,
@@ -127,8 +141,8 @@ app.post('/api/registro', (req, res) => {
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
     if (err) {
-    console.log(err); // Mira la terminal donde corre Node
-    return res.status(500).json({ error: err.sqlMessage || 'Error al registrar' });
+      console.log(err); // Mira la terminal donde corre Node
+      return res.status(500).json({ error: err.sqlMessage || 'Error al registrar' });
     }
     res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
   });
@@ -137,63 +151,63 @@ app.post('/api/registro', (req, res) => {
 
 // RUTA PARA OBTENER LOS DATOS 
 app.get('/api/perfil/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = "SELECT * FROM usuarios WHERE id = ?";
-    conexion.query(sql, [id], (err, result) => {
-        if (err) {
-            console.error("Error en GET:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        if (result.length === 0) return res.status(404).json({ error: "No existe" });
-        res.json(result[0]);
-    });
+  const { id } = req.params;
+  const sql = "SELECT * FROM usuarios WHERE id = ?";
+  conexion.query(sql, [id], (err, result) => {
+    if (err) {
+      console.error("Error en GET:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    if (result.length === 0) return res.status(404).json({ error: "No existe" });
+    res.json(result[0]);
+  });
 });
 
 // RUTA PARA GUARDAR 
 app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
-    const { id } = req.params;
-    let { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
+  const { id } = req.params;
+  let { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
 
-    const limpiar = (valor) => (valor === 'indefinido' || valor === '' || valor === 'null' ? null : valor);
-    
-    // 1. Limpiamos campos
-    nombre = limpiar(nombre);
-    genero = limpiar(genero);
-    domicilio = limpiar(domicilio);
-    cp = limpiar(cp);
-    ciudad = limpiar(ciudad);
-    ca = limpiar(ca);
-    pais = limpiar(pais);
+  const limpiar = (valor) => (valor === 'indefinido' || valor === '' || valor === 'null' ? null : valor);
 
-    // 2. Aquí está la clave: usamos la variable limpia
-    const valorTelefono = (telefono === 'indefinido' || !telefono || telefono === 'null') ? null : parseInt(telefono);
+  // 1. Limpiamos campos
+  nombre = limpiar(nombre);
+  genero = limpiar(genero);
+  domicilio = limpiar(domicilio);
+  cp = limpiar(cp);
+  ciudad = limpiar(ciudad);
+  ca = limpiar(ca);
+  pais = limpiar(pais);
 
-    let foto_perfil = req.file ? req.file.filename : null;
+  // 2. Aquí está la clave: usamos la variable limpia
+  const valorTelefono = (telefono === 'indefinido' || !telefono || telefono === 'null') ? null : parseInt(telefono);
 
-    // 3. Consulta SQL
-    let sql = `UPDATE usuarios SET 
+  let foto_perfil = req.file ? req.file.filename : null;
+
+  // 3. Consulta SQL
+  let sql = `UPDATE usuarios SET 
                nombre = ?, genero = ?, telefono = ?, domicilio = ?, 
                cp = ?, ciudad = ?, comunidad_autonoma = ?, pais = ?`;
-    
-    // 4. IMPORTANTE: He cambiado 'telefono' por 'valorTelefono' aquí abajo
-    let params = [nombre, genero, valorTelefono, domicilio, cp, ciudad, ca, pais];
 
-    // Solo actualizamos la foto si realmente se ha subido una nueva
-    if (foto_perfil) {
-        sql += ", foto_perfil = ?";
-        params.push(foto_perfil);
+  // 4. IMPORTANTE: He cambiado 'telefono' por 'valorTelefono' aquí abajo
+  let params = [nombre, genero, valorTelefono, domicilio, cp, ciudad, ca, pais];
+
+  // Solo actualizamos la foto si realmente se ha subido una nueva
+  if (foto_perfil) {
+    sql += ", foto_perfil = ?";
+    params.push(foto_perfil);
+  }
+
+  sql += " WHERE id = ?";
+  params.push(id);
+
+  conexion.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("ERROR SQL AL GUARDAR:", err);
+      return res.status(500).json({ error: err.message });
     }
-
-    sql += " WHERE id = ?";
-    params.push(id);
-
-    conexion.query(sql, params, (err, result) => {
-        if (err) {
-            console.error("ERROR SQL AL GUARDAR:", err);
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ mensaje: "OK", foto: foto_perfil });
-    });
+    res.json({ mensaje: "OK", foto: foto_perfil });
+  });
 });
 
 // --- RUTAS DE CITAS ---
@@ -208,7 +222,7 @@ app.post('/api/citas', (req, res) => {
   }
 
   const sql = "INSERT INTO citas (usuario_id, nombre, email, servicio, descripcion, fecha, hora, estado) VALUES (?, ?, ?, ?, ?, ?, ?, 'pendiente')";
-  
+
   conexion.query(sql, [cliente_id, nombre, email, servicio, descripcion, fecha, hora], (err, result) => {
     if (err) {
       console.error('❌ Error SQL en Citas:', err);
@@ -246,7 +260,7 @@ app.get('/api/citas/ocupadas', (req, res) => {
 
     // Convertimos de "09:00:00" a "09:00" para que Angular lo entienda
     const horasOcupadas = resultado.map(fila => fila.hora.substring(0, 5));
-    
+
     // console.log(`Día ${fecha} - Horas no disponibles:`, horasOcupadas);
     res.json(horasOcupadas); // Enviamos el array, ej: ["10:00", "16:00"]
   });
@@ -265,16 +279,16 @@ app.get('/api/admin/citas', (req, res) => {
 // Obtener solo pendientes para la bandeja de entrada
 app.get('/api/admin/citas/pendientes', (req, res) => {
   conexion.query("SELECT * FROM citas WHERE estado = 'pendiente' ORDER BY fecha, hora", (err, result) => {
-      if (err) return res.status(500).send(err);
-      res.json(result);
+    if (err) return res.status(500).send(err);
+    res.json(result);
   });
 });
 
 // Obtener solo confirmadas para el calendario
 app.get('/api/admin/citas/calendario', (req, res) => {
   conexion.query("SELECT * FROM citas WHERE estado = 'confirmada'", (err, result) => {
-      if (err) return res.status(500).send(err);
-      res.json(result);
+    if (err) return res.status(500).send(err);
+    res.json(result);
   });
 });
 
@@ -282,7 +296,7 @@ app.get('/api/admin/citas/calendario', (req, res) => {
 app.patch('/api/admin/citas/:id', (req, res) => {
   const { id } = req.params;
   const { estado, email } = req.body;
-  
+
   conexion.query('UPDATE citas SET estado = ? WHERE id = ?', [estado, id], (err) => {
     if (err) return res.status(500).json({ error: 'Error al actualizar' });
 
@@ -309,14 +323,14 @@ app.get('/api/admin/usuarios', (req, res) => {
 });
 
 app.delete('/api/admin/usuarios/:id', (req, res) => {
-    const { id } = req.params;
-    conexion.query("DELETE FROM Usuarios WHERE id = ?", [id], (err, result) => {
-        if (err) {
-            console.log("EL ERROR ES ESTE:", err.message); // Mira esto en la terminal negra
-            return res.status(500).json({ error: err.message });
-        }
-        res.json({ mensaje: "Usuario borrado" });
-    });
+  const { id } = req.params;
+  conexion.query("DELETE FROM Usuarios WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      console.log("EL ERROR ES ESTE:", err.message); // Mira esto en la terminal negra
+      return res.status(500).json({ error: err.message });
+    }
+    res.json({ mensaje: "Usuario borrado" });
+  });
 });
 
 // --- RUTAS DE CATÁLOGO ---
@@ -327,6 +341,25 @@ app.get('/api/catalogo', (req, res) => {
   });
 });
 
+app.post('/api/productos/reducir-stock', (req, res) => {
+  const { carrito } = req.body; // Un array de productos: [{id: 1, cantidad: 2}, ...]
+
+  // Usamos una promesa para manejar múltiples actualizaciones
+  const promesas = carrito.map(item => {
+    return new Promise((resolve, reject) => {
+      const sql = "UPDATE productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
+      conexion.query(sql, [item.cantidad, item.id, item.cantidad], (err, result) => {
+        if (err) reject(err);
+        if (result.affectedRows === 0) reject(new Error(`Sin stock para el producto ID: ${item.id}`));
+        resolve(result);
+      });
+    });
+  });
+
+  Promise.all(promesas)
+    .then(() => res.json({ mensaje: "Stock actualizado correctamente" }))
+    .catch(err => res.status(400).json({ error: err.message }));
+});
 
 // --- RUTAS DE BLOG ---
 
@@ -340,12 +373,12 @@ app.get('/api/blog', (req, res) => {
 
 // Obtener noticias individialmente
 app.get('/api/blog/:id', (req, res) => {
-    const { id } = req.params;
-    const sql = "SELECT * FROM blog_posts WHERE id = ?";
-    conexion.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).send(err);
-        res.json(result[0]); // Devolvemos solo el primer objeto
-    });
+  const { id } = req.params;
+  const sql = "SELECT * FROM blog_posts WHERE id = ?";
+  conexion.query(sql, [id], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json(result[0]); // Devolvemos solo el primer objeto
+  });
 });
 
 // --- RUTAS DE ADMIN BLOG ---
@@ -370,17 +403,17 @@ app.post('/api/admin/blog', upload.single('imagen'), (req, res) => {
   }
 
   const sql = 'INSERT INTO blog_posts (titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  
+
   const fechaFormateada = new Date(fecha_publicacion || Date.now())
     .toISOString().slice(0, 19).replace('T', ' ');
 
   const valores = [
-    titulo, 
-    categoria, 
-    contenido, 
+    titulo,
+    categoria,
+    contenido,
     nombreImagen, // <--- Solo el nombre del archivo
-    urlExterna || null, 
-    autor_id || 1, 
+    urlExterna || null,
+    autor_id || 1,
     fechaFormateada
   ];
 
@@ -428,130 +461,116 @@ app.delete('/api/catalogo-admin/:id', (req, res) => {
   });
 });
 
-// --- RUTAS DE CARRITO AÑADIR PEDIDOS ---
+// --- RUTAS DE CARRITO  ---
 app.post('/api/pedidos', (req, res) => {
-    const { usuario_id, total, productos } = req.body;
+  const { usuario_id, total, productos } = req.body;
+  console.log("ID de usuario recibido:", usuario_id);
+  
+  const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
 
-    // Insertamos el Pedido principal
-    const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
-    
-    conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+  conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
+    if (err) return res.status(500).json({ error: "Error al crear pedido" });
 
-        const pedidoId = result.insertId;
+    const pedidoId = result.insertId;
+    const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio_unitario || p.precio]);
+    const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
 
-        // Preparamos los detalles
-        const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio]);
-        const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
+    conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
+      if (errDetalle) return res.status(500).json({ error: "Error en detalles" });
 
-        // Insertamos los detalles
-        conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
-            if (errDetalle) return res.status(500).json({ error: errDetalle.message });
-
-            // Limpiamos el carrito SOLO cuando lo anterior ha salido bien
-            const sqlBorrarCarrito = 'DELETE FROM carrito WHERE usuario_id = ?';
-            conexion.query(sqlBorrarCarrito, [usuario_id], (errBorrar) => {
-                if (errBorrar) console.error("Error al limpiar carrito:", errBorrar);
-                
-                // 5. UNA SOLA RESPUESTA AL FINAL
-                res.json({ 
-                    success: true, 
-                    message: "Pedido completado y carrito limpio", 
-                    pedidoId: pedidoId 
-                });
-            });
+      // Actualizar Stock
+      const promesasStock = productos.map(p => {
+        return new Promise((resolve, reject) => {
+          const idProd = p.producto_id || p.id;
+          const sqlUpdate = "UPDATE Productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
+          conexion.query(sqlUpdate, [p.cantidad, idProd, p.cantidad], (errS, resS) => {
+            if (errS) return reject(errS);
+            if (resS.affectedRows === 0) return reject(new Error(`Sin stock para ID ${idProd}`));
+            resolve();
+          });
         });
+      });
+
+      Promise.all(promesasStock)
+        .then(() => {
+          // AQUÍ ESTÁ LA CLAVE: Borrar de la tabla Carrito
+          const sqlBorrar = "DELETE FROM Carrito WHERE usuario_id = ?";
+          conexion.query(sqlBorrar, [usuario_id], (errBorrar) => {
+            if (errBorrar) return res.status(500).json({ error: "No se pudo vaciar el carrito" });
+
+            // Enviamos éxito SOLO tras borrar de la BD
+            res.json({ success: true, pedidoId: pedidoId });
+          });
+        })
+        .catch(error => res.status(400).json({ error: error.message }));
     });
+  });
 });
 
-// --- RUTAS DE CARRITO---
-
-const verificarToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(" ")[1];
-
-    //console.log("Token recibido para validar:", token);
-
-    if (!token) return res.status(403).json({ error: "No se proporcionó un token" });
-
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-        if (err) {
-            console.error("Error al verificar token:", err.message);
-            return res.status(401).json({ error: "Token inválido o expirado" });
-        }
-        
-        // Guardamos el ID que viene dentro del token para usarlo en las rutas
-        req.userId = decoded.id; 
-        next();
-    });
-};
+// --- RUTAS DE CARRITO  ---
 
 app.get('/api/carrito', verificarToken, (req, res) => {
-    const sql = `
+  const sql = `
         SELECT c.*, p.nombre, p.precio, p.imagen 
         FROM carrito c 
         INNER JOIN Productos p ON c.producto_id = p.id 
         WHERE c.usuario_id = ?`;
-    
-    conexion.query(sql, [req.userId], (err, result) => {
-        if (err) return res.status(500).json(err);
-        res.json(result);
-    });
+
+  conexion.query(sql, [req.userId], (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
+  });
 });
 
-// Añadir o actualizar producto en el carrito
 app.post('/api/carrito', verificarToken, (req, res) => {
-    const { producto_id, cantidad } = req.body;
-    const usuario_id = req.userId;
+  const { producto_id, cantidad } = req.body;
+  const sql = `
+        INSERT INTO carrito (usuario_id, producto_id, cantidad) 
+        VALUES (?, ?, ?) 
+        ON DUPLICATE KEY UPDATE cantidad = cantidad + ?`;
 
-    if (!usuario_id) return res.status(401).json({ error: "No se identificó al usuario" });
-
-    const sql = `
-      INSERT INTO carrito (usuario_id, producto_id, cantidad) 
-      VALUES (?, ?, ?) 
-      ON DUPLICATE KEY UPDATE cantidad = cantidad + ?`;
-    
-    conexion.query(sql, [usuario_id, producto_id, cantidad, cantidad], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ success: true });
-    });
+  conexion.query(sql, [req.userId, producto_id, cantidad, cantidad], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ success: true });
+  });
 });
+
 
 // Vaciar el carrito completo de un usuario
 app.delete('/api/carrito/vaciar/todo', verificarToken, (req, res) => {
-    const sql = 'DELETE FROM carrito WHERE usuario_id = ?';
-    conexion.query(sql, [req.userId], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ success: true, mensaje: "Carrito vaciado" });
-    });
+  const sql = 'DELETE FROM carrito WHERE usuario_id = ?';
+  conexion.query(sql, [req.userId], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ success: true, mensaje: "Carrito vaciado" });
+  });
 });
 
 // Eliminar un único producto del carrito
 app.delete('/api/carrito/:producto_id', verificarToken, (req, res) => {
-    const { producto_id } = req.params;
-    const sql = 'DELETE FROM carrito WHERE usuario_id = ? AND producto_id = ?';
-    conexion.query(sql, [req.userId, producto_id], (err) => {
-        if (err) return res.status(500).json(err);
-        res.json({ success: true });
-    });
+  const { producto_id } = req.params;
+  const sql = 'DELETE FROM carrito WHERE usuario_id = ? AND producto_id = ?';
+  conexion.query(sql, [req.userId, producto_id], (err) => {
+    if (err) return res.status(500).json(err);
+    res.json({ success: true });
+  });
 });
 
 // --- RUTAS DE PEDIDOS ADMIN---
 // Ruta para enviar el correo y "desbloquear" la edición
 app.get('/api/admin/pedidos', (req, res) => {
-    const sql = `
+  const sql = `
         SELECT p.*, u.nombre AS nombre_usuario, u.email 
         FROM Pedidos p
         INNER JOIN Usuarios u ON p.usuario_id = u.id
         ORDER BY p.fecha_pedido DESC`;
 
-    conexion.query(sql, (err, result) => {
-        if (err) {
-            console.error("Error en la consulta:", err);
-            return res.status(500).json({ error: "Error en la base de datos" });
-        }
-        res.json(result);
-    });
+  conexion.query(sql, (err, result) => {
+    if (err) {
+      console.error("Error en la consulta:", err);
+      return res.status(500).json({ error: "Error en la base de datos" });
+    }
+    res.json(result);
+  });
 });
 
 app.listen(3000, () => {

@@ -3,22 +3,59 @@
     <div class="container">
       <h2 class="text-center section-title">Nuestro Catálogo Natura</h2>
 
-    <div class="row">
-      @for (item of productos; track item.id) {
+      <div class="row">
+        @for (item of productos; track item.id) {
         <div class="col-md-4 mb-4">
           <div class="card h-100 shadow-sm border-0">
-            <img [src]="item.imagen" class="card-img-top" alt='{{ item.nombre }}'>
+            <img [src]="item.imagen" class="card-img-top" [alt]="item.nombre">
             <div class="card-body text-center">
               <h5 class="fw-bold">{{ item.nombre }}</h5>
-              <p class="text-success fs-4">{{ item.precio }}€</p>
-              
-              <button class="btn btn-outline-success rounded-pill px-4" 
-                      (click)="agregarAlCarrito(item)">
-                Añadir al Carrito
-              </button>
+
+              <!-- Usamos stockEfectivo para mostrar la realidad de la reserva -->
+              <p class="mb-1" [ngClass]="{
+                  'text-danger fw-bold': item.stockEfectivo! <= 5 && item.stockEfectivo! > 0,
+                  'text-muted': item.stockEfectivo! > 5
+                }">
+                @if (item.stockEfectivo! > 0) {
+                Stock disponible: {{ item.stockEfectivo }}
+                } @else {
+                <span class="badge bg-secondary">Agotado temporalmente</span>
+                }
+              </p>
+
+              @if (item.stockEfectivo! > 0 && item.stockEfectivo! <= 5) { <div class="alert alert-info py-1 px-2 mb-2"
+                style="font-size: 0.75rem;">
+                <i class="bi bi-info-circle"></i> No reservable en carrito. ¡Vuela!
             </div>
+            }
+            <p class="text-success fs-4">{{ item.precio }}€</p>
+
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+              <div class="input-group input-group-sm" style="width: 100px;">
+                <button class="btn btn-outline-secondary" (click)="cambiarCantidad(item, -1)"
+                  [disabled]="item.cantidadSeleccionada! <= 1 || item.stockEfectivo! <= 0">-</button>
+
+                <input type="text" class="form-control text-center" [value]="item.cantidadSeleccionada" readonly>
+
+                <button class="btn btn-outline-secondary" (click)="cambiarCantidad(item, 1)"
+                  [disabled]="item.cantidadSeleccionada! >= item.stockEfectivo!">+</button>
+              </div>
+            </div>
+
+            <!-- Botón de añadir con bloqueo dinámico -->
+            <button class="btn w-100" [ngClass]="item.stockEfectivo! > 0 ? 'btn-success' : 'btn-secondary'"
+              (click)="agregarAlCarrito(item)" [disabled]="item.stockEfectivo! <= 0">
+              {{ item.stockEfectivo! > 0 ? 'Añadir' : 'Agotado' }}
+            </button>
+
+            <!-- Cambio de *ngIf a @if para evitar errores de importación -->
+            @if (item.stockEfectivo! > 0 && item.stockEfectivo! <= 5) { <small class="text-danger fw-bold">
+              ¡Solo quedan {{ item.stockEfectivo }} unidades!
+              </small>
+              }
           </div>
         </div>
+      </div>
       }
     </div>
     </div>
