@@ -39,7 +39,8 @@ export class Perfil implements OnInit {
 
   // Configuración de rutas e imágenes
   apiUrl = 'http://localhost:3000'; // Tu servidor Node
-  fotoPorDefecto = 'assets/img/default-user.png'; // Asegúrate de tener esta imagen en assets
+  // Cambia esto en la declaración de variables arriba:
+  fotoPorDefecto = 'http://localhost:3000/uploads/perfil/imagenUsuarioEjemplo.jpg';
 
   // Variables para el modo edición
   editMode = false;
@@ -57,45 +58,45 @@ export class Perfil implements OnInit {
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
       this.cargarDatos();
+      this.cdr.detectChanges();
     }
   }
 
   cargarDatos() {
-    // Comprobar si esta iniciado sesion
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // obligatoria para obtener el id del usuario
     this.userId = localStorage.getItem('userId');
 
     if (this.userId) {
-      // LLAMADA AL SERVIDOR PARA OBTENER DATOS REALES
       this.authService.obtenerPerfil(this.userId).subscribe({
         next: (user) => {
-          // Asignamos lo que viene de la BASE DE DATOS
           this.userName = user.nombre;
           this.userRole = user.rol;
-          this.userGender = user.genero || 'indefinido';
-          this.userPhone = user.telefono || 'indefinido';
-          this.userStreet = user.domicilio || 'indefinido';
-          this.userCP = user.cp || 'indefinido';
-          this.userCity = user.ciudad || 'indefinido';
-          this.userComunity = user.comunidad_autonoma || 'indefinido';
-          this.userCountry = user.pais || 'indefinido';
+          this.userGender = user.genero;
+          this.userPhone = user.telefono;
+          this.userStreet = user.domicilio;
+          this.userCP = user.cp;
+          this.userCity = user.ciudad;
+          this.userComunity = user.comunidad_autonoma;
+          this.userCountry = user.pais;
 
-          // Actualizamos la foto con la lógica que ya tenías
+          // --- AJUSTE PARA LA FOTO ---
           const serverUrl = 'http://localhost:3000/uploads/perfil/';
+          const timestamp = new Date().getTime(); // Generamos el sello de tiempo
+
           if (user.foto_perfil) {
+            // Si la foto es una URL externa (http), la dejamos tal cual
+            // Si es un archivo local, le pegamos el timestamp
             this.userPhoto = user.foto_perfil.startsWith('http')
               ? user.foto_perfil
-              : `${serverUrl}${user.foto_perfil}`;
+              : `${serverUrl}${user.foto_perfil}?t=${timestamp}`;
           } else {
             this.userPhoto = this.fotoPorDefecto;
           }
 
-          // Sincronizamos el formulario de edición
           this.resetFormulario();
           this.cdr.detectChanges();
         },
@@ -177,7 +178,9 @@ export class Perfil implements OnInit {
       return;
     }
 
-    if (this.cpEditado.length !== 5) {
+    const cpLimpio = this.cpEditado?.toString().trim() || '';
+
+    if (cpLimpio.length !== 5) {
       Swal.fire('CP inválido', 'El código postal debe tener 5 dígitos', 'warning');
       return;
     }
@@ -201,70 +204,87 @@ export class Perfil implements OnInit {
       this.paisEditado
     ).subscribe({
       next: (res) => {
-        // 'res' debe traer los valores actualizados desde la base de datos
+        console.log('Respuesta del servidor:', res);
 
-        // Actualizar LocalStorage (Usamos los valores que enviamos o los que devuelve el server)
+        // Identificar el nombre del archivo devuelto por el servidor
+        const nombreArchivo = res.foto || res.foto_perfil;
+        const serverUrl = 'http://localhost:3000/uploads/perfil/';
+        const timestamp = new Date().getTime();
+
+        // Limpiar estados de edición inmediatamente
+        this.editMode = false;
+        this.fotoPreview = null;
+        this.fotoSeleccionada = null;
+        
+        // Forzar el "blanco" momentáneo para romper la caché
+        this.userPhoto = null;
+        this.cdr.detectChanges(); 
+
+        // Actualizar LocalStorage para que al pulsar F5 no salga la vieja
         localStorage.setItem('userName', this.nombreEditado);
-        localStorage.setItem('userGender', this.generoEditado);
         localStorage.setItem('userPhone', this.telefonoEditado);
         localStorage.setItem('userStreet', this.domicilioEditado);
         localStorage.setItem('userCP', this.cpEditado);
         localStorage.setItem('userCity', this.ciudadEditado);
-        localStorage.setItem('userComunity', this.caEditado);
-        localStorage.setItem('userCountry', this.paisEditado);
-
-        if (res.foto) {
-          localStorage.setItem('userPhoto', res.foto);
+        if (nombreArchivo) {
+            localStorage.setItem('userPhoto', nombreArchivo);
         }
 
-        // 2. Actualizar variables de la vista vinculadas al HTML
-        this.userName = this.nombreEditado;
-        this.userGender = this.generoEditado;
-        this.userPhone = this.telefonoEditado;
-        this.userStreet = this.domicilioEditado;
-        this.userCP = this.cpEditado;
-        this.userCity = this.ciudadEditado;
-        this.userComunity = this.caEditado;
-        this.userCountry = this.paisEditado;
+        // Aplicar cambios visuales tras un pequeño delay (esperando al servidor)
+        setTimeout(() => {
+          // Si hay archivo nuevo, construimos la URL con el puerto 3000
+          // Si no hay archivo, usamos la foto que ya tenía el usuario o la de por defecto
+          if (nombreArchivo) {
+            this.userPhoto = `${serverUrl}${nombreArchivo}?t=${timestamp}`;
+          } else if (!this.userPhoto) {
+            this.userPhoto = this.fotoPorDefecto.includes('http') 
+            ? this.fotoPorDefecto 
+            : `http://localhost:3000/${this.fotoPorDefecto}`;
+          }
 
-        if (res.foto) {
-          const serverUrl = 'http://localhost:3000/uploads/perfil/';
-          this.userPhoto = `${serverUrl}${res.foto}`;
-        }
+          // Sincronizar el resto de variables de texto
+          this.userName = this.nombreEditado;
+          this.userGender = this.generoEditado;
+          this.userPhone = this.telefonoEditado;
+          this.userStreet = this.domicilioEditado;
+          this.userCP = this.cpEditado;
+          this.userCity = this.ciudadEditado;
+          this.userComunity = this.caEditado;
+          this.userCountry = this.paisEditado;
 
-        // 3. Limpieza y refresco de UI
-        this.editMode = false;
-        this.fotoPreview = null;
-        this.fotoSeleccionada = null;
+          // Avisar al Navbar (Estado Global)
+          this.authService.actualizarEstadoUsuario(this.userName, this.userPhoto);
 
-        // Forzamos a Angular a renderizar los nuevos valores inmediatamente
-        this.cdr.detectChanges();
+          this.cdr.markForCheck();
+          this.cdr.detectChanges();
+        }, 400);
 
-        Swal.fire({ icon: 'success', title: '¡Guardado!', timer: 1500, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: '¡Perfil actualizado!', timer: 1500, showConfirmButton: false });
       },
       error: (err) => {
-      // Cerramos el "Guardando..." de Swal para mostrar el error
-          Swal.close();
+        Swal.close();
+        console.error(err);
+        Swal.fire('Error', 'No se pudieron guardar los cambios', 'error');
 
-          // 1. Si el servidor nos dice que el teléfono ya existe (Status 400)
-          if (err.status === 400 && err.error.error_type === 'DUPLICADO_TELEFONO') {
-            Swal.fire({
-              icon: 'error',
-              title: 'Registro Duplicado',
-              text: err.error.mensaje, // "No se pueden guardar los cambios porque este número..."
-              confirmButtonColor: '#2d7a4d'
-            });
-          } 
-          // 2. Si es cualquier otro error (Status 500, conexión, etc.)
-          else {
-            Swal.fire({
-              icon: 'error',
-              title: 'Error al guardar',
-              text: 'Hubo un problema al conectar con el servidor. Inténtalo más tarde.',
-              confirmButtonColor: '#d33'
-            });
-          }
+        // 1. Si el servidor nos dice que el teléfono ya existe (Status 400)
+        if (err.status === 400 && err.error.error_type === 'DUPLICADO_TELEFONO') {
+          Swal.fire({
+            icon: 'error',
+            title: 'Registro Duplicado',
+            text: err.error.mensaje, // "No se pueden guardar los cambios porque este número..."
+            confirmButtonColor: '#2d7a4d'
+          });
         }
+        // 2. Si es cualquier otro error (Status 500, conexión, etc.)
+        else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al guardar',
+            text: 'Hubo un problema al conectar con el servidor. Inténtalo más tarde.',
+            confirmButtonColor: '#d33'
+          });
+        }
+      }
     });
   }
 

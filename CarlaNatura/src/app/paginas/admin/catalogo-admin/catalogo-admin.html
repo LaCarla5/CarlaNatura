@@ -31,6 +31,15 @@
           <label class="form-label">Descripción</label>
           <input type="text" [(ngModel)]="nuevoProducto.descripcion" name="descripcion" class="form-control">
         </div>
+        <div class="col-md-6">
+          <label class="form-label fw-bold">Categoría</label>
+          <select [(ngModel)]="nuevoProducto.categoria_id" name="categoria_id" class="form-select">
+            <option [value]="null" disabled selected>Selecciona una categoría...</option>
+            <option [value]="1">Cuidado Facial</option>
+            <option [value]="2">Suplementos Naturales</option>
+            <option [value]="3">Aromaterapia</option>
+          </select>
+        </div>
         <div class="col-12 text-end">
           <button type="button" class="btn btn-outline-secondary me-2 rounded-pill"
             (click)="cancelar()">Cancelar</button>

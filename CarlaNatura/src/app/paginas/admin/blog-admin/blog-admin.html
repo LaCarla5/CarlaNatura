@@ -15,8 +15,15 @@
                     <input type="text" [(ngModel)]="nuevoPost.titulo" name="titulo" class="form-control" placeholder="Título del Post" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Categoría</label>
-                    <input type="text" [(ngModel)]="nuevoPost.categoria" name="categoria" class="form-control" placeholder="Ej: Salud, Nutrición..." required>
+                    <label class="form-label fw-bold">Categoría del Post</label>
+                    <select [(ngModel)]="nuevoPost.categoria" name="categoria" class="form-select" required>
+                        <option value="" disabled selected>Selecciona una temática...</option>
+                        <option value="Salud">Salud y Bienestar</option>
+                        <option value="Nutrición">Nutrición Natural</option>
+                        <option value="Cosmética">Cosmética Bio</option>
+                        <option value="Recetas">Recetas Saludables</option>
+                        <option value="Consejos">Consejos del Taller</option>
+                    </select>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-bold">Contenido del Post</label>

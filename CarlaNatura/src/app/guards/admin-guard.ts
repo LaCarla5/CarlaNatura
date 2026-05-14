@@ -13,8 +13,6 @@ export const adminGuard: CanActivateFn = (route, state) => {
   if (authService.isLoggedIn() && role === 'ADMIN') {
     return true; 
   } else {
-    // Si es un usuario normal intentando "colarse", lo mandamos al catálogo
-    // console.warn('Acceso denegado: Se requiere rol de ADMIN');
     router.navigate(['/inicio']);
     return false;
   }

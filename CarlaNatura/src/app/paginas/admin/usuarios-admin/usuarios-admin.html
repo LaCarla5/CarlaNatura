@@ -2,47 +2,66 @@
   <div class="header-admin d-flex justify-content-between align-items-center mb-4">
     <h2 class="fw-bold text-success">Gestión de Usuarios</h2>
     <div class="search-box">
-      <input type="text" class="form-control rounded-pill shadow-sm" 
-             placeholder="🔍 Buscar por nombre o email..." 
-             [(ngModel)]="filtro" (input)="filtrarUsuarios()">
+      <input type="text" class="form-control rounded-pill shadow-sm" placeholder="🔍 Buscar por nombre o email..."
+        [(ngModel)]="filtro" (input)="filtrarUsuarios()">
     </div>
   </div>
 
   <div class="row">
     @for (user of usuariosFiltrados; track user.id) {
-      <div class="col-md-4 mb-4">
-        <div class="card border-0 shadow-sm user-card h-100">
-          <div class="card-body text-center">
-            <div class="avatar-container mb-3">
-              <img [src]="user.foto_url"
-                   class="rounded-circle border border-3"
-                   [class.border-success]="user.rol === 'USER'"
-                   [class.border-danger]="user.rol === 'ADMIN'"
-                   style="width: 80px; height: 80px; object-fit: cover;">
-            </div>
-            
-            <h5 class="card-title fw-bold">{{ user.nombre }}</h5>
-            <p class="text-muted small mb-1">{{ user.email }}</p>
-            <p class="text-muted small mb-1">{{ user.fecha_registro }}</p>
-            <span class="badge" [ngClass]="user.rol === 'ADMIN' ? 'bg-danger' : 'bg-success'">
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm user-card h-100" [class.user-blocked]="user.activo === 0">
+        <div class="card-body text-center d-flex flex-column">
+
+          <!-- Badge de Rol posicionado arriba a la derecha -->
+          <div class="text-end mb-2">
+            <span class="badge rounded-pill" [ngClass]="user.rol === 'ADMIN' ? 'bg-danger' : 'bg-success'">
               {{ user.rol }}
             </span>
+          </div>
 
-            <hr class="my-3 opacity-25">
+          <div class="avatar-container mb-3 position-relative">
+            <img [src]="user.foto_url" class="rounded-circle border border-3 p-1"
+              [class.border-success]="user.activo === 1" [class.border-secondary]="user.activo === 0"
+              style="width: 90px; height: 90px; object-fit: cover;">
 
-            <div class="d-flex justify-content-center gap-2">
-                <button class="btn btn-outline-danger rounded-pill px-4 shadow-sm" 
-                        (click)="eliminarUsuario(user.id)">
-                <i class="bi bi-person-x-fill"></i> Eliminar permanentemente
-                </button>
+            @if (user.activo === 0) {
+            <div class="position-absolute top-50 start-50 translate-middle">
+              <span class="badge bg-dark opacity-75 px-3 py-2">SUSPENDIDO</span>
+            </div>
+            }
+          </div>
+
+          <h5 class="card-title mb-1">{{ user.nombre }}</h5>
+          <p class="text-muted small mb-3">{{ user.email }}</p>
+
+          <div class="mt-auto">
+            <hr class="my-3 opacity-10">
+
+            <!-- CONTENEDOR DE ACCIONES MEJORADO -->
+            <div class="d-flex align-items-center justify-content-between gap-2">
+
+              <!-- Botón de Bloqueo Principal -->
+              <button
+                class="btn flex-grow-1 rounded-pill d-flex align-items-center justify-content-center gap-2 transition-all btn-outline-blocked"
+                [ngClass]="user.activo === 1 ? 'btn-outline-warning' : 'btn-success'"
+                (click)="cambiarEstadoBloqueo(user)">
+                <i class="bi" [ngClass]="user.activo === 1 ? 'bi-person-slash' : 'bi-person-check-fill'"></i>
+                <span>{{ user.activo === 1 ? 'Restringir' : 'Habilitar' }}</span>
+              </button>
+
+              <!-- Botón Eliminar (Icono circular sutil) -->
+              <button
+                class="btn btn-outline-danger rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                style="width: 40px; height: 40px;" (click)="eliminarUsuario(user)" title="Eliminar permanentemente">
+                <i class="bi bi-trash3"></i>
+              </button>
+
             </div>
           </div>
         </div>
       </div>
-    } @empty {
-      <div class="col-12 text-center py-5">
-        <p class="text-muted fs-4">No se encontraron usuarios con ese criterio.</p>
-      </div>
+    </div>
     }
   </div>
 </div>

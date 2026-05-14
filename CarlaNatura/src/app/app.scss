@@ -1,5 +1,5 @@
 // Definimos un color principal acorde a "CarlaNatura"
-$primary-nature: #2d6a4f;
+$verde-corporativo: #198754;
 
 // Importar boostrap
 @use "bootstrap/scss/bootstrap" as *;
@@ -28,13 +28,13 @@ main {
     margin: 0 5px;
 
     &:hover {
-      color: $primary-nature;
+      color: $verde-corporativo;
     }
 
     // Clase que Angular aplica automáticamente al estar en la ruta
     &.active-link {
-      color: $primary-nature !important;
-      border-bottom: 2px solid $primary-nature;
+      color: $verde-corporativo !important;
+      border-bottom: 2px solid $verde-corporativo;
     }
   }
 
@@ -49,6 +49,6 @@ main {
 
 // Estilo específico para el botón de login si no quieres que tenga el borde inferior
 .btn.active {
-  background-color: $primary-nature !important;
+  background-color: $verde-corporativo !important;
   color: white !important;
 }

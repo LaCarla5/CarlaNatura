@@ -1,6 +1,6 @@
 // VARIABLES
-$verde: #2d5a27;
-$verde-claro: #f1f8f1;
+$verde-corporativo: #198754;
+$verde-corporativo-claro: #a8d5ba;
 $blanco-puro: #ffffff;
 $gris-borde: #e0e0e0;
 $sombra-suave: 0 15px 35px rgba(0, 0, 0, 0.1);
@@ -35,7 +35,7 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   backface-visibility: hidden;
   border-radius: 24px;
   background: $blanco-puro;
-  border: 1px solid rgba($verde, 0.1);
+  border: 1px solid rgba($verde-corporativo, 0.1);
   box-shadow: $sombra-suave;
   padding: 2.5rem 3rem;
   display: flex;
@@ -43,7 +43,7 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
   h2 {
     font-weight: 800;
-    color: $verde;
+    color: $verde-corporativo;
     margin-bottom: 1.5rem;
     text-align: center;
   }
@@ -76,8 +76,8 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   transition: all 0.3s ease;
 
   &:focus {
-    border-color: $verde;
-    box-shadow: 0 0 0 3px rgba($verde, 0.1);
+    border-color: $verde-corporativo;
+    box-shadow: 0 0 0 3px rgba($verde-corporativo, 0.1);
     outline: none;
   }
 }
@@ -114,7 +114,7 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     &:hover {
-      color: $verde;
+      color: $verde-corporativo;
       background-color: #ffffff !important;
     }
   }
@@ -135,7 +135,7 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     color: #aaa; // Por defecto gris
 
     &.text-success {
-      color: $verde !important;
+      color: $verde-corporativo !important;
     }
 
     &.text-danger {
@@ -150,7 +150,7 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 
 // BOTONES
 .btn-primary {
-  background-color: $verde;
+  background-color: $verde-corporativo;
   color: white;
   border: none;
   border-radius: 12px;
@@ -161,9 +161,9 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 1rem;
 
   &:hover:not(:disabled) {
-    background-color: darken($verde, 5%);
+    background-color: darken($verde-corporativo, 5%);
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba($verde, 0.3);
+    box-shadow: 0 8px 20px rgba($verde-corporativo, 0.3);
   }
 
   &:disabled {
@@ -172,8 +172,8 @@ $transicion-flip: 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
-.text-verde {
-  color: $verde;
+.text-verde-corporativo {
+  color: $verde-corporativo;
   font-weight: 700;
   cursor: pointer;
 

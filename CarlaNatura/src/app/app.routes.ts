@@ -39,10 +39,10 @@ export const routes: Routes = [
   { path: 'inicio', component: Inicio },
   { path: 'login', component: Login },
   { path: 'blog', component: Blog },
-  { path: 'dietas', component: Dietas },
-  { path: 'catalogo', component: Catalogo },
-  
-  // PÁGINAS QUE REQUIEREN LOGIN (Cita y Carrito suelen ser privadas)
+
+  // PÁGINAS QUE REQUIEREN LOGIN
+  { path: 'dietas', component: Dietas, canActivate: [authGuard] },
+  { path: 'catalogo', component: Catalogo, canActivate: [authGuard]},
   { path: 'perfil', component: Perfil, canActivate: [authGuard]},
   { path: 'citas', component: Citas, canActivate: [authGuard]},
   { path: 'carrito', component: Carrito, canActivate: [authGuard]},

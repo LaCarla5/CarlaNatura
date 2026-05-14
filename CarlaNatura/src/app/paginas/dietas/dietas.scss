@@ -1,5 +1,5 @@
 // Paleta de colores CarlaNatura
-$verde-oscuro: #2d5a27;
+$verde-corporativo: #198754;
 $blanco: #ffffff;
 
 .dietas-wrapper {
@@ -14,7 +14,7 @@ $blanco: #ffffff;
     text-align: center;
     
     h2 {
-      color: $verde-oscuro;
+      color: $verde-corporativo;
       font-weight: 800;
     }
   }
@@ -26,7 +26,7 @@ $blanco: #ffffff;
     background: $blanco;
     
     // Usamos un borde sólido con el verde
-    border: 5px solid $verde-oscuro; 
+    border: 5px solid $verde-corporativo; 
     border-radius: 1.5rem; // Bordes redondeados
     
     overflow: hidden; // iframe no "pise" las esquinas redondeadas

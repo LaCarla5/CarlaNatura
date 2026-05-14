@@ -82,39 +82,39 @@ export class Login {
     );
   }
 
-onLogin() {
-  this.authService.login(this.loginData).subscribe({
-    next: (res) => {
-      // 1. Guardamos el token en el LocalStorage
-      if (res.token) {
-        localStorage.setItem('token', res.token);
+  onLogin() {
+    this.authService.login(this.loginData).subscribe({
+      next: (res) => {
+        // 1. Guardamos el token en el LocalStorage
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+        }
+
+        // Como el token ya está en el localStorage, el interceptor lo enviará correctamente.
+        this.carritoS.cargarCarritoBD();
+
+        // 3. Mostramos el mensaje de éxito
+        Swal.fire({
+          title: '¡Bienvenido de nuevo!',
+          text: `Hola ${res.nombre || ''}, iniciando sesión...`,
+          icon: 'success',
+          timer: 1500,
+          showConfirmButton: false,
+          timerProgressBar: true
+        }).then(() => {
+          this.router.navigate(['/inicio']);
+        });
+      },
+      error: (err) => {
+        Swal.fire({
+          title: 'Error de acceso',
+          text: err.error?.error || 'Credenciales incorrectas',
+          icon: 'error',
+          confirmButtonColor: '#198754'
+        });
       }
-
-      // Como el token ya está en el localStorage, el interceptor lo enviará correctamente.
-      this.carritoS.cargarCarritoBD();
-
-      // 3. Mostramos el mensaje de éxito
-      Swal.fire({
-        title: '¡Bienvenido de nuevo!',
-        text: `Hola ${res.nombre || ''}, iniciando sesión...`,
-        icon: 'success',
-        timer: 1500,
-        showConfirmButton: false,
-        timerProgressBar: true
-      }).then(() => {
-        this.router.navigate(['/inicio']);
-      });
-    },
-    error: (err) => {
-      Swal.fire({
-        title: 'Error de acceso',
-        text: err.error?.error || 'Credenciales incorrectas',
-        icon: 'error',
-        confirmButtonColor: '#198754'
-      });
-    }
-  });
-}
+    });
+  }
 
   // .subscribe(), la petición nunca sale del navegador. Angular ignora las llamadas a servidores si nadie está "escuchando" la respuesta.
   onRegister() {
@@ -123,33 +123,55 @@ onLogin() {
 
     this.authService.registro(this.registerData).subscribe({
       next: () => {
+        // Guardamos el email antes de limpiar el formulario de registro
+        const emailRegistrado = this.registerData.email;
+
         Swal.fire({
           title: '¡Cuenta creada!',
           text: 'Registro completado con éxito. Ahora puedes entrar.',
           icon: 'success',
           confirmButtonColor: '#2d5a27',
           confirmButtonText: 'Ir al Login'
+
         }).then((result) => {
-          this.isFlipped = false;
+          // Giramos la tarjeta
+          this.isFlipped = true;
+          this.loginData.email = this.registerData.email;
           this.cdr.detectChanges();
+
           // Limpiamos datos
           setTimeout(() => {
             this.registerData = { nombre: '', email: '', password: '', rol: 'USER' };
             this.validaciones = { largo: false, mayuscula: false, numero: false };
             this.mostrarPasswordReg = false;
           }, 300);
-
-          this.loginData.email = this.registerData.email;
           this.resetFormularios();
         });
       },
       error: (err) => {
-        Swal.fire({
-          title: 'Fallo en el registro',
-          text: err.error?.error || 'No se pudo crear la cuenta',
-          icon: 'error',
-          confirmButtonColor: '#d33'
-        });
+        if (err.status === 409) {
+          // Aquí mostramos el error de campo repetido
+          Swal.fire({
+            title: 'Correo ya registrado',
+            text: 'Este email ya está en uso. ¿Ya tienes cuenta?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ir a Iniciar Sesión',
+            cancelButtonText: 'Cerrar',
+            confirmButtonColor: '#198754'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.router.navigate(['/login']);
+            }
+          });
+        } else {
+          Swal.fire({
+            title: 'Fallo en el registro',
+            text: err.error?.error || 'No se pudo crear la cuenta',
+            icon: 'error',
+            confirmButtonColor: '#d33'
+          });
+        }
       }
     });
   }

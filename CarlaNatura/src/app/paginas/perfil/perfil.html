@@ -7,17 +7,22 @@
 
         <!-- 1. AVATAR -->
         <div class="profile-avatar-container mb-4 position-relative d-inline-block">
-          <div
-            class="avatar-circle rounded-circle shadow-sm d-flex align-items-center justify-content-center border border-2"
-            style="width: 180px; height: 180px; overflow: hidden; background-color: #f8f9fa; border-color: #2d6a4f !important;">
+          <div class="avatar-circle rounded-circle shadow-sm d-flex align-items-center justify-content-center border border-2"
+              style="width: 180px; height: 180px; overflow: hidden; background-color: #f8f9fa; border-color: #2d6a4f !important;">
 
-            <img *ngIf="fotoPreview" [src]="fotoPreview" class="img-fluid rounded-circle"
+            <img *ngIf="fotoPreview" 
+                [src]="fotoPreview" 
+                class="img-fluid rounded-circle"
+                style="object-fit: cover; width: 100%; height: 100%;">
+
+          <img *ngIf="!fotoPreview && userPhoto" 
+              [src]="userPhoto" 
+              class="img-fluid rounded-circle"
               style="object-fit: cover; width: 100%; height: 100%;">
 
-            <img *ngIf="!fotoPreview && userPhoto" [src]="userPhoto" class="img-fluid rounded-circle"
-              style="object-fit: cover; width: 100%; height: 100%;" alt="Foto actual">
-
-            <i *ngIf="!fotoPreview && !userPhoto" class="bi bi-person-circle text-muted" style="font-size: 8rem;"></i>
+            <i *ngIf="!fotoPreview && !userPhoto" 
+              class="bi bi-person-circle text-muted" 
+              style="font-size: 8rem;"></i>
           </div>
 
           <!-- Botón de cámara (Solo en modo edición) -->
@@ -29,12 +34,12 @@
           </label>
         </div>
 
-        <!-- 2. TÍTULO Y SEPARADOR -->
+        <!-- TÍTULO Y SEPARADOR -->
         <h1 class="text-verde fw-bold display-6 mb-2">Mi Perfil Natura</h1>
         <hr class="mx-auto mb-4 opacity-10"
           style="width: 100px; height: 4px; background-color: #2d6a4f; border-radius: 2px;">
 
-        <!-- 3. MODO LECTURA -->
+        <!-- MODO LECTURA -->
         <ng-container *ngIf="!editMode">
           <div class="info-wrapper mx-auto" style="max-width: 700px;">
             <p class="text-muted mb-4 fs-4 text-center">
@@ -50,7 +55,7 @@
                 </div>
                 <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
                   <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Teléfono Móvil</span>
-                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userPhone || 'No asignado' }}</p>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userPhone }}</p>
                 </div>
               </div>
 
@@ -62,7 +67,7 @@
                 </div>
                 <div class="col-sm-6 ps-sm-4 mt-3 mt-sm-0">
                   <span class="text-secondary small text-uppercase fw-bold d-block mb-1">Domicilio</span>
-                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userStreet || 'Sin dirección' }}</p>
+                  <p class="mb-0 fs-5 fw-semibold text-verde">{{ userStreet  }}</p>
                 </div>
               </div>
 

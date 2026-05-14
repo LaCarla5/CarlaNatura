@@ -1,63 +1,69 @@
-// Paleta de colores CarlaNatura
-$verde-oscuro: #2d5a27;   
-$verde-bosque: #1e3d1a;   
+// Paleta de colores CarlaNatura (Se mantienen exactos)
+$verde-corporativo: #198754;   
+$verde-corporativo-oscuro: #1e3d1a;   
 $verde-fondo: #f4f9f4;    
 $blanco: #ffffff;
 
+// 1. EL CONTENEDOR (El que garantiza el centrado)
 .perfil-container {
-  // Asegura que ocupe todo el alto para el centrado vertical
-  min-height: 90vh; 
+  min-height: 100vh;
+  width: 100%;
   display: flex;
-  align-items: center;    // Centrado vertical
-  justify-content: center; // Centrado horizontal
-  background-color: transparent; 
-  padding: 2rem 1rem;
+  align-items: center;      // Centrado vertical
+  justify-content: center;   // Centrado horizontal
+  padding: 1.5rem;           // Espacio de seguridad para que no toque los bordes del móvil
+  box-sizing: border-box;
+  overflow-x: hidden;        // Evita desplazamientos laterales
 }
 
+// 2. LA CAJITA (Responsive y con sombra)
 .profile-card {
   border: none;
-  border-radius: 2.5rem; // Un poco más redondeado para suavidad
   background: $blanco;
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  width: 100%;
+  max-width: 800px;          // Ancho elegante en escritorio
+  border-radius: 2.5rem;
+  box-sizing: border-box;
+  transition: all 0.4s ease;
   
-  // Tu efecto de relieve mejorado para que no se vea "estrecho"
+  // Sombra principal (Neumorfismo suave)
   box-shadow: 20px 20px 60px #d9ded9, -20px -20px 60px #ffffff;
   
-  // Aquí controlamos el ancho máximo para que no se estire al infinito en 4K
-  width: 100%;
-  max-width: 900px; // Esto lo hace ver "más ancho" pero elegante
-  
-  padding: 3.5rem !important; // Más espacio interno para que no se vea apretado
+  // Espaciado interno generoso
+  padding: 3.5rem; 
+
+  // Ajustes para Móviles (TABLETA Y SMARTPHONE)
+  @media (max-width: 768px) {
+    padding: 2rem 1.5rem;    // Reducimos padding para que no "explote" hacia los lados
+    border-radius: 1.8rem;   
+    margin: 0 auto;          // Asegura centrado
+    box-shadow: 10px 10px 30px #d9ded9; // Sombra más discreta para móvil
+  }
 
   &:hover {
-    transform: translateY(-8px);
-    box-shadow: 25px 25px 70px #ccd1cc, -25px -25px 70px #ffffff;
+    transform: translateY(-5px);
   }
 }
 
-// Estructura interna para que el contenido no se pegue
+// 3. ESTRUCTURA INTERNA
 .info-wrapper {
-  max-width: 700px;
+  width: 100%;
   margin: 0 auto;
-}
-
-.text-verde {
-  color: $verde-oscuro;
-  letter-spacing: -0.5px;
-}
-
-.bg-verde-suave {
-  background-color: rgba(45, 90, 39, 0.05);
 }
 
 .account-info {
   background-color: #fcfdfc;
   border: 1px solid rgba(45, 90, 39, 0.1);
   border-radius: 1.5rem;
-  padding: 3rem;
+  padding: 2.5rem;
+  margin-top: 1.5rem;
+
+  @media (max-width: 576px) {
+    padding: 1.5rem; // Más compacto en móviles pequeños
+  }
   
   strong {
-    color: $verde-oscuro;
+    color: $verde-corporativo;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 1.5px;
@@ -65,7 +71,12 @@ $blanco: #ffffff;
   }
 }
 
-// Badges (Roles)
+// RESTO DE ESTILOS (Botones y utilidades)
+.text-verde {
+  color: $verde-corporativo;
+  letter-spacing: -0.5px;
+}
+
 .badge {
   padding: 10px 20px;
   border-radius: 50px;
@@ -73,58 +84,43 @@ $blanco: #ffffff;
   font-size: 0.9rem;
   
   &.bg-verde-intenso {
-    background-color: $verde-oscuro !important;
+    background-color: $verde-corporativo !important;
     color: $blanco;
     box-shadow: 0 4px 15px rgba(45, 90, 39, 0.2);
   }
-  
-  &.bg-verde-suave {
-    background-color: #eef5ee !important;
-    color: $verde-oscuro;
-    border: 1px solid rgba($verde-oscuro, 0.2);
-  }
 }
 
-// Botones mejorados (Más grandes para accesibilidad)
 .btn {
   padding: 12px 30px;
   font-weight: 600;
+  border-radius: 50px;
   transition: all 0.3s ease;
   
   &.btn-success {
-    background-color: $verde-oscuro;
+    background-color: $verde-corporativo;
     border: none;
     &:hover {
-      background-color: $verde-bosque;
+      background-color: $verde-corporativo-oscuro;
       transform: scale(1.02);
     }
   }
 
   &.btn-outline-success {
-    border: 2px solid $verde-oscuro;
-    color: $verde-oscuro;
+    border: 2px solid $verde-corporativo;
+    color: $verde-corporativo;
     &:hover {
-      background-color: $verde-oscuro;
+      background-color: $verde-corporativo;
       color: white;
     }
   }
 }
 
-.rounded-5 {
-  border-radius: 50px !important;
-}
-
-.camposForm{
-  margin: 8px;
-}
-
-label{
+label {
   font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
 }
-// Ajuste para móviles: que no pierda el estilo
-@media (max-width: 768px) {
-  .profile-card {
-    padding: 2rem 1.5rem !important;
-    margin: 1rem;
-  }
+
+.camposForm {
+  margin-bottom: 1.2rem;
 }

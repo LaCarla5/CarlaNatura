@@ -1,7 +1,7 @@
 // Variables de temática Natura
-$primary: #2d7a4d;    // Verde bosque
-$secondary: #a8d5ba;  // Verde pastel
-$accent: #f4a261;     // Naranja suave para alertas
+$verde-corporativo: #198754;    // Verde bosque
+$verde-corporativo-claro: #a8d5ba;  // Verde pastel
+$amarillo-corporativo: #bf9525;     // Naranja suave para alertas
 $text-dark: #1f2937;
 $white: #ffffff;
 $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
@@ -12,10 +12,10 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   font-family: 'Segoe UI', Roboto, sans-serif;
 
   h2 {
-    color: $primary;
+    color: $verde-corporativo;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    border-bottom: 2px solid $secondary;
+    border-bottom: 2px solid $verde-corporativo-claro;
     display: inline-block;
   }
 }
@@ -32,7 +32,7 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     margin-bottom: 0;
     
     thead {
-      background-color: $primary;
+      background-color: $verde-corporativo;
       color: $white;
       
       th {
@@ -45,7 +45,7 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     tbody tr {
       transition: background 0.3s;
       &:hover {
-        background-color: rgba($secondary, 0.1);
+        background-color: rgba($verde-corporativo-claro, 0.1);
       }
       
       td {
@@ -71,28 +71,28 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 
 // Panel de Edición "Obligatorio"
 .edit-card {
-  border: 2px solid $secondary;
+  border: 2px solid $verde-corporativo-claro;
   border-radius: 15px;
   background: $white;
   overflow: hidden;
   animation: slideUp 0.4s ease-out;
 
   .card-header {
-    background-color: $primary;
+    background-color: $verde-corporativo;
     color: $white;
     font-weight: 600;
     padding: 1rem;
   }
 
   .step-box {
-    background: rgba($secondary, 0.1);
-    border-left: 4px solid $accent;
+    background: rgba($verde-corporativo-claro, 0.1);
+    border-left: 4px solid $amarillo-corporativo;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
     border-radius: 0 8px 8px 0;
 
     h5 {
-      color: $primary;
+      color: $verde-corporativo;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -104,15 +104,15 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     border-radius: 8px;
     padding: 0.75rem;
     &:focus {
-      border-color: $primary;
-      box-shadow: 0 0 0 3px rgba($primary, 0.1);
+      border-color: $verde-corporativo;
+      box-shadow: 0 0 0 3px rgba($verde-corporativo, 0.1);
     }
   }
 }
 
 // Botones Natura
 .btn-natura {
-  background-color: $primary;
+  background-color: $verde-corporativo;
   color: $white;
   border-radius: 8px;
   padding: 0.6rem 1.2rem;
@@ -121,9 +121,9 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s;
 
   &:hover:not(:disabled) {
-    background-color: darken($primary, 10%);
+    background-color: darken($verde-corporativo, 10%);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba($primary, 0.2);
+    box-shadow: 0 4px 12px rgba($verde-corporativo, 0.2);
   }
 
   &:disabled {
@@ -133,10 +133,10 @@ $shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 
   &-outline {
     background: transparent;
-    border: 2px solid $primary;
-    color: $primary;
+    border: 2px solid $verde-corporativo;
+    color: $verde-corporativo;
     &:hover {
-      background: $primary;
+      background: $verde-corporativo;
       color: $white;
     }
   }

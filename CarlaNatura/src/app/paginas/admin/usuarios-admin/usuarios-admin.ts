@@ -30,7 +30,7 @@ export class UsuariosAdmin implements OnInit {
         this.usuariosCreados = res.map(u => {
           // Usamos u.foto_perfil que es donde tienes "logo.png"
           // Si por casualidad viene vacío, ponemos una cadena vacía o tu logo
-          const nombreReal = u.foto_perfil ? u.foto_perfil : 'imagenUsuarioEjemplo.jpg'; 
+          const nombreReal = u.foto_perfil ? u.foto_perfil : 'imagenUsuarioEjemplo.jpg';
 
           return {
             ...u,
@@ -41,8 +41,8 @@ export class UsuariosAdmin implements OnInit {
 
         this.usuariosFiltrados = [...this.usuariosCreados];
         this.cdr.detectChanges();
-        
-        console.log("✅ Ahora el Admin tiene:", this.usuariosCreados[0].foto_url);
+
+        //console.log("✅ Ahora el Admin tiene:", this.usuariosCreados[0].foto_url);
       },
       error: (err) => console.error("Error al cargar usuarios", err)
     });
@@ -50,31 +50,83 @@ export class UsuariosAdmin implements OnInit {
 
   // Búsqueda dinámica "original"
   filtrarUsuarios() {
+    const busqueda = this.filtro.toLowerCase();
+
+    // Filtramos y asignamos una NUEVA referencia para que Angular detecte el cambio
     this.usuariosFiltrados = this.usuariosCreados.filter(u =>
-      u.nombre.toLowerCase().includes(this.filtro.toLowerCase()) ||
-      u.email.toLowerCase().includes(this.filtro.toLowerCase())
+      u.nombre.toLowerCase().includes(busqueda) ||
+      u.email.toLowerCase().includes(busqueda)
     );
+
+    // Forzamos la detección de cambios
+    this.cdr.markForCheck();
+    this.cdr.detectChanges();
   }
 
-  async eliminarUsuario(id: number) {
+
+  cambiarEstadoBloqueo(user: any) {
+    const nuevoEstado = user.activo === 1 ? 0 : 1;
+
+    this.http.put(`http://localhost:3000/api/usuarios/bloquear/${user.id}`, { activo: nuevoEstado })
+      .subscribe({
+        next: () => {
+          // Buscamos el usuario en el array original y actualizamos su estado
+          const index = this.usuariosCreados.findIndex(u => u.id === user.id);
+          if (index !== -1) {
+            this.usuariosCreados[index].activo = nuevoEstado;
+            // IMPORTANTE: Refrescamos la vista
+            this.filtrarUsuarios();
+          }
+
+          Swal.fire({
+            title: nuevoEstado === 0 ? 'Usuario Bloqueado' : 'Usuario Activado',
+            icon: 'success',
+            timer: 1000,
+            showConfirmButton: false
+          });
+        },
+        error: (err) => Swal.fire('Error', 'No se pudo actualizar el estado', 'error')
+      });
+  }
+
+  async eliminarUsuario(user: any) {
     const result = await Swal.fire({
-      title: '¿Estás seguro?',
-      text: "Esta acción no se puede deshacer",
+      title: '¿Eliminar permanentemente?',
+      text: `Se borrarán los datos de ${user.nombre}`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#2d5a27',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar usuario'
+      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
     });
 
     if (result.isConfirmed) {
-      this.http.delete(`${this.apiUrl}/${id}`).subscribe({
-        next: (res) => {
-          // Si el servidor borró al usuario con éxito, volvemos a llamar a la función que hace el SELECT.
-          this.cargarUsuarios();
-          Swal.fire('¡Borrado!', 'El usuario ha sido eliminado.', 'success');
+      this.http.delete(`${this.apiUrl}/${user.id}`).subscribe({
+        next: () => {
+          // Eliminamos del array original mediante una nueva referencia
+          this.usuariosCreados = this.usuariosCreados.filter(u => u.id !== user.id);
+
+          // Refrescamos la vista filtrada
+          this.filtrarUsuarios();
+
+          Swal.fire('¡Borrado!', 'Usuario eliminado correctamente', 'success');
         },
-        error: () => Swal.fire('Error', 'No se pudo eliminar', 'error')
+        error: (err) => {
+          if (err.status === 409) {
+            Swal.fire({
+              title: 'Acción sugerida: Bloqueo',
+              text: err.error.message,
+              icon: 'info',
+              showCancelButton: true,
+              confirmButtonText: 'Bloquear acceso',
+              confirmButtonColor: '#ffc107'
+            }).then((res) => {
+              if (res.isConfirmed) {
+                this.cambiarEstadoBloqueo(user);
+              }
+            });
+          }
+        }
       });
     }
   }

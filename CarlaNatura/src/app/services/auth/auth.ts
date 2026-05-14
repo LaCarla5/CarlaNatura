@@ -28,7 +28,7 @@ export class AuthService {
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   public isLoggedIn$ = this.loggedInSubject.asObservable();
 
-  // 2. NUEVO: Estado de los datos del usuario (Nombre y Foto)
+  // Estado de los datos del usuario (Nombre y Foto)
   // Esto permite que el Navbar se actualice cuando cambias tu foto o nombre
   private userDataSubject = new BehaviorSubject<{ nombre: string | null, foto: string | null }>({
     nombre: this.getStoredItem('userName'),
@@ -65,8 +65,14 @@ export class AuthService {
     );
   }
 
+  // En auth.service.ts
   isLoggedIn(): boolean {
-    return this.loggedInSubject.value;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const token = localStorage.getItem('token');
+      // Aquí podrías añadir lógica extra para verificar si el token ha expirado
+      return !!token; 
+    }
+    return false;
   }
 
   registro(datos: any): Observable<any> {
@@ -77,6 +83,7 @@ export class AuthService {
   logout() {
     if (isPlatformBrowser(this.platformId)) {
       localStorage.clear();
+      localStorage.removeItem('token');
       this.loggedInSubject.next(false);
 
       // 3. Obtenemos el CarritoS AQUÍ, no arriba. Así rompemos el bucle.
@@ -131,6 +138,8 @@ export class AuthService {
     return this.http.put<any>(`${this.apiUrl}/perfil/${id}`, formData).pipe(
       tap(res => {
         if (isPlatformBrowser(this.platformId)) {
+          const nombreFoto = res.foto || res.foto_perfil;
+
           // Guardamos TODO en LocalStorage para que al recargar no se pierda nada
           localStorage.setItem('userName', res.nombre);
           localStorage.setItem('userPhone', res.telefono);
@@ -139,14 +148,21 @@ export class AuthService {
           localStorage.setItem('userCity', res.ciudad);
           localStorage.setItem('userComunity', res.comunidad_autonoma); // Lo que devuelva el server
           localStorage.setItem('userCountry', res.pais);
-          if (res.foto) localStorage.setItem('userPhoto', res.foto);
+
+          if (nombreFoto) {
+            localStorage.setItem('userPhoto', nombreFoto);
+          }
 
           this.userDataSubject.next({
             nombre: res.nombre,
-            foto: res.foto || localStorage.getItem('userPhoto')
+            foto: nombreFoto ? `${nombreFoto}?t=${new Date().getTime()}` : null
           });
         }
       })
     );
+  }
+
+  actualizarEstadoUsuario(nombre: string | null, foto: string | null) {
+  this.userDataSubject.next({ nombre, foto });  
   }
 }

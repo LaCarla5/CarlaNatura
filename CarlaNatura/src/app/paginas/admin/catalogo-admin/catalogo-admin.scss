@@ -1,16 +1,15 @@
-$verde-carla: #2d5a27;
-$verde-claro: #f4f9f4;
+$verde-corporativo: #198754;
 
 .admin-page {
   background-color: #fafafa;
   min-height: 100vh;
 
-  .text-verde { color: $verde-carla; }
+  .text-verde { color: $verde-corporativo; }
 
   .btn-verde {
-    background-color: $verde-carla;
+    background-color: $verde-corporativo;
     color: white;
-    &:hover { background-color: darken($verde-carla, 10%); color: white; }
+    &:hover { background-color: darken($verde-corporativo, 10%); color: white; }
   }
 
   .card-formulario {
@@ -22,7 +21,7 @@ $verde-claro: #f4f9f4;
       border: 2px solid #eee;
       border-radius: 12px;
       &:focus {
-        border-color: $verde-carla;
+        border-color: $verde-corporativo;
         box-shadow: none;
       }
     }
@@ -33,7 +32,7 @@ $verde-claro: #f4f9f4;
     overflow: hidden;
     
     .table thead {
-      background-color: $verde-carla;
+      background-color: $verde-corporativo;
       th { border: none; font-weight: 500; padding: 1.2rem; }
     }
 

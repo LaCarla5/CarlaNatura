@@ -39,7 +39,7 @@ export class CitasAdmin implements OnInit {
     });
   }
 
-cargarCalendario() {
+  cargarCalendario() {
     this.http.get<any[]>('http://localhost:3000/api/admin/citas/calendario').subscribe({
       next: (res) => {
         this.eventosCalendario = res.map(cita => ({
@@ -52,12 +52,46 @@ cargarCalendario() {
     });
   }
 
-  gestionarCita(id: number, nuevoEstado: string, email: string) {
-    // Usamos el email que recibimos del objeto cita para que el backend lo use en Nodemailer
-    this.http.patch(`http://localhost:3000/api/admin/citas/${id}`, { estado: nuevoEstado, email })
+  async gestionarCita(cita: any, nuevoEstado: string) {
+    let motivoAnulacion = '';
+
+    // Si el admin va a rechazar, pedimos el motivo
+    if (nuevoEstado === 'cancelada') {
+      const { value: motivo } = await Swal.fire({
+        title: 'Motivo de la anulación',
+        input: 'textarea',
+        inputPlaceholder: 'Escribe aquí por qué se anula la cita (se enviará al cliente)...',
+        showCancelButton: true,
+        confirmButtonText: 'Anular Cita',
+        confirmButtonColor: '#d33',
+        cancelButtonText: 'Cancelar'
+      });
+
+      // Si el admin cierra el Swal sin escribir o cancela, no hacemos nada
+      if (motivo === undefined) return;
+      motivoAnulacion = motivo;
+    }
+
+    // Preparamos el paquete de datos para el correo (Nodemailer)
+    const datosCita = {
+      estado: nuevoEstado,
+      email: cita.email,
+      nombre: cita.nombre,
+      servicio: cita.servicio,
+      fecha: new Date(cita.fecha).toLocaleDateString('es-ES'),
+      hora: cita.hora,
+      motivo: motivoAnulacion // Solo llevará texto si es 'cancelada'
+    };
+
+    // Llamada al API
+    this.http.patch(`http://localhost:3000/api/admin/citas/${cita.id}`, datosCita)
       .subscribe({
         next: () => {
-          Swal.fire('Éxito', `Cita ${nuevoEstado}`, 'success');
+          Swal.fire({
+            title: nuevoEstado === 'confirmada' ? 'Cita Confirmada' : 'Cita Anulada',
+            text: 'Se ha enviado la notificación por correo al cliente.',
+            icon: 'success'
+          });
           this.cargarPendientes();
           this.cargarCalendario();
         },

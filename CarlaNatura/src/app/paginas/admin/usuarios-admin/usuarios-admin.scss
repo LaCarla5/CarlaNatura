@@ -1,0 +1,47 @@
+.user-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+}
+
+.user-blocked {
+    filter: grayscale(0.4);
+    background-color: #fdfdfd;
+
+    img {
+        filter: grayscale(100%) blur(0.5px);
+        opacity: 0.6;
+    }
+}
+
+/* Animación para los botones */
+.transition-all {
+    transition: all 0.3s ease;
+}
+
+/* Estilo específico para el botón de basura para que no parezca un error */
+.btn-outline-danger {
+    color: #f8d7da;
+    background-color: #dc3545;
+
+    &:hover {
+        background-color: #c7303f;
+        border-color: #c7303f;
+        color: white;
+    }
+}
+
+.btn-outline-blocked {
+    font-weight: bold;
+    color: black;
+    background-color: #ffc107;
+
+    &:hover {
+        background-color: #e6ae06;
+        border-color: #e6ae06;
+        color: black;
+    }
+}

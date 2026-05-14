@@ -94,7 +94,7 @@ const verificarToken = (req, res, next) => {
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
   // Buscamos al usuario solo por email
-  const sql = "SELECT * FROM usuarios WHERE email = ?";
+  const sql = "SELECT * FROM usuarios WHERE email = ? AND activo = 1";
 
   conexion.query(sql, [email], (err, result) => {
     if (err) return res.status(500).json({ error: "Error en el servidor" });
@@ -147,8 +147,15 @@ app.post('/api/registro', (req, res) => {
   const sql = 'INSERT INTO usuarios (nombre, email, password, rol, foto_perfil) VALUES (?, ?, ?, ?, ?)';
   conexion.query(sql, [nombre, email, hash, rolFinal, fotoDef], (err, resultado) => {
     if (err) {
-      console.log(err);
-      return res.status(500).json({ error: err.sqlMessage || 'Error al registrar' });
+      // Verificamos si el error es por entrada duplicada (Código 1062)
+      if (err.errno === 1062 || err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({
+          error: "Duplicado",
+          message: "El correo electrónico ya está registrado. Intenta iniciar sesión."
+        });
+      }
+      // Error genérico para otros fallos
+      return res.status(500).json({ error: "Error en el servidor, usuario bloqueado o eliminado" });
     }
     res.status(201).json({ mensaje: 'Éxito', id: resultado.insertId });
   });
@@ -211,7 +218,7 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
     if (err) {
       // CAPTURAMOS EL ERROR DE DUPLICADO (ER_DUP_ENTRY)
       if (err.code === 'ER_DUP_ENTRY') {
-        console.log("Conflicto detectado: Teléfono duplicado");
+        //console.log("Conflicto detectado: Teléfono duplicado");
         return res.status(400).json({
           error_type: 'DUPLICADO_TELEFONO',
           mensaje: 'Este número de teléfono ya está registrado por otro usuario.'
@@ -222,7 +229,9 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
       console.error("Error en MySQL:", err);
       return res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
-    res.json({ success: true, mensaje: 'Perfil actualizado' });
+    res.json({ success: true, 
+      mensaje: 'Perfil actualizado', 
+      foto_perfil: foto_perfil });
   });
 });
 
@@ -282,6 +291,45 @@ app.get('/api/citas/ocupadas', (req, res) => {
   });
 });
 
+// Ejemplo de la ruta en el servidor para actualizar el estado
+app.put('/api/citas/:id/estado', (req, res) => {
+  const { id } = req.params;
+  const { estado, motivo, email, fecha, hora, servicio } = req.body;
+
+  const sql = "UPDATE Citas SET estado = ? WHERE id = ?";
+  db.query(sql, [estado, id], (err, result) => {
+    if (err) return res.status(500).send(err);
+
+    // CONFIGURACIÓN DEL CORREO
+    let asunto = '';
+    let cuerpoHtml = '';
+
+    if (estado === 'confirmada') {
+      asunto = '¡Cita Confirmada en CarlaNatura! ✅';
+      cuerpoHtml = `
+                <h2>Hola, tu cita ha sido confirmada</h2>
+                <p><b>Servicio:</b> ${servicio}</p>
+                <p><b>Fecha:</b> ${fecha}</p>
+                <p><b>Hora:</b> ${hora}h</p>
+                <p>Te esperamos en nuestro centro. Si necesitas cambiarla, avísanos con 24h de antelación.</p>
+            `;
+    } else if (estado === 'cancelada') {
+      asunto = 'Cita Anulada - CarlaNatura ❌';
+      cuerpoHtml = `
+                <h2>Tu cita ha sido anulada</h2>
+                <p>Lamentamos informarte que tu cita para el día ${fecha} ha sido cancelada.</p>
+                <p style="color: red;"><b>Motivo:</b> ${motivo || 'No especificado'}</p>
+                <p>Puedes volver a reservar a través de nuestra web.</p>
+            `;
+    }
+
+    // Aquí llamarías a tu función de nodemailer (transporter.sendMail)
+    // enviarEmail(email, asunto, cuerpoHtml);
+
+    res.json({ success: true, message: 'Estado actualizado y correo enviado' });
+  });
+});
+
 // --- RUTAS DE ADMIN CITAS ---
 
 // Obtener todas para la tabla general
@@ -311,23 +359,61 @@ app.get('/api/admin/citas/calendario', (req, res) => {
 // Actualizar estado y enviar mail de confirmación
 app.patch('/api/admin/citas/:id', (req, res) => {
   const { id } = req.params;
-  const { estado, email } = req.body;
+  const { estado, email, nombre, servicio, fecha, hora, motivo } = req.body;
 
   conexion.query('UPDATE citas SET estado = ? WHERE id = ?', [estado, id], (err) => {
     if (err) return res.status(500).json({ error: 'Error al actualizar' });
 
-    if (estado === 'confirmada' && email) {
-      const mailOptions = {
-        from: 'CarlaNatura <carlanatura2026@gmail.com>',
-        to: email,
-        subject: '✅ Cita Confirmada - CarlaNatura',
-        html: `<h2>¡Tu cita ha sido confirmada!</h2><p>Te esperamos en el centro CarlaNatura.</p>`
-      };
-      transporter.sendMail(mailOptions);
+    let asunto = '';
+    let cuerpoHtml = '';
+
+    if (estado === 'confirmada') {
+      asunto = '¡Cita Confirmada! - CarlaNatura ✅';
+      cuerpoHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <h2 style="color: #198754;">Hola ${nombre},</h2>
+                <p>Nos alegra informarte que tu solicitud de cita ha sido <strong>confirmada</strong>.</p>
+                <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 5px solid #198754;">
+                    <p style="margin: 0;"><strong>Servicio:</strong> ${servicio}</p>
+                    <p style="margin: 0;"><strong>Fecha:</strong> ${fecha}</p>
+                    <p style="margin: 0;"><strong>Hora:</strong> ${hora}h</p>
+                </div>
+                <p>Te esperamos en nuestro centro. Si necesitas realizar algún cambio, por favor avísanos con antelación.</p>
+                <hr>
+                <footer style="font-size: 12px; color: #777;">CarlaNatura - Salud y Bienestar</footer>
+            </div>
+        `;
+    } else if (estado === 'cancelada') {
+      asunto = 'Información sobre tu cita - CarlaNatura ❌';
+      cuerpoHtml = `
+            <div style="font-family: Arial, sans-serif; color: #333;">
+                <h2 style="color: #d33;">Hola ${nombre},</h2>
+                <p>Lamentamos informarte que no hemos podido procesar tu cita para el día <strong>${fecha}</strong>.</p>
+                <div style="background-color: #fff3f3; padding: 15px; border-radius: 8px; border: 1px solid #f5c6cb;">
+                    <p style="margin: 0; font-weight: bold;">Motivo de la anulación:</p>
+                    <p style="margin: 5px 0 0 0;">${motivo}</p>
+                </div>
+                <p>Puedes intentar reservar en otra fecha disponible a través de nuestra web.</p>
+                <hr>
+                <footer style="font-size: 12px; color: #777;">CarlaNatura</footer>
+            </div>
+        `;
     }
-    res.json({ mensaje: 'Cita actualizada' });
+
+    // Envío con Nodemailer
+    const mailOptions = {
+      from: '"CarlaNatura" <carlanatura2026@gmail.com>',
+      to: email,
+      subject: asunto,
+      html: cuerpoHtml
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) return res.status(500).send(error);
+      res.json({ message: 'Estado actualizado y correo enviado' });
+    });
   });
-});
+})
 
 
 // --- RUTAS DE ADMIN USUARIOS ---
@@ -338,14 +424,34 @@ app.get('/api/admin/usuarios', (req, res) => {
   });
 });
 
+// Eliminar usuarios
 app.delete('/api/admin/usuarios/:id', (req, res) => {
   const { id } = req.params;
+
   conexion.query("DELETE FROM Usuarios WHERE id = ?", [id], (err, result) => {
     if (err) {
-      console.log("EL ERROR ES ESTE:", err.message); // Mira esto en la terminal negra
-      return res.status(500).json({ error: err.message });
+      // Error de restricción de clave foránea (tiene pedidos, citas, etc.)
+      if (err.errno === 1451) {
+        return res.status(409).json({
+          error: "Relacionado",
+          message: "No se puede eliminar al usuario porque tiene historial en la tienda. ¡Pero puedes bloquearlo para impedir su acceso!"
+        });
+      }
+      return res.status(500).send("Error en el servidor");
     }
     res.json({ mensaje: "Usuario borrado" });
+  });
+});
+
+// Bloquear usuarios
+app.put('/api/usuarios/bloquear/:id', (req, res) => {
+  const id = req.params.id;
+  const { activo } = req.body; // Recibimos 0 para bloquear o 1 para desbloquear
+  const sql = "UPDATE Usuarios SET activo = ? WHERE id = ?";
+
+  conexion.query(sql, [activo, id], (err, result) => {
+    if (err) return res.status(500).send(err);
+    res.json({ success: true });
   });
 });
 
@@ -484,12 +590,18 @@ app.post('/api/catalogo-admin', upload.single('imagen'), (req, res) => {
 // Editar producto existente
 app.put('/api/catalogo-admin/:id', upload.single('imagen'), (req, res) => {
   const { id } = req.params;
-  const { nombre, precio, stock, descripcion } = req.body;
-  let sql = "UPDATE productos SET nombre = ?, precio = ?, stock = ?, descripcion = ?";
-  let params = [nombre, precio, stock, descripcion];
+  const { nombre, precio, stock, descripcion, categoria_id } = req.body;
+
+  // 1. Limpieza de datos (Evita el Error 500 si algún número llega como string vacío)
+  const finalPrecio = parseFloat(precio) || 0;
+  const finalStock = parseInt(stock) || 0;
+  const finalCategoria = parseInt(categoria_id) || 1; // 1 es tu categoría por defecto
+
+  let sql = "UPDATE productos SET nombre = ?, precio = ?, stock = ?, descripcion = ?, categoria_id = ?";
+  let params = [nombre, finalPrecio, finalStock, descripcion, finalCategoria];
 
   if (req.file) {
-    // SI HAY FOTO NUEVA, SOLO GUARDAMOS EL NOMBRE
+    // Si el usuario subió una imagen nueva, la añadimos a la consulta
     sql += ", imagen = ?";
     params.push(req.file.filename);
   }
@@ -497,17 +609,39 @@ app.put('/api/catalogo-admin/:id', upload.single('imagen'), (req, res) => {
   sql += " WHERE id = ?";
   params.push(id);
 
-  conexion.query(sql, params, (err) => {
-    if (err) return res.status(500).json({ error: 'Error al actualizar' });
-    res.json({ mensaje: 'Producto actualizado' });
+  conexion.query(sql, params, (err, result) => {
+    if (err) {
+      // 2. Log detallado para que sepas por qué falló exactamente
+      console.error("❌ ERROR SQL EN UPDATE:", err.message);
+      return res.status(500).json({
+        error: 'Error al actualizar el producto',
+        detalle: err.message
+      });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: 'No se encontró el producto con ese ID' });
+    }
+
+    res.json({ mensaje: 'Producto actualizado con éxito' });
   });
 });
 
 // Eliminar producto
 app.delete('/api/catalogo-admin/:id', (req, res) => {
-  conexion.query('DELETE FROM productos WHERE id = ?', [req.params.id], (err) => {
-    if (err) return res.status(500).json({ error: 'Error' });
-    res.json({ mensaje: 'Eliminado' });
+  const { id } = req.params;
+
+  conexion.query("DELETE FROM Productos WHERE id = ?", [id], (err, result) => {
+    if (err) {
+      // Código 1451: El producto está en Detalle_Pedidos o Carrito
+      if (err.errno === 1451) {
+        return res.status(409).json({
+          mensaje: 'Este producto no se puede eliminar físicamente porque ya aparece en pedidos realizados.'
+        });
+      }
+      return res.status(500).json({ error: 'Error al eliminar' });
+    }
+    res.json({ mensaje: 'Borrado correctamente' });
   });
 });
 
@@ -515,45 +649,58 @@ app.delete('/api/catalogo-admin/:id', (req, res) => {
 // --- RUTAS DE CARRITO  ---
 app.post('/api/pedidos', (req, res) => {
   const { usuario_id, total, productos } = req.body;
-  //console.log("ID de usuario recibido:", usuario_id);
 
-  const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
+  // PRIMERO: Validar que el usuario tenga los datos completos
+  const sqlCheckUser = "SELECT telefono, genero, domicilio, cp, ciudad, comunidad_autonoma, pais FROM Usuarios WHERE id = ?";
 
-  conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
-    if (err) return res.status(500).json({ error: "Error al crear pedido" });
+  conexion.query(sqlCheckUser, [usuario_id], (errUser, users) => {
+    if (errUser) return res.status(500).json({ error: "Error al verificar usuario" });
 
-    const pedidoId = result.insertId;
-    const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio_unitario || p.precio]);
-    const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
+    const u = users[0];
+    // Comprobamos si falta algún dato esencial para el envío
+    if (!u.telefono || !u.domicilio || !u.cp || !u.ciudad || !u.genero || !u.comunidad_autonoma) {
+      return res.status(403).json({
+        code: 'INCOMPLETE_PROFILE',
+        message: 'Debes completar tu perfil (dirección, teléfono, CP) antes de realizar una compra.'
+      });
+    }
 
-    conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
-      if (errDetalle) return res.status(500).json({ error: "Error en detalles" });
+    // SI ESTÁ COMPLETO: Proceder con la creación del pedido (tu código original)
+    const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
 
-      // Actualizar Stock
-      const promesasStock = productos.map(p => {
-        return new Promise((resolve, reject) => {
-          const idProd = p.producto_id || p.id;
-          const sqlUpdate = "UPDATE Productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
-          conexion.query(sqlUpdate, [p.cantidad, idProd, p.cantidad], (errS, resS) => {
-            if (errS) return reject(errS);
-            if (resS.affectedRows === 0) return reject(new Error(`Sin stock para ID ${idProd}`));
-            resolve();
+    conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
+      if (err) return res.status(500).json({ error: "Error al crear pedido" });
+
+      const pedidoId = result.insertId;
+      const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio_unitario || p.precio]);
+      const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
+
+      conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
+        if (errDetalle) return res.status(500).json({ error: "Error en detalles" });
+
+        // Actualizar Stock
+        const promesasStock = productos.map(p => {
+          return new Promise((resolve, reject) => {
+            const idProd = p.producto_id || p.id;
+            const sqlUpdate = "UPDATE Productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
+            conexion.query(sqlUpdate, [p.cantidad, idProd, p.cantidad], (errS, resS) => {
+              if (errS) return reject(errS);
+              if (resS.affectedRows === 0) return reject(new Error(`Sin stock para ID ${idProd}`));
+              resolve();
+            });
           });
         });
+
+        Promise.all(promesasStock)
+          .then(() => {
+            const sqlBorrar = "DELETE FROM Carrito WHERE usuario_id = ?";
+            conexion.query(sqlBorrar, [usuario_id], (errBorrar) => {
+              if (errBorrar) return res.status(500).json({ error: "No se pudo vaciar el carrito" });
+              res.json({ success: true, pedidoId: pedidoId });
+            });
+          })
+          .catch(error => res.status(400).json({ error: error.message }));
       });
-
-      Promise.all(promesasStock)
-        .then(() => {
-          // AQUÍ ESTÁ LA CLAVE: Borrar de la tabla Carrito
-          const sqlBorrar = "DELETE FROM Carrito WHERE usuario_id = ?";
-          conexion.query(sqlBorrar, [usuario_id], (errBorrar) => {
-            if (errBorrar) return res.status(500).json({ error: "No se pudo vaciar el carrito" });
-
-            // Enviamos éxito SOLO tras borrar de la BD
-            res.json({ success: true, pedidoId: pedidoId });
-          });
-        })
-        .catch(error => res.status(400).json({ error: error.message }));
     });
   });
 });
@@ -676,24 +823,24 @@ app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
 });
 
 app.put('/api/admin/pedidos/:id', (req, res) => {
-    const { id } = req.params; // Aquí Node recoge el "3" de la URL
-    const { total, estado_pago } = req.body;
+  const { id } = req.params; // Aquí Node recoge el "3" de la URL
+  const { total, estado_pago } = req.body;
 
-    const sql = "UPDATE pedidos SET total = ?, estado_pago = ? WHERE id = ?";
-    
-    conexion.query(sql, [total, estado_pago, id], (err, result) => {
-        if (err) {
-            console.error("Error al actualizar:", err);
-            return res.status(500).json({ success: false, error: err.message });
-        }
-        
-        // Si el ID no existe en la DB, result.affectedRows será 0
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ success: false, mensaje: "Pedido no encontrado" });
-        }
+  const sql = "UPDATE pedidos SET total = ?, estado_pago = ? WHERE id = ?";
 
-        res.json({ success: true, mensaje: "Pedido actualizado correctamente" });
-    });
+  conexion.query(sql, [total, estado_pago, id], (err, result) => {
+    if (err) {
+      console.error("Error al actualizar:", err);
+      return res.status(500).json({ success: false, error: err.message });
+    }
+
+    // Si el ID no existe en la DB, result.affectedRows será 0
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, mensaje: "Pedido no encontrado" });
+    }
+
+    res.json({ success: true, mensaje: "Pedido actualizado correctamente" });
+  });
 });
 
 // -- PERMITIR EL USO DE LA API Y USAR MI SERVIDOR DE PUENTE --

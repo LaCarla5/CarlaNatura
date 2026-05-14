@@ -17,10 +17,16 @@ registerLocaleData(localeEs);
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    // CONFIGURACIÓN HTTP UNIFICADA ---
     provideHttpClient(
-      withInterceptors([authInterceptor]) // <--- ¡Aquí se activa!
+      withFetch(), 
+      withInterceptors([authInterceptor])
     ),
-    { provide: LOCALE_ID, useValue: 'es-ES' }, // calendario en español
+
+    // --- IDIOMA Y LOCALIZACIÓN ---
+    { provide: LOCALE_ID, useValue: 'es-ES' },
+
+    // --- 3. RUTAS Y SCROLL ---
     provideRouter(
       routes, 
       withInMemoryScrolling({
@@ -28,16 +34,17 @@ export const appConfig: ApplicationConfig = {
         anchorScrolling: 'enabled',
       })
     ), 
+
+    // --- RENDERIZADO Y ANIMACIONES ---
     provideClientHydration(withEventReplay()),
     provideAnimations(),
-    provideHttpClient(),
-    provideHttpClient(withFetch()), 
+
+    // --- MÓDULOS EXTERNOS ---
     importProvidersFrom(
       CalendarModule.forRoot({
         provide: DateAdapter,
         useFactory: adapterFactory,
       })
     )
-    
   ]
 };

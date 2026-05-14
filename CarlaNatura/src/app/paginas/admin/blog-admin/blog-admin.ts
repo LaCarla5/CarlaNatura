@@ -65,6 +65,9 @@ export class BlogAdmin implements OnInit {
     });
   }
 
+// Asegúrate de tenerlo inyectado en el constructor o como variable de clase:
+// private cdr = inject(ChangeDetectorRef); 
+
   agregarPost() {
     const idUsuario = this.authService.getUserId();
     if (!idUsuario) return;
@@ -75,7 +78,6 @@ export class BlogAdmin implements OnInit {
     formData.append('contenido', this.nuevoPost.contenido);
     formData.append('urlExterna', this.nuevoPost.urlExterna || '');
     formData.append('autor_id', idUsuario.toString());
-    formData.append('fecha_publicacion', new Date().toISOString());
 
     if (this.archivoSeleccionado) {
       formData.append('imagen', this.archivoSeleccionado);
@@ -85,13 +87,21 @@ export class BlogAdmin implements OnInit {
       next: () => {
         Swal.fire('¡Éxito!', 'Noticia publicada', 'success');
 
-        // --- PASOS DE RECARGA ---
-        this.cargarPosts();       // 1. Vuelve a pedir la lista al servidor
-        this.resetForm();         // 2. Limpia los inputs del formulario
-        this.mostrarFormulario = false; // 3. Cierra el panel de agregar
-        this.archivoSeleccionado = null; // 4. Olvida el archivo anterior
+        // --- MEJORA DE RECARGA ---
+        this.resetForm();
+        this.mostrarFormulario = false;
+        this.archivoSeleccionado = null;
+
+        // Esperamos 300ms para dar tiempo al servidor a terminar la escritura
+        setTimeout(() => {
+          this.cargarPosts(); 
+          this.cdr.detectChanges(); // Forzamos a Angular a mirar la lista nueva
+        }, 300);
       },
-      error: (err) => Swal.fire('Error', 'No se pudo guardar', 'error')
+      error: (err) => {
+        console.error(err);
+        Swal.fire('Error', 'No se pudo guardar la noticia', 'error');
+      }
     });
   }
 

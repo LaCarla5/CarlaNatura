@@ -5,9 +5,10 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { Injector } from '@angular/core';
+import { catchError, throwError } from 'rxjs';
 import Swal from 'sweetalert2';
 import { AuthService } from '../auth/auth';
+import { Router } from '@angular/router';
 
 export interface Producto {
   id: number;
@@ -26,6 +27,7 @@ export interface Producto {
 export class CarritoS {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/api/carrito';
+  private router = inject(Router);
 
   public productos = signal<any[]>([]);
 
@@ -137,22 +139,44 @@ finalizarCompra(pedido: any): Observable<any> {
   return this.http.post('http://localhost:3000/api/pedidos', pedido).pipe(
     tap((res: any) => {
       if (res.success) {
-        // Generar Factura
         this.generarFacturaPDF(res.pedidoId, pedido);
-        
-        // VACIAR LA SIGNAL (Esto quita el número 6 de la pantalla)
         this.productos.set([]); 
-        
-        // Confirmar con la BD por si acaso
         this.cargarCarritoBD(); 
 
         setTimeout(() => {
           this.cargarCarritoBD(); 
         }, 300);
       }
-    })
-  );
-}
+    }),
+    catchError((err) => {
+      console.log('Error recibido en el Servicio:', err);
+
+      if (err.status === 403) {
+        // 1. Cerramos CUALQUIER alerta abierta (incluyendo el loading del componente)
+        Swal.close(); 
+
+        // 2. Usamos un pequeño setTimeout para asegurar que el DOM se limpie antes de lanzar el nuevo Swal
+        setTimeout(() => {
+          Swal.fire({
+            title: '¡Faltan datos!',
+            text: err.error.message || 'Debes completar tu perfil para poder realizar el envío.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ir a mi perfil',
+            cancelButtonText: 'Cancelar',
+            confirmButtonColor: '#2d7a4d',
+            cancelButtonColor: '#6c757d',
+          }).then((result) => {
+            if (result.isConfirmed) {
+              this.router.navigate(['/perfil']);
+            }
+          });
+        }, 100); // 100ms son suficientes para que SweetAlert se resetee
+      }
+      
+      return throwError(() => err);
+    }));
+  }
 
   private generarFacturaPDF(idPedido: number, datos: any) {
     const doc = new jsPDF();
@@ -165,7 +189,7 @@ finalizarCompra(pedido: any): Observable<any> {
 
     doc.setFontSize(10);
     doc.setTextColor(100);
-    doc.text('Calle Saludable 123, Valencia', 14, 28);
+    doc.text('Calle Saludable 123, Valladolid', 14, 28);
     doc.text('CIF: 12345678Z', 14, 33);
 
     // DATOS DEL PEDIDO ---

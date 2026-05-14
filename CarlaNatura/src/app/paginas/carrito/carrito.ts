@@ -20,24 +20,21 @@ export class Carrito {
   productos: any[] = [];
   constructor() { }
 
-  finalizarCompra() {
-
+finalizarCompra() {
     Swal.fire({
       title: '¿Confirmar pedido?',
       text: "Se generará tu factura y se procesará el envío",
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#2d7a4d', // El color verde de tu tema
+      confirmButtonColor: '#2d7a4d',
       cancelButtonColor: '#6c757d',
       confirmButtonText: 'Sí, finalizar compra',
       cancelButtonText: 'Revisar carrito'
     }).then((result) => {
       if (result.isConfirmed) {
 
-        // Obtén el usuario logueado
-       const usuarioActual = this.authService.getCurrentUser();
+        const usuarioActual = this.authService.getCurrentUser();
 
-        // Mostramos un spinner de "Procesando..."
         Swal.fire({
           title: 'Procesando pedido',
           text: 'Por favor, espera un momento...',
@@ -47,17 +44,14 @@ export class Carrito {
           }
         });
 
-        // Creamos el objeto con los datos que pide el servicio
         const datosParaEnviar = {
-            usuario_id: usuarioActual?.id,
-            total: this.miCarrito.precioTotal(),
-            productos: this.miCarrito.productos() 
-          };
+          usuario_id: usuarioActual?.id,
+          total: this.miCarrito.precioTotal(),
+          productos: this.miCarrito.productos() 
+        };
 
-        // Llamamos al servicio
         this.miCarrito.finalizarCompra(datosParaEnviar).subscribe({
           next: (res) => {
-            // Cerramos el loading y mostramos éxito
             Swal.fire({
               title: '¡Compra realizada!',
               text: `Tu pedido ha sido procesado. Se ha descargado tu factura.`,
@@ -66,17 +60,17 @@ export class Carrito {
             });
           },
           error: (err) => {
-            // Cerramos el loading y mostramos error
-            Swal.fire({
-              title: 'Error',
-              text: 'Hubo un problema al procesar tu pedido. Inténtalo de nuevo.',
-              icon: 'error',
-              confirmButtonColor: '#d33'
-            });
-            console.error('Error al finalizar compra', err);
-          }
-        });
-      }
+              // Si es 403, cerramos el loading y salimos. El Swal lo lanza el servicio.
+              if (err.status === 403) {
+                Swal.close(); 
+                return;
+              }
+
+              // Solo si NO es 403, mostramos el error genérico
+              Swal.fire('Error', 'Hubo un problema inesperado', 'error');
+            }
+          });
+        }
     });
   }
 
