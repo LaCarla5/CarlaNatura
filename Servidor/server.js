@@ -20,7 +20,7 @@ const axios = require('axios');
 const app = express();
 
 app.use(cors({
-  origin: 'https://tu-proyecto-de-vercel.vercel.app', // Pega aquí TU URL real
+  origin: 'https://carla-natura.vercel.app', // Pega aquí TU URL real
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 }));
