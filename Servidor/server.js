@@ -514,14 +514,14 @@ app.get('/api/admin/blog', (req, res) => {
 
 // Usamos el "disparador" de Multer para el blog que configuramos antes
 app.post('/api/admin/blog', upload.single('imagen'), (req, res) => {
-  // Los textos vienen en req.body
   const { titulo, categoria, contenido, urlExterna, autor_id, fecha_publicacion } = req.body;
 
-  // El nombre del archivo viene de Multer (si se subió uno)
-  const nombreImagen = req.file ? req.file.filename : null;
+  // Si no hay archivo, usamos la imagen de ejemplo por defecto
+  const nombreImagen = req.file ? req.file.filename : 'imagenDefecto.jpg';
 
-  if (!titulo || !contenido || !categoria) {
-    return res.status(400).json({ error: 'Datos incompletos' });
+  // Validación en servidor: El contenido es opcional si hay URL, pero el título/categoría no
+  if (!titulo || !categoria) {
+    return res.status(400).json({ error: 'Título y categoría son obligatorios' });
   }
 
   const sql = 'INSERT INTO blog_posts (titulo, categoria, contenido, imagen, urlExterna, autor_id, fecha_publicacion) VALUES (?, ?, ?, ?, ?, ?, ?)';
@@ -532,8 +532,8 @@ app.post('/api/admin/blog', upload.single('imagen'), (req, res) => {
   const valores = [
     titulo,
     categoria,
-    contenido,
-    nombreImagen, // <--- Solo el nombre del archivo
+    contenido || '', // Evitamos NULL si viene vacío
+    nombreImagen,
     urlExterna || null,
     autor_id || 1,
     fechaFormateada
@@ -557,6 +557,48 @@ app.delete('/api/admin/blog/:id', (req, res) => {
   });
 });
 
+app.put('/api/admin/blog/:id', upload.single('imagen'), (req, res) => {
+  const { id } = req.params;
+  // IMPORTANTE: Ahora extraemos también urlExterna del cuerpo de la petición
+  const { titulo, contenido, categoria, urlExterna } = req.body;
+  const fotoNueva = req.file ? req.file.filename : null;
+
+  // 1. Base de la consulta: Incluimos urlExterna
+  let sql = "UPDATE Blog_Posts SET titulo = ?, contenido = ?, categoria = ?, urlExterna = ?";
+  
+  // Si hay urlExterna, el contenido debería guardarse como string vacío o null 
+  // para cumplir con tu lógica de "Si hay URL no hay contenido"
+  const contenidoFinal = (urlExterna && urlExterna.trim() !== '') ? '' : contenido;
+  
+  let params = [titulo, contenidoFinal, categoria, urlExterna || null];
+
+  // 2. Manejo de la imagen
+  if (fotoNueva) {
+    sql += ", imagen = ?";
+    params.push(fotoNueva);
+  }
+  
+  // 3. Condición final
+  sql += " WHERE id = ?";
+  params.push(id);
+
+  conexion.query(sql, params, (err, result) => {
+    if (err) {
+      console.error("Error MySQL detallado:", err);
+      return res.status(500).json({ error: err.message });
+    }
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ mensaje: "No se encontró el registro con ID: " + id });
+    }
+
+    res.json({ 
+      success: true, 
+      mensaje: "Post actualizado correctamente", 
+      nuevaImagen: fotoNueva 
+    });
+  });
+});
 
 // --- RUTAS DE CATÁLOGO ADMIN ---
 
@@ -567,6 +609,7 @@ app.get('/api/catalogo-admin', (req, res) => {
     res.json(resultados);
   });
 });
+
 
 // Guardar nuevo producto (con imagen Multer)
 app.post('/api/catalogo-admin', upload.single('imagen'), (req, res) => {

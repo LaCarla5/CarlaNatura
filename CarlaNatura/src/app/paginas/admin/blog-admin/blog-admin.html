@@ -11,11 +11,12 @@
         <form (ngSubmit)="agregarPost()">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Título</label>
-                    <input type="text" [(ngModel)]="nuevoPost.titulo" name="titulo" class="form-control" placeholder="Título del Post" required>
+                    <label class="form-label fw-bold">Título <span class="text-danger">*</span></label>
+                    <input type="text" [(ngModel)]="nuevoPost.titulo" name="titulo" class="form-control"
+                        [class.is-invalid]="!nuevoPost.titulo && formularioEnviado">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">Categoría del Post</label>
+                    <label class="form-label fw-bold">Categoría del Post <span class="text-danger">*</span></label>
                     <select [(ngModel)]="nuevoPost.categoria" name="categoria" class="form-select" required>
                         <option value="" disabled selected>Selecciona una temática...</option>
                         <option value="Salud">Salud y Bienestar</option>
@@ -26,39 +27,36 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-bold">Contenido del Post</label>
-                    <textarea [(ngModel)]="nuevoPost.contenido" name="contenido" class="form-control" rows="5" placeholder="Escribe aquí tu post..." required></textarea>
+                    <label class="form-label fw-bold">Contenido del Post (opcional)</label>
+                    <textarea [(ngModel)]="nuevoPost.contenido" name="contenido" class="form-control" rows="5"
+                        placeholder="Escribe aquí tu post..." required></textarea>
                 </div>
-
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Imagen del Post (Archivo)</label>
                     <input type="file" (change)="onFileSelected($event)" class="form-control" accept="image/*">
-                    <small class="text-muted">Selecciona una foto de tu ordenador</small>
                 </div>
-
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Enlace Externo (Opcional)</label>
-                    <input type="text" [(ngModel)]="nuevoPost.urlExterna" name="urlExterna" class="form-control" placeholder="https://...">
+                    <input type="text" [(ngModel)]="nuevoPost.urlExterna" name="urlExterna" class="form-control"
+                        placeholder="https://...">
                 </div>
                 <div class="col-12 text-end mt-4">
-                    <button type="submit" class="btn btn-success px-5 rounded-pill shadow-sm">
-                        Publicar en el Blog
-                    </button>
+                    <button type="submit" class="btn btn-success px-5 rounded-pill shadow-sm">Publicar en el
+                        Blog</button>
                 </div>
             </div>
         </form>
     </div>
     }
 
-    <div class="table-responsive shadow rounded-4">
+    <div class="table-responsive shadow rounded-4 overflow-hidden">
         <table class="table table-hover align-middle bg-white mb-0">
             <thead class="table-dark">
                 <tr>
-                    <th>Post</th>
-                    <th>Categoría</th>
-                    <th>Resumen</th>
-                    <th>Enlace</th>
-                    <th class="text-center">Acciones</th>
+                    <th style="width: 35%;">Post</th>
+                    <th style="width: 15%;" class="d-none d-md-table-cell">Categoría</th>
+                    <th style="width: 35%;" class="d-none d-lg-table-cell">Contenido / Enlace</th>
+                    <th style="width: 15%;" class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,23 +64,37 @@
                 <tr>
                     <td>
                         <div class="d-flex align-items-center">
-                            <img [src]="p.imagen_url" class="rounded me-3 shadow-sm"
-                                 style="width: 50px; height: 50px; object-fit: cover;"
-                                 onerror="this.src='assets/img/no-image.png'"> 
-                            <span class="fw-bold">{{ p.titulo }}</span>
+                            <img [src]="p.imagen_url" class="rounded me-3 shadow-sm flex-shrink-0"
+                                style="width: 45px; height: 45px; object-fit: cover;">
+                            <div class="text-truncate fw-bold" style="max-width: 250px;">{{ p.titulo }}</div>
                         </div>
                     </td>
-                    <td><span class="badge bg-success-subtle text-success border border-success-subtle">{{ p.categoria }}</span></td>
-                    <td>
-                        <div class="text-truncate" style="max-width: 200px;">{{ p.contenido }}</div>
+
+                    <td class="d-none d-md-table-cell">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle text-nowrap">
+                            {{ p.categoria }}
+                        </span>
                     </td>
-                    <td>
-                        <small class="text-muted">{{ p.urlExterna || 'Sin link' }}</small>
+
+                    <td class="d-none d-lg-table-cell">
+                        @if (p.urlExterna) {
+                        <div class="text-truncate text-primary small">
+                            <i class="bi bi-link-45deg"></i> {{ p.urlExterna }}
+                        </div>
+                        } @else {
+                        <div class="text-truncate text-muted small" style="max-width: 300px;">
+                            {{ p.contenido }}
+                        </div>
+                        }
                     </td>
+
                     <td class="text-center">
-                        <div class="d-flex gap-2 justify-content-center">
-                            <button class="btn btn-danger btn-editado" (click)="eliminar(p.id)" title="Eliminar">
-                                <i class="bi bi-trash-fill"></i>
+                        <div class="d-flex justify-content-center gap-2">
+                            <button class="btn btn-sm btn-outline-success border-0" (click)="abrirEditor(p)">
+                                <i class="bi bi-pencil-fill fs-5"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger border-0" (click)="eliminar(p.id)">
+                                <i class="bi bi-trash-fill fs-5"></i>
                             </button>
                         </div>
                     </td>

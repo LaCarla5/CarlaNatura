@@ -1,0 +1,60 @@
+/* Tamaño de imagen adaptable */
+.img-admin-blog {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+}
+
+/* Título que se adapta */
+.titulo-post-tabla {
+  font-size: 1rem;
+}
+
+/* Ajustes para móviles (menos de 768px) */
+@media (max-width: 767.98px) {
+  .img-admin-blog {
+    width: 40px;
+    height: 40px;
+  }
+
+  .titulo-post-tabla {
+    font-size: 0.85rem; /* Título más pequeño */
+    max-width: 120px;   /* Evita que empuje los botones */
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.4rem; /* Botones más pequeños pero fáciles de tocar */
+  }
+  
+  /* Quitamos bordes de la tabla en móvil para ganar espacio */
+  .table td {
+    padding: 0.75rem 0.25rem;
+  }
+}
+
+.table {
+  /* Esto evita que la tabla se estire más allá del contenedor */
+  table-layout: fixed; 
+  width: 100%;
+}
+
+td {
+  /* Evita que el contenido muy largo rompa la fila */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}
+
+/* Ajuste específico para que el contenido se vea gris y elegante */
+.text-truncate {
+  display: block;
+  width: 100%;
+}
+
+/* En pantallas grandes, damos un poco más de aire */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1200px;
+  }
+}
