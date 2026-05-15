@@ -69,13 +69,13 @@ const conexion = mysql.createPool({
   queueLimit: 0
 });
 
-conexion.connect((err) => {
-  if (err) {
-    console.error('❌ Error al conectar:', err);
-    return;
-  }
-  console.log('✅ ¡Conectado con éxito a MySQL Workbench!');
-});
+// conexion.connect((err) => {
+//   if (err) {
+//     console.error('❌ Error al conectar:', err);
+//     return;
+//   }
+//   console.log('✅ ¡Conectado con éxito a MySQL Workbench!');
+// });
 
 // Configuración Nodemailer
 const transporter = nodemailer.createTransport({
