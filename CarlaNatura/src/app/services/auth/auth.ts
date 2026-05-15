@@ -22,7 +22,7 @@ export class AuthService {
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'https://carlanatura.onrender.com/api';
 
   // Estado de autenticación
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
