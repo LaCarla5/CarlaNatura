@@ -19,7 +19,12 @@ const axios = require('axios');
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://tu-proyecto-de-vercel.vercel.app', // Pega aquí TU URL real
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;

@@ -24,6 +24,8 @@
             "browser": "src/main.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "prerender": false,
+            "ssr": false,
             "assets": [
               {
                 "glob": "**/*",
