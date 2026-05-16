@@ -458,7 +458,7 @@ app.delete('/api/admin/usuarios/:id', (req, res) => {
 app.put('/api/usuarios/bloquear/:id', (req, res) => {
   const id = req.params.id;
   const { activo } = req.body; // Recibimos 0 para bloquear o 1 para desbloquear
-  const sql = "UPDATE Usuarios SET activo = ? WHERE id = ?";
+  const sql = "UPDATE usuarios SET activo = ? WHERE id = ?";
 
   conexion.query(sql, [activo, id], (err, result) => {
     if (err) return res.status(500).send(err);
@@ -575,7 +575,7 @@ app.put('/api/admin/blog/:id', upload.single('imagen'), (req, res) => {
   const fotoNueva = req.file ? req.file.filename : null;
 
   // 1. Base de la consulta: Incluimos urlExterna
-  let sql = "UPDATE Blog_Posts SET titulo = ?, contenido = ?, categoria = ?, urlExterna = ?";
+  let sql = "UPDATE blog_posts SET titulo = ?, contenido = ?, categoria = ?, urlExterna = ?";
   
   // Si hay urlExterna, el contenido debería guardarse como string vacío o null 
   // para cumplir con tu lógica de "Si hay URL no hay contenido"
@@ -736,7 +736,7 @@ app.post('/api/pedidos', (req, res) => {
         const promesasStock = productos.map(p => {
           return new Promise((resolve, reject) => {
             const idProd = p.producto_id || p.id;
-            const sqlUpdate = "UPDATE Productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
+            const sqlUpdate = "UPDATE productos SET stock = stock - ? WHERE id = ? AND stock >= ?";
             conexion.query(sqlUpdate, [p.cantidad, idProd, p.cantidad], (errS, resS) => {
               if (errS) return reject(errS);
               if (resS.affectedRows === 0) return reject(new Error(`Sin stock para ID ${idProd}`));
