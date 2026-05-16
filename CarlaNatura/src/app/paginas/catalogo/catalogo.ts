@@ -8,6 +8,7 @@ import { HttpClient } from '@angular/common/http';
 import Swal from 'sweetalert2';
 //FormsModule para el contador
 import { FormsModule } from '@angular/forms';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-catalogo',
@@ -26,7 +27,7 @@ export class Catalogo {
   private cdr = inject(ChangeDetectorRef); // Inyectamos el detector de cambios
 
 
-  private apiUrl = 'https://carlanatura.onrender.com/api/catalogo';
+ private apiUrl = `${environment.apiUrl}/api/catalogo`;
   productos: Producto[] = [];
   constructor() { }
 

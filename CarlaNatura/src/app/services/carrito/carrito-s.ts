@@ -9,6 +9,7 @@ import { catchError, throwError } from 'rxjs';
 import Swal from 'sweetalert2';
 import { AuthService } from '../auth/auth';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 export interface Producto {
   id: number;
@@ -26,7 +27,7 @@ export interface Producto {
 })
 export class CarritoS {
   private http = inject(HttpClient);
-  private apiUrl = 'https://carlanatura.onrender.com/api/carrito';
+  private apiUrl = `${environment.apiUrl}/api/carrito`;
   private router = inject(Router);
 
   public productos = signal<any[]>([]);
@@ -136,7 +137,7 @@ export class CarritoS {
   // --- FINLIZAR COMPRA Y PDF ---
 
 finalizarCompra(pedido: any): Observable<any> {
-  return this.http.post('https://carlanatura.onrender.com/api/pedidos', pedido).pipe(
+  return this.http.post(`${environment.apiUrl}/api/pedidos`, pedido).pipe(
     tap((res: any) => {
       if (res.success) {
         this.generarFacturaPDF(res.pedidoId, pedido);
