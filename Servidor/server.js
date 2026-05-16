@@ -20,10 +20,9 @@ const axios = require('axios');
 const app = express();
 
 app.use(cors({
-  origin: 'https://carla-natura.vercel.app', // Pega aquí TU URL real
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: 'https://carla-natura.vercel.app',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], // <--- ESTO ES LO QUE TE DA EL ERROR DE LA CONSOLA
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(express.json());
@@ -425,7 +424,7 @@ app.patch('/api/admin/citas/:id', (req, res) => {
       res.json({ message: 'Estado actualizado y correo enviado' });
     });
   });
-})
+});
 
 
 // --- RUTAS DE ADMIN USUARIOS ---

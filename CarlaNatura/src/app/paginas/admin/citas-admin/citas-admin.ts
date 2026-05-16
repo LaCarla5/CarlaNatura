@@ -4,6 +4,7 @@ import { CalendarEvent, CalendarModule, CalendarView } from 'angular-calendar';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import Swal from 'sweetalert2';
+import { CitasService } from '../../../services/citas/citas';
 
 @Component({
   selector: 'app-citas-admin',
@@ -14,7 +15,7 @@ import Swal from 'sweetalert2';
 })
 export class CitasAdmin implements OnInit {
   private http = inject(HttpClient);
-
+  private citasService = inject(CitasService);
   refresh = new Subject<void>();
 
   citasPendientes: any[] = [];
@@ -80,22 +81,20 @@ export class CitasAdmin implements OnInit {
       servicio: cita.servicio,
       fecha: new Date(cita.fecha).toLocaleDateString('es-ES'),
       hora: cita.hora,
-      motivo: motivoAnulacion // Solo llevará texto si es 'cancelada'
+      motivo: motivoAnulacion 
     };
 
     // Llamada al API
-    this.http.patch(`https://carlanatura.onrender.com/api/admin/citas/${cita.id}`, datosCita)
-      .subscribe({
+    this.citasService.actualizarEstadoCita(cita.id, datosCita).subscribe({
         next: () => {
-          Swal.fire({
-            title: nuevoEstado === 'confirmada' ? 'Cita Confirmada' : 'Cita Anulada',
-            text: 'Se ha enviado la notificación por correo al cliente.',
-            icon: 'success'
-          });
+          Swal.fire('¡Éxito!', 'Correo enviado al cliente', 'success');
           this.cargarPendientes();
           this.cargarCalendario();
         },
-        error: () => Swal.fire('Error', 'No se pudo actualizar la cita', 'error')
-      });
+        error: (err) => {
+          console.error("Error completo:", err);
+          Swal.fire('Error', 'CORS bloqueado o fallo en el servidor', 'error');
+        }
+    });
   }
 }

@@ -20,10 +20,10 @@ export class CitasService {
   }
 
   // 2. Para que el ADMIN cambie el estado (Confirmada/Cancelada)
-  actualizarEstadoCita(id: number, nuevoEstado: string): Observable<any> {
-    return this.http.patch(`${this.apiUrl}/admin/citas/${id}`, { estado: nuevoEstado });
+  actualizarEstadoCita(id: number, datos: any): Observable<any> {
+    return this.http.patch(`${this.apiUrl}/admin/citas/${id}`, datos);
   }
-
+  
   // 3. Para que el USUARIO cree una cita nueva
   crearCita(datosCita: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/citas`, datosCita);
