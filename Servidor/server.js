@@ -765,7 +765,7 @@ app.get('/api/carrito', verificarToken, (req, res) => {
   const sql = `
         SELECT c.*, p.nombre, p.precio, p.imagen 
         FROM carrito c 
-        INNER JOIN Productos p ON c.producto_id = p.id 
+        INNER JOIN productos p ON c.producto_id = p.id 
         WHERE c.usuario_id = ?`;
 
   conexion.query(sql, [req.userId], (err, result) => {
@@ -813,7 +813,7 @@ app.get('/api/admin/pedidos', (req, res) => {
   const sql = `
         SELECT p.*, u.nombre AS nombre_usuario, u.email 
         FROM pedidos p
-        INNER JOIN Usuarios u ON p.usuario_id = u.id
+        INNER JOIN usuarios u ON p.usuario_id = u.id
         ORDER BY p.fecha_pedido DESC`;
 
   conexion.query(sql, (err, result) => {
@@ -867,7 +867,7 @@ app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
   const sql = `
         SELECT d.*, p.nombre, p.imagen 
         FROM detalle_pedidos d
-        INNER JOIN Productos p ON d.producto_id = p.id
+        INNER JOIN productos p ON d.producto_id = p.id
         WHERE d.pedido_id = ?`;
 
   conexion.query(sql, [id], (err, result) => {
