@@ -27,7 +27,7 @@ export class Catalogo {
   private cdr = inject(ChangeDetectorRef); // Inyectamos el detector de cambios
 
 
- private apiUrl = `${environment.apiUrl}/api/catalogo`;
+ private apiUrl = `${environment.apiUrl}/catalogo`;
   productos: Producto[] = [];
   constructor() { }
 

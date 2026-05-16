@@ -27,7 +27,7 @@ export interface Producto {
 })
 export class CarritoS {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/carrito`;
+  private apiUrl = `${environment.apiUrl}/carrito`;
   private router = inject(Router);
 
   public productos = signal<any[]>([]);
@@ -137,7 +137,7 @@ export class CarritoS {
   // --- FINLIZAR COMPRA Y PDF ---
 
 finalizarCompra(pedido: any): Observable<any> {
-  return this.http.post(`${environment.apiUrl}/api/pedidos`, pedido).pipe(
+  return this.http.post(`${environment.apiUrl}/pedidos`, pedido).pipe(
     tap((res: any) => {
       if (res.success) {
         this.generarFacturaPDF(res.pedidoId, pedido);
