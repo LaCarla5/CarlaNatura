@@ -419,8 +419,15 @@ app.patch('/api/admin/citas/:id', (req, res) => {
       html: cuerpoHtml
     };
 
+    console.log("Intentando enviar correo a:", email);
+    console.log("Datos del cuerpo:", nombre, servicio, fecha);
+
     transporter.sendMail(mailOptions, (error, info) => {
-      if (error) return res.status(500).send(error);
+    if (error) {
+        console.error("ERROR NODEMAILER:", error); // Esto saldrá en los logs de Render
+        return res.status(500).send(error);
+      }
+      console.log("Correo enviado con éxito: " + info.response);
       res.json({ message: 'Estado actualizado y correo enviado' });
     });
   });
