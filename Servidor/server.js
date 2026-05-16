@@ -21,7 +21,8 @@ const app = express();
 
 app.use(cors({
   origin: 'https://carla-natura.vercel.app', // Pega aquí TU URL real
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'], 
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
 
