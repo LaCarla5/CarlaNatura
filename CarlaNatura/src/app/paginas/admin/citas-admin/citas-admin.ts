@@ -28,7 +28,7 @@ export class CitasAdmin implements OnInit {
   }
 
   cargarPendientes() {
-    this.http.get<any[]>('http://localhost:3000/api/admin/citas/pendientes').subscribe({
+    this.http.get<any[]>('https://carlanatura.onrender.com/api/admin/citas/pendientes').subscribe({
       next: (res) => {
         this.citasPendientes = res;
         //console.log("Citas recibidas en el componente:", this.citasPendientes);
@@ -40,7 +40,7 @@ export class CitasAdmin implements OnInit {
   }
 
   cargarCalendario() {
-    this.http.get<any[]>('http://localhost:3000/api/admin/citas/calendario').subscribe({
+    this.http.get<any[]>('https://carlanatura.onrender.com/api/admin/citas/calendario').subscribe({
       next: (res) => {
         this.eventosCalendario = res.map(cita => ({
           start: new Date(cita.fecha), // La fecha ISO que recibes ya es suficiente
@@ -84,7 +84,7 @@ export class CitasAdmin implements OnInit {
     };
 
     // Llamada al API
-    this.http.patch(`http://localhost:3000/api/admin/citas/${cita.id}`, datosCita)
+    this.http.patch(`https://carlanatura.onrender.com/api/admin/citas/${cita.id}`, datosCita)
       .subscribe({
         next: () => {
           Swal.fire({

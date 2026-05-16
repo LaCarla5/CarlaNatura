@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 })
 export class UsuariosAdmin implements OnInit {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/admin/usuarios';
+  private apiUrl = 'https://carlanatura.onrender.com/api/admin/usuarios';
   private cdr = inject(ChangeDetectorRef);
 
   usuariosCreados: any[] = [];
@@ -35,7 +35,7 @@ export class UsuariosAdmin implements OnInit {
           return {
             ...u,
             // Construimos la URL con el nombre que VIENE de tu base de datos
-            foto_url: `http://localhost:3000/uploads/perfil/${nombreReal}`
+            foto_url: `https://carlanatura.onrender.com/uploads/perfil/${nombreReal}`
           };
         });
 
@@ -67,7 +67,7 @@ export class UsuariosAdmin implements OnInit {
   cambiarEstadoBloqueo(user: any) {
     const nuevoEstado = user.activo === 1 ? 0 : 1;
 
-    this.http.put(`http://localhost:3000/api/usuarios/bloquear/${user.id}`, { activo: nuevoEstado })
+    this.http.put(`https://carlanatura.onrender.com/api/usuarios/bloquear/${user.id}`, { activo: nuevoEstado })
       .subscribe({
         next: () => {
           // Buscamos el usuario en el array original y actualizamos su estado

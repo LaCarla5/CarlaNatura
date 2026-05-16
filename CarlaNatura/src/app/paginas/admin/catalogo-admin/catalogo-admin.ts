@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 })
 export class CatalogoAdmin implements OnInit {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/catalogo-admin';
+  private apiUrl = 'https://carlanatura.onrender.com/api/catalogo-admin';
   private cdr = inject(ChangeDetectorRef);
 
   productos: any[] = [];

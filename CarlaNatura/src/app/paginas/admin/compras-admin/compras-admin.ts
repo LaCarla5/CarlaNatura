@@ -31,8 +31,8 @@ export class ComprasAdmin {
 
   // Este es el método que te faltaba (Error TS2339)
   cargarPedidos() {
-    // Asegúrate de que this.apiUrl sea 'http://localhost:3000'
-    this.http.get(`http://localhost:3000/api/admin/pedidos`).subscribe({
+    // Asegúrate de que this.apiUrl sea 'https://carlanatura.onrender.com'
+    this.http.get(`https://carlanatura.onrender.com/api/admin/pedidos`).subscribe({
       next: (res: any) => {
         this.pedidos = res;
         this.pedidosFiltrados = res;
@@ -79,7 +79,7 @@ export class ComprasAdmin {
 
     Swal.showLoading();
 
-    this.http.post('http://localhost:3000/api/admin/pedidos/notificar', {
+    this.http.post('https://carlanatura.onrender.com/api/admin/pedidos/notificar', {
       pedidoId: this.pedidoEnEdicion.id,
       emailCliente: this.pedidoEnEdicion.email,
       motivo: this.motivoInput
@@ -100,7 +100,7 @@ export class ComprasAdmin {
   }
 
   confirmarCambios(): void {
-    this.http.put(`http://localhost:3000/api/admin/pedidos/${this.pedidoEnEdicion.id}`, this.pedidoEnEdicion)
+    this.http.put(`https://carlanatura.onrender.com/api/admin/pedidos/${this.pedidoEnEdicion.id}`, this.pedidoEnEdicion)
       .subscribe({
         next: () => {
           Swal.fire('Éxito', 'Pedido actualizado', 'success');
@@ -125,7 +125,7 @@ export class ComprasAdmin {
     }).then((result) => {
       if (result.isConfirmed && result.value) {
         // 1. Notificamos al cliente la cancelación
-        this.http.post('http://localhost:3000/api/admin/pedidos/notificar', {
+        this.http.post('https://carlanatura.onrender.com/api/admin/pedidos/notificar', {
           pedidoId: this.pedidoEnEdicion.id,
           emailCliente: this.pedidoEnEdicion.email,
           motivo: `PEDIDO CANCELADO: ${result.value}`

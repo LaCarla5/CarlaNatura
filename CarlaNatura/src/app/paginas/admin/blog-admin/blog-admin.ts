@@ -16,7 +16,7 @@ import { AuthService } from '../../../services/auth/auth';
 })
 export class BlogAdmin implements OnInit {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/admin/blog';
+  private apiUrl = 'https://carlanatura.onrender.com/api/admin/blog';
   private cdr = inject(ChangeDetectorRef);
   public authService = inject(AuthService);
 
@@ -56,7 +56,7 @@ export class BlogAdmin implements OnInit {
         // Mapeamos y asignamos a una variable nueva para asegurar la reactividad
         const postsMapeados = res.map(p => ({
           ...p,
-          imagen_url: `http://localhost:3000/uploads/blog/${p.imagen}`
+          imagen_url: `https://carlanatura.onrender.com/uploads/blog/${p.imagen}`
         }));
 
         this.post = [...postsMapeados]; // Actualizamos el array principal
