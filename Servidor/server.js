@@ -80,16 +80,17 @@ const conexion = mysql.createPool({
 // Configuración Nodemailer
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // true para el puerto 465
+  port: 587,
+  secure: false,
   auth: {
     user: 'carlanatura2026@gmail.com',
     pass: 'mfmnmsssyhhozggl'
   },
   tls: {
-    rejectUnauthorized: false
+    rejectUnauthorized: false,
+    minVersion: 'TLSv1.2' // Asegura compatibilidad con Gmail
   },
-  family: 4 // Obliga a usar IPv4
+  family: 4 // Seguimos forzando IPv4 para evitar el error ENETUNREACH
 });
 
 // Verificacion de token
