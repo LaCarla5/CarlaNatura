@@ -720,14 +720,14 @@ app.post('/api/pedidos', (req, res) => {
     }
 
     // SI ESTÁ COMPLETO: Proceder con la creación del pedido (tu código original)
-    const sqlPedido = "INSERT INTO Pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
+    const sqlPedido = "INSERT INTO pedidos (usuario_id, total, estado_pago) VALUES (?, ?, 'pagado')";
 
     conexion.query(sqlPedido, [usuario_id, total], (err, result) => {
       if (err) return res.status(500).json({ error: "Error al crear pedido" });
 
       const pedidoId = result.insertId;
       const valoresDetalles = productos.map(p => [pedidoId, p.producto_id || p.id, p.cantidad, p.precio_unitario || p.precio]);
-      const sqlDetalles = "INSERT INTO Detalle_Pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
+      const sqlDetalles = "INSERT INTO detalle_pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES ?";
 
       conexion.query(sqlDetalles, [valoresDetalles], (errDetalle) => {
         if (errDetalle) return res.status(500).json({ error: "Error en detalles" });
