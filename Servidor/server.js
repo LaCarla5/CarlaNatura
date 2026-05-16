@@ -192,7 +192,7 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
   const { id } = req.params;
   let { nombre, genero, telefono, domicilio, cp, ciudad, ca, pais } = req.body;
 
-  const limpiar = (valor) => (valor === 'indefinido' || valor === '' || valor === 'null' ? null : valor);
+  const limpiar = (valor) => (valor === '' || valor === 'null' ? null : valor);
 
   // 1. Limpiamos campos
   nombre = limpiar(nombre);

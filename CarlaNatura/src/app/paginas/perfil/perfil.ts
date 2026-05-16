@@ -226,6 +226,7 @@ export class Perfil implements OnInit {
         localStorage.setItem('userStreet', this.domicilioEditado);
         localStorage.setItem('userCP', this.cpEditado);
         localStorage.setItem('userCity', this.ciudadEditado);
+        localStorage.setItem('userGender', this.generoEditado);
         if (nombreArchivo) {
             localStorage.setItem('userPhoto', nombreArchivo);
         }
