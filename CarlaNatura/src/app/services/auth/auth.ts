@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { Injector } from '@angular/core';
 import { CarritoS } from '../carrito/carrito-s';
+import { environment } from '../../../environments/environment';
 
 export interface UserCredentials {
   email: string;
@@ -22,7 +23,7 @@ export class AuthService {
   private platformId = inject(PLATFORM_ID);
   private injector = inject(Injector);
 
-  private apiUrl = 'https://carlanatura.onrender.com/api';
+  private apiUrl = environment.apiUrl;
 
   // Estado de autenticación
   private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
