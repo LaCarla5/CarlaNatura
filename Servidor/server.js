@@ -81,14 +81,15 @@ const conexion = mysql.createPool({
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
-  secure: true, // true para puerto 465
+  secure: true, // true para el puerto 465
   auth: {
     user: 'carlanatura2026@gmail.com',
     pass: 'mfmnmsssyhhozggl'
   },
   tls: {
-    rejectUnauthorized: false // Esto ayuda a evitar bloqueos en servidores externos
-  }
+    rejectUnauthorized: false
+  },
+  family: 4 // Obliga a usar IPv4
 });
 
 // Verificacion de token
