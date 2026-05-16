@@ -79,10 +79,15 @@ const conexion = mysql.createPool({
 
 // Configuración Nodemailer
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true, // true para puerto 465
   auth: {
     user: 'carlanatura2026@gmail.com',
     pass: 'mfmnmsssyhhozggl'
+  },
+  tls: {
+    rejectUnauthorized: false // Esto ayuda a evitar bloqueos en servidores externos
   }
 });
 
@@ -423,12 +428,14 @@ app.patch('/api/admin/citas/:id', (req, res) => {
     console.log("Datos del cuerpo:", nombre, servicio, fecha);
 
     transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-        console.error("ERROR NODEMAILER:", error); // Esto saldrá en los logs de Render
-        return res.status(500).send(error);
+      if (error) {
+        console.log("❌ ERROR EN NODEMAILER:", error);
+        return res.status(500).json({ error: 'Fallo al enviar mail', detalles: error });
       }
-      console.log("Correo enviado con éxito: " + info.response);
-      res.json({ message: 'Estado actualizado y correo enviado' });
+      
+      console.log("✅ CORREO ENVIADO:", info.response);
+      // LA RESPUESTA AL FRONTEND SOLO SE ENVÍA AQUÍ DENTRO
+      return res.json({ message: 'Estado actualizado y correo enviado' });
     });
   });
 });
