@@ -73,7 +73,7 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
 
   try {
     // Preguntamos al servidor qué horas están reservadas ese día
-    const horasOcupadas = await this.http.get<string[]>(`http://localhost:3000/api/citas/ocupadas?fecha=${fechaISO}`)
+    const horasOcupadas = await this.http.get<string[]>(`https://carlanatura.onrender.com/api/citas/ocupadas?fecha=${fechaISO}`)
       .toPromise() || [];
 
     const usuarioActivo = this.authService.getCurrentUser();
@@ -155,7 +155,7 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
       estado: 'pendiente'
     };
 
-    this.http.post('http://localhost:3000/api/citas', payload).subscribe({
+    this.http.post('https://carlanatura.onrender.com/api/citas', payload).subscribe({
       next: () => {
         // ... (tu lógica de Google Calendar se mantiene igual)
         

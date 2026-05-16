@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AdminPedidosS {
   private http = inject(HttpClient);
-  private url = 'http://localhost:3000/api/admin/pedidos';
+  private url = 'https://carlanatura.onrender.com/api/admin/pedidos';
 
   getPedidos(): Observable<any[]> {
     return this.http.get<any[]>(this.url);

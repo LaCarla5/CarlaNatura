@@ -38,9 +38,9 @@ export class Perfil implements OnInit {
 
 
   // Configuración de rutas e imágenes
-  apiUrl = 'http://localhost:3000'; // Tu servidor Node
+  apiUrl = 'https://carlanatura.onrender.com'; // Tu servidor Node
   // Cambia esto en la declaración de variables arriba:
-  fotoPorDefecto = 'http://localhost:3000/uploads/perfil/imagenUsuarioEjemplo.jpg';
+  fotoPorDefecto = 'https://carlanatura.onrender.com/uploads/perfil/imagenUsuarioEjemplo.jpg';
 
   // Variables para el modo edición
   editMode = false;
@@ -84,7 +84,7 @@ export class Perfil implements OnInit {
           this.userCountry = user.pais;
 
           // --- AJUSTE PARA LA FOTO ---
-          const serverUrl = 'http://localhost:3000/uploads/perfil/';
+          const serverUrl = 'https://carlanatura.onrender.com/uploads/perfil/';
           const timestamp = new Date().getTime(); // Generamos el sello de tiempo
 
           if (user.foto_perfil) {
@@ -208,7 +208,7 @@ export class Perfil implements OnInit {
 
         // Identificar el nombre del archivo devuelto por el servidor
         const nombreArchivo = res.foto || res.foto_perfil;
-        const serverUrl = 'http://localhost:3000/uploads/perfil/';
+        const serverUrl = 'https://carlanatura.onrender.com/uploads/perfil/';
         const timestamp = new Date().getTime();
 
         // Limpiar estados de edición inmediatamente
@@ -232,14 +232,13 @@ export class Perfil implements OnInit {
 
         // Aplicar cambios visuales tras un pequeño delay (esperando al servidor)
         setTimeout(() => {
-          // Si hay archivo nuevo, construimos la URL con el puerto 3000
           // Si no hay archivo, usamos la foto que ya tenía el usuario o la de por defecto
           if (nombreArchivo) {
             this.userPhoto = `${serverUrl}${nombreArchivo}?t=${timestamp}`;
           } else if (!this.userPhoto) {
             this.userPhoto = this.fotoPorDefecto.includes('http') 
             ? this.fotoPorDefecto 
-            : `http://localhost:3000/${this.fotoPorDefecto}`;
+            : `https://carlanatura.onrender.com/${this.fotoPorDefecto}`;
           }
 
           // Sincronizar el resto de variables de texto

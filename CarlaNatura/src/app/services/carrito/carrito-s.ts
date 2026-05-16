@@ -26,7 +26,7 @@ export interface Producto {
 })
 export class CarritoS {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/api/carrito';
+  private apiUrl = 'https://carlanatura.onrender.com/api/carrito';
   private router = inject(Router);
 
   public productos = signal<any[]>([]);
@@ -136,7 +136,7 @@ export class CarritoS {
   // --- FINLIZAR COMPRA Y PDF ---
 
 finalizarCompra(pedido: any): Observable<any> {
-  return this.http.post('http://localhost:3000/api/pedidos', pedido).pipe(
+  return this.http.post('https://carlanatura.onrender.com/api/pedidos', pedido).pipe(
     tap((res: any) => {
       if (res.success) {
         this.generarFacturaPDF(res.pedidoId, pedido);

@@ -11,6 +11,6 @@ export class UbicacionS {
   // Consultar datos por Código Postal
   getInfoPorCP(cp: string) {
   // Ahora llamas a tu propio backend
-  return this.http.get(`http://localhost:3000/api/proxy/cp/${cp}`);
+  return this.http.get(`https://carlanatura.onrender.com/api/proxy/cp/${cp}`);
   }
 }

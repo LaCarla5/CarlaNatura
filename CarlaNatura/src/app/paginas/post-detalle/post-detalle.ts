@@ -16,7 +16,7 @@ private route = inject(ActivatedRoute);
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
-    this.http.get(`http://localhost:3000/api/blog/${id}`).subscribe(res => {
+    this.http.get(`https://carlanatura.onrender.com/api/blog/${id}`).subscribe(res => {
       this.post = res;
     });
   }

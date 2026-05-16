@@ -10,7 +10,7 @@ export class CitasService {
   private http = inject(HttpClient);
   
   // Esta es la URL de tu servidor Node.js
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = 'https://carlanatura.onrender.com/api';
 
   constructor() { }
 

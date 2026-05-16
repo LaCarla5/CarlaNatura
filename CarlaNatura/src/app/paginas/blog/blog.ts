@@ -20,12 +20,12 @@ export class Blog implements OnInit {
   }
 
   cargarPosts() {
-    this.http.get<any[]>('http://localhost:3000/api/blog').subscribe({
+    this.http.get<any[]>('https://carlanatura.onrender.com/api/blog').subscribe({
       next: (res) => {
         this.posts = res.map(post => ({
           ...post,
           // Construimos la URL: Servidor + Alias + Nombre del archivo en la BD
-           imagen_url: `http://localhost:3000/uploads/blog/${post.imagen}`
+           imagen_url: `https://carlanatura.onrender.com/uploads/blog/${post.imagen}`
         }));
         this.cdr.detectChanges();
       },

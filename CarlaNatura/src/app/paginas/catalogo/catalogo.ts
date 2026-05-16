@@ -26,7 +26,7 @@ export class Catalogo {
   private cdr = inject(ChangeDetectorRef); // Inyectamos el detector de cambios
 
 
-  private apiUrl = 'http://localhost:3000/api/catalogo';
+  private apiUrl = 'https://carlanatura.onrender.com/api/catalogo';
   productos: Producto[] = [];
   constructor() { }
 
