@@ -4,7 +4,7 @@
   @for (item of miCarrito.productos(); track item.id) {
   <div class="card mb-3 shadow-sm border-0">
     <div class="card-body d-flex align-items-center">
-      <img [src]="'http://localhost:3000/uploads/productos/' + item.imagen" class="rounded me-3" width="80">
+      <img [src]="'https://carlanatura.onrender.com/uploads/productos/' + item.imagen" class="rounded me-3" width="80">
       <div class="flex-grow-1">
         <h5 class="mb-0">{{ item.nombre }}</h5>
         <p class="text-muted">{{ item.cantidad }} x {{ item.precio }}€</p>

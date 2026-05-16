@@ -7,7 +7,7 @@
         @for (item of productos; track item.id) {
         <div class="col-md-4 mb-4">
           <div class="card h-100 shadow-sm border-0">
-            <img [src]="'http://localhost:3000/uploads/productos/' + item.imagen" 
+            <img [src]="'https://carlanatura.onrender.com/uploads/productos/' + item.imagen" 
             class="card-img-top" 
             [alt]="item.nombre"
             (error)="item.imagen = 'placeholder-producto.jpg'">

@@ -67,7 +67,7 @@
           <td>
             <div class="d-flex align-items-center">
               <!-- Concatenamos la URL del servidor + carpeta + nombre del archivo -->
-              <img [src]="'http://localhost:3000/uploads/productos/' + p.imagen" class="rounded me-3"
+              <img [src]="'https://carlanatura.onrender.com/uploads/productos/' + p.imagen" class="rounded me-3"
                 style="width: 50px; height: 50px; object-fit: cover;" onerror="this.src='assets/img/placeholder.jpg'">
               <!-- Imagen por defecto si falla -->
               <span class="fw-bold">{{ p.nombre }}</span>
