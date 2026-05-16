@@ -307,7 +307,7 @@ app.put('/api/citas/:id/estado', (req, res) => {
   const { id } = req.params;
   const { estado, motivo, email, fecha, hora, servicio } = req.body;
 
-  const sql = "UPDATE Citas SET estado = ? WHERE id = ?";
+  const sql = "UPDATE citas SET estado = ? WHERE id = ?";
   db.query(sql, [estado, id], (err, result) => {
     if (err) return res.status(500).send(err);
 
@@ -439,7 +439,7 @@ app.get('/api/admin/usuarios', (req, res) => {
 app.delete('/api/admin/usuarios/:id', (req, res) => {
   const { id } = req.params;
 
-  conexion.query("DELETE FROM Usuarios WHERE id = ?", [id], (err, result) => {
+  conexion.query("DELETE FROM usuarios WHERE id = ?", [id], (err, result) => {
     if (err) {
       // Error de restricción de clave foránea (tiene pedidos, citas, etc.)
       if (err.errno === 1451) {
@@ -685,7 +685,7 @@ app.put('/api/catalogo-admin/:id', upload.single('imagen'), (req, res) => {
 app.delete('/api/catalogo-admin/:id', (req, res) => {
   const { id } = req.params;
 
-  conexion.query("DELETE FROM Productos WHERE id = ?", [id], (err, result) => {
+  conexion.query("DELETE FROM productos WHERE id = ?", [id], (err, result) => {
     if (err) {
       // Código 1451: El producto está en Detalle_Pedidos o Carrito
       if (err.errno === 1451) {
@@ -705,7 +705,7 @@ app.post('/api/pedidos', (req, res) => {
   const { usuario_id, total, productos } = req.body;
 
   // PRIMERO: Validar que el usuario tenga los datos completos
-  const sqlCheckUser = "SELECT telefono, genero, domicilio, cp, ciudad, comunidad_autonoma, pais FROM Usuarios WHERE id = ?";
+  const sqlCheckUser = "SELECT telefono, genero, domicilio, cp, ciudad, comunidad_autonoma, pais FROM usuarios WHERE id = ?";
 
   conexion.query(sqlCheckUser, [usuario_id], (errUser, users) => {
     if (errUser) return res.status(500).json({ error: "Error al verificar usuario" });
@@ -747,7 +747,7 @@ app.post('/api/pedidos', (req, res) => {
 
         Promise.all(promesasStock)
           .then(() => {
-            const sqlBorrar = "DELETE FROM Carrito WHERE usuario_id = ?";
+            const sqlBorrar = "DELETE FROM carrito WHERE usuario_id = ?";
             conexion.query(sqlBorrar, [usuario_id], (errBorrar) => {
               if (errBorrar) return res.status(500).json({ error: "No se pudo vaciar el carrito" });
               res.json({ success: true, pedidoId: pedidoId });
@@ -812,7 +812,7 @@ app.delete('/api/carrito/:producto_id', verificarToken, (req, res) => {
 app.get('/api/admin/pedidos', (req, res) => {
   const sql = `
         SELECT p.*, u.nombre AS nombre_usuario, u.email 
-        FROM Pedidos p
+        FROM pedidos p
         INNER JOIN Usuarios u ON p.usuario_id = u.id
         ORDER BY p.fecha_pedido DESC`;
 
@@ -866,7 +866,7 @@ app.get('/api/admin/pedidos/detalles/:id', (req, res) => {
   const { id } = req.params;
   const sql = `
         SELECT d.*, p.nombre, p.imagen 
-        FROM Detalle_Pedidos d
+        FROM detalle_pedidos d
         INNER JOIN Productos p ON d.producto_id = p.id
         WHERE d.pedido_id = ?`;
 
