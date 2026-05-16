@@ -908,6 +908,6 @@ app.get('/api/proxy/cp/:cp', async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log('🚀 Servidor corriendo en http://localhost:3000');
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
 });
