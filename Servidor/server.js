@@ -5,7 +5,9 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 // Correo
-const nodemailer = require('nodemailer');
+//const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey('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');
 //const path = require('path');
 // Imagenes
 const multer = require('multer');
@@ -78,23 +80,23 @@ const conexion = mysql.createPool({
 // });
 
 // Configuración Nodemailer
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Obligatorio para puerto 587
-  auth: {
-    user: 'carlanatura2026@gmail.com',
-    pass: 'mfmnmsssyhhozggl'
-  },
-  tls: {
-    rejectUnauthorized: false,
-    minVersion: 'TLSv1.2'
-  },
-  connectionTimeout: 20000, // Espera 20 segundos antes de rendirse
-  greetingTimeout: 20000,
-  socketTimeout: 20000,
-  family: 4 // Evita el error de IPv6
-});
+// const transporter = nodemailer.createTransport({
+//   host: 'smtp.gmail.com',
+//   port: 587,
+//   secure: false, // Obligatorio para puerto 587
+//   auth: {
+//     user: 'carlanatura2026@gmail.com',
+//     pass: 'mfmnmsssyhhozggl'
+//   },
+//   tls: {
+//     rejectUnauthorized: false,
+//     minVersion: 'TLSv1.2'
+//   },
+//   connectionTimeout: 20000, // Espera 20 segundos antes de rendirse
+//   greetingTimeout: 20000,
+//   socketTimeout: 20000,
+//   family: 4 // Evita el error de IPv6
+// });
 
 // Verificacion de token
 const verificarToken = (req, res, next) => {
@@ -421,27 +423,30 @@ app.patch('/api/admin/citas/:id', (req, res) => {
         `;
     }
 
-    // Envío con Nodemailer
-    const mailOptions = {
-      from: '"CarlaNatura" <carlanatura2026@gmail.com>',
-      to: email,
+    // // Envío con Nodemailer
+    // const mailOptions = {
+    //   from: '"CarlaNatura" <carlanatura2026@gmail.com>',
+    //   to: email,
+    //   subject: asunto,
+    //   html: cuerpoHtml
+    // };
+    const msg = {
+      to: email, // El email del cliente que recibes en el body
+      from: 'carlanatura2026@gmail.com', // El correo que verificaste en SendGrid
       subject: asunto,
-      html: cuerpoHtml
+      html: cuerpoHtml,
     };
 
-    console.log("Intentando enviar correo a:", email);
-    console.log("Datos del cuerpo:", nombre, servicio, fecha);
-
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        console.log("❌ ERROR EN NODEMAILER:", error);
-        return res.status(500).json({ error: 'Fallo al enviar mail', detalles: error });
-      }
-      
-      console.log("✅ CORREO ENVIADO:", info.response);
-      // LA RESPUESTA AL FRONTEND SOLO SE ENVÍA AQUÍ DENTRO
-      return res.json({ message: 'Estado actualizado y correo enviado' });
-    });
+    sgMail.send(msg)
+      .then(() => {
+        console.log('✅ Correo enviado con SendGrid');
+        res.json({ message: 'Estado actualizado y correo enviado' });
+      })
+      .catch((error) => {
+        console.error('❌ Error de SendGrid:', error);
+        // Si hay error, enviamos el 500 para que Angular sepa que falló
+        res.status(500).json({ error: 'Fallo al enviar mail', detalles: error.response?.body || error });
+      });
   });
 });
 
