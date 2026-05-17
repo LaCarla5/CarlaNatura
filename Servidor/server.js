@@ -71,33 +71,6 @@ const conexion = mysql.createPool({
   queueLimit: 0
 });
 
-// conexion.connect((err) => {
-//   if (err) {
-//     console.error('❌ Error al conectar:', err);
-//     return;
-//   }
-//   console.log('✅ ¡Conectado con éxito a MySQL Workbench!');
-// });
-
-// Configuración Nodemailer
-// const transporter = nodemailer.createTransport({
-//   host: 'smtp.gmail.com',
-//   port: 587,
-//   secure: false, // Obligatorio para puerto 587
-//   auth: {
-//     user: 'carlanatura2026@gmail.com',
-//     pass: 'mfmnmsssyhhozggl'
-//   },
-//   tls: {
-//     rejectUnauthorized: false,
-//     minVersion: 'TLSv1.2'
-//   },
-//   connectionTimeout: 20000, // Espera 20 segundos antes de rendirse
-//   greetingTimeout: 20000,
-//   socketTimeout: 20000,
-//   family: 4 // Evita el error de IPv6
-// });
-
 // Verificacion de token
 const verificarToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -252,9 +225,11 @@ app.put('/api/perfil/:id', upload.single('foto'), (req, res) => {
       console.error("Error en MySQL:", err);
       return res.status(500).json({ mensaje: 'Error interno del servidor' });
     }
-    res.json({ success: true, 
-      mensaje: 'Perfil actualizado', 
-      foto_perfil: foto_perfil });
+    res.json({
+      success: true,
+      mensaje: 'Perfil actualizado',
+      foto_perfil: foto_perfil
+    });
   });
 });
 
@@ -423,13 +398,7 @@ app.patch('/api/admin/citas/:id', (req, res) => {
         `;
     }
 
-    // // Envío con Nodemailer
-    // const mailOptions = {
-    //   from: '"CarlaNatura" <carlanatura2026@gmail.com>',
-    //   to: email,
-    //   subject: asunto,
-    //   html: cuerpoHtml
-    // };
+    // Envío de correo
     const msg = {
       to: email, // El email del cliente que recibes en el body
       from: 'carlanatura2026@gmail.com', // El correo que verificaste en SendGrid
@@ -600,11 +569,11 @@ app.put('/api/admin/blog/:id', upload.single('imagen'), (req, res) => {
 
   // 1. Base de la consulta: Incluimos urlExterna
   let sql = "UPDATE blog_posts SET titulo = ?, contenido = ?, categoria = ?, urlExterna = ?";
-  
+
   // Si hay urlExterna, el contenido debería guardarse como string vacío o null 
   // para cumplir con tu lógica de "Si hay URL no hay contenido"
   const contenidoFinal = (urlExterna && urlExterna.trim() !== '') ? '' : contenido;
-  
+
   let params = [titulo, contenidoFinal, categoria, urlExterna || null];
 
   // 2. Manejo de la imagen
@@ -612,7 +581,7 @@ app.put('/api/admin/blog/:id', upload.single('imagen'), (req, res) => {
     sql += ", imagen = ?";
     params.push(fotoNueva);
   }
-  
+
   // 3. Condición final
   sql += " WHERE id = ?";
   params.push(id);
@@ -622,15 +591,15 @@ app.put('/api/admin/blog/:id', upload.single('imagen'), (req, res) => {
       console.error("Error MySQL detallado:", err);
       return res.status(500).json({ error: err.message });
     }
-    
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ mensaje: "No se encontró el registro con ID: " + id });
     }
 
-    res.json({ 
-      success: true, 
-      mensaje: "Post actualizado correctamente", 
-      nuevaImagen: fotoNueva 
+    res.json({
+      success: true,
+      mensaje: "Post actualizado correctamente",
+      nuevaImagen: fotoNueva
     });
   });
 });
@@ -853,10 +822,10 @@ app.get('/api/admin/pedidos', (req, res) => {
 app.post('/api/admin/pedidos/notificar', (req, res) => {
   const { pedidoId, emailCliente, motivo } = req.body;
 
-  // Configuración del mensaje
-  const mailOptions = {
-    from: 'CarlaNatura <carlanatura2026@gmail.com>',
-    to: emailCliente,
+  // Configuración del mensaje`
+  const msg = {
+    to: emailCliente, // El email del cliente que recibes en el body
+    from:'CarlaNatura <carlanatura2026@gmail.com>', // El correo que verificaste en SendGrid
     subject: `⚠️ Información sobre su pedido #${pedidoId} - CarlaNatura`,
     html: `
             <div style="font-family: sans-serif; color: #333;">
@@ -874,15 +843,16 @@ app.post('/api/admin/pedidos/notificar', (req, res) => {
         `
   };
 
-  // Envío real del correo
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      //console.error("Error al enviar email de notificación:", error);
-      return res.status(500).json({ success: false, error: "Error al enviar el correo" });
-    }
-    //console.log("Email enviado: " + info.response);
-    res.json({ success: true, message: "Correo enviado correctamente" });
-  });
+  sgMail.send(msg)
+    .then(() => {
+      console.log('✅ Correo enviado con SendGrid');
+      res.json({ message: 'Estado actualizado y correo enviado' });
+    })
+    .catch((error) => {
+      console.error('❌ Error de SendGrid:', error);
+      // Si hay error, enviamos el 500 para que Angular sepa que falló
+      res.status(500).json({ error: 'Fallo al enviar mail', detalles: error.response?.body || error });
+    });
 });
 
 // Ruta para obtener los productos de UN pedido específico
