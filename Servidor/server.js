@@ -7,7 +7,7 @@ const cors = require('cors');
 // Correo
 //const nodemailer = require('nodemailer');
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey('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');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 //const path = require('path');
 // Imagenes
 const multer = require('multer');
