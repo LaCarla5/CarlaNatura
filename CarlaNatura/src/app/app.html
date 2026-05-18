@@ -6,10 +6,6 @@
         <span class="fw-bold text-success fs-3">{{ title() }}</span>
       </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
           
@@ -70,14 +66,14 @@
               </a>
             </li>
             <li class="nav-item ms-lg-2">
-              <button class="btn btn-outline-danger px-3" (click)="authService.logout()">Cerrar Sesión</button>
+              <button class="btn btn-outline-danger fw-bold px-4 shadow-sm" (click)="authService.logout()">Cerrar Sesión</button>
             </li>
           </ng-container>
 
           <ng-container *ngIf="!(authService.isLoggedIn$ | async)">
             <li class="nav-item"><a class="nav-link" routerLink="/blog">Blog</a></li>
             <li class="nav-item ms-lg-3">
-              <a class="btn btn-outline-success px-4 shadow-sm" routerLink="/login">
+              <a class="btn btn-outline-success fw-bold px-4 shadow-sm" routerLink="/login">
                 Iniciar Sesión / Registrase
               </a>
             </li>
