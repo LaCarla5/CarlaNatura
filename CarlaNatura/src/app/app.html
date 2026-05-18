@@ -66,15 +66,17 @@
               </a>
             </li>
             <li class="nav-item ms-lg-2">
-              <button class="btn btn-outline-danger fw-bold px-4 shadow-sm" (click)="authService.logout()">Cerrar Sesión</button>
+              <button class="btn btn-danger fw-bold px-4 shadow-sm" (click)="authService.logout()">
+                Cerrar Sesión
+              </button>
             </li>
           </ng-container>
 
           <ng-container *ngIf="!(authService.isLoggedIn$ | async)">
             <li class="nav-item"><a class="nav-link" routerLink="/blog">Blog</a></li>
             <li class="nav-item ms-lg-3">
-              <a class="btn btn-outline-success fw-bold px-4 shadow-sm" routerLink="/login">
-                Iniciar Sesión / Registrase
+              <a routerLink="/login" class="btn btn-success fw-bold px-4 shadow-sm">
+                Iniciar Sesión / Registrarse
               </a>
             </li>
           </ng-container>
