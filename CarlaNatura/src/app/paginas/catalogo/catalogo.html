@@ -53,4 +53,33 @@
 
                 <p class="text-success fs-4 fw-bold mb-2">{{ item.precio }}€</p>
 
-                <div class="d-flex align-items-center justify-content-center gap-2 mb
+                <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+                  <div class="input-group input-group-sm" style="width: 100px;">
+                    <button class="btn btn-outline-secondary" (click)="cambiarCantidad(item, -1)"
+                      [disabled]="item.cantidadSeleccionada! <= 1 || item.stockEfectivo! <= 0">-</button>
+
+                    <input type="text" class="form-control text-center" [value]="item.cantidadSeleccionada" readonly>
+
+                    <button class="btn btn-outline-secondary" (click)="cambiarCantidad(item, 1)"
+                      [disabled]="item.cantidadSeleccionada! >= item.stockEfectivo!">+</button>
+                  </div>
+                </div>
+
+                <button class="btn w-100 mb-2" [ngClass]="item.stockEfectivo! > 0 ? 'btn-success' : 'btn-secondary'"
+                  (click)="agregarAlCarrito(item)" [disabled]="item.stockEfectivo! <= 0">
+                  {{ item.stockEfectivo! > 0 ? 'Añadir al carrito' : 'Agotado' }}
+                </button>
+
+                @if (item.stockEfectivo! > 0 && item.stockEfectivo! <= 5) { 
+                  <div class="d-block"><small class="text-danger fw-bold">¡Solo quedan {{ item.stockEfectivo }} unidades!</small></div>
+                }
+              </div>
+
+            </div>
+          </div>
+        </div>
+        }
+      </div>
+    </div>
+  </section>
+</main>
