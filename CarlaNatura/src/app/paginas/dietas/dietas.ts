@@ -22,7 +22,7 @@ export class Dietas implements OnInit{
       this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(this.urlExterna);
     }
 
-    irADietas() {
+  irADietas() {
   // Abre tu app de Streamlit en una pestaña nueva del navegador
   window.open('https://dietascarlanatura.streamlit.app/', '_blank');
   }

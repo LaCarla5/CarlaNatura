@@ -1,6 +1,6 @@
-import { Component, Inject, PLATFORM_ID, inject } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { CalendarModule, CalendarView, CalendarDateFormatter, CalendarNativeDateFormatter } from 'angular-calendar';
+import { CalendarModule, CalendarView, CalendarDateFormatter, CalendarNativeDateFormatter, CalendarEvent } from 'angular-calendar';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
@@ -19,7 +19,7 @@ import { AuthService } from '../../services/auth/auth';
     },
   ],
 })
-export class Citas {
+export class Citas implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private http = inject(HttpClient);
@@ -28,10 +28,50 @@ export class Citas {
   viewDate: Date = new Date();
   isBrowser: boolean;
 
+  eventosUsuario: CalendarEvent[] = [];
+
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
     this.isBrowser = isPlatformBrowser(this.platformId);
     // Ponemos la hora a 00:00:00 para comparar solo el día
     this.viewDate.setHours(0, 0, 0, 0);
+  }
+
+  ngOnInit() {
+    if (this.isBrowser && this.authService.isLoggedIn()) {
+      this.cargarMisCitasCalendario();
+    }
+  }
+
+  cargarMisCitasCalendario() {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    this.http.get<any[]>(`https://carlanatura.onrender.com/api/citas/usuario/${userId}`).subscribe({
+      next: (citas) => {
+        this.eventosUsuario = citas.map(cita => {
+          const horaLimpia = cita.hora ? cita.hora.substring(0, 5) : '';
+          
+          // Definimos colores dinámicos según el estado para guiar al usuario
+          let colorEstado = { primary: '#198754', secondary: '#e8f5e9' }; // Verde para confirmadas
+          
+          if (cita.estado === 'pendiente') {
+            colorEstado = { primary: '#ffc107', secondary: '#fff3cd' }; // Amarillo para pendientes
+          } else if (cita.estado === 'cancelada') {
+            colorEstado = { primary: '#dc3545', secondary: '#f8d7da' }; // Rojo si fue rechazada
+          }
+
+          return {
+            id: cita.id,
+            // Multiplicamos por 1 para asegurar que Angular Calendar trabaje con un objeto Date válido
+            start: new Date(cita.fecha), 
+            title: `Tu Cita: ${horaLimpia} - ${cita.servicio} (${cita.estado.toUpperCase()})`,
+            color: colorEstado,
+            meta: { citaOriginal: cita }
+          };
+        });
+      },
+      error: (err) => console.error('Error al poblar el calendario del usuario:', err)
+    });
   }
 
   // Esta función protege los botones de Anterior/Siguiente

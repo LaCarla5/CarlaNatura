@@ -43,11 +43,31 @@ export class CitasAdmin implements OnInit {
   cargarCalendario() {
     this.http.get<any[]>('https://carlanatura.onrender.com/api/admin/citas/calendario').subscribe({
       next: (res) => {
-        this.eventosCalendario = res.map(cita => ({
-          start: new Date(cita.fecha), // La fecha ISO que recibes ya es suficiente
-          title: `${cita.nombre} - ${cita.servicio}`,
-          color: { primary: '#198754', secondary: '#e8f5e9' }
-        }));
+        this.eventosCalendario = res.map(cita => {
+          // 1. Limpiamos el formato de la hora (de "17:30:00" a "17:30") por si viene con segundos desde MySQL
+          const horaLimpia = cita.hora ? cita.hora.substring(0, 5) : '';
+
+          // 2. Preparamos una descripción opcional abreviada para que no sature visualmente el cuadro si es muy larga
+          const notaBreve = cita.descripcion ? ` - Obs: "${cita.descripcion}"` : '';
+
+          return {
+            id: cita.id,
+            start: new Date(cita.fecha),
+            
+            title: `⏰ ${horaLimpia} | ${cita.nombre} (${cita.servicio})${notaBreve}`,
+            
+            // Mantenemos tus colores verde corporativo personalizados
+            color: { 
+              primary: '#198754', 
+              secondary: '#e8f5e9' 
+            },
+            
+            // Guardamos los datos nativos por si en el futuro deseas capturar un evento (click) en el calendario
+            meta: {
+              citaOriginal: cita
+            }
+          };
+        });
         this.refresh.next();
       }
     });
