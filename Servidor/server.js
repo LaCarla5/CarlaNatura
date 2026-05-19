@@ -461,8 +461,18 @@ app.put('/api/usuarios/bloquear/:id', (req, res) => {
 
 // --- RUTAS DE CATÁLOGO ---
 app.get('/api/catalogo', (req, res) => {
-  conexion.query('SELECT * FROM productos', (err, resultados) => {
-    if (err) return res.status(500).json({ error: 'Error' });
+  // Hacemos un JOIN para traer los datos del producto y el nombre de su categoría
+  const query = `
+    SELECT p.*, c.nombre AS categoria_nombre 
+    FROM productos p 
+    LEFT JOIN categorias c ON p.categoria_id = c.id
+  `;
+
+  conexion.query(query, (err, resultados) => {
+    if (err) {
+      console.error('Error en catálogo:', err);
+      return res.status(500).json({ error: 'Error al obtener el catálogo' });
+    }
     res.json(resultados);
   });
 });

@@ -18,6 +18,7 @@ export interface Producto {
   imagen: string;
   descripcion: string;
   stock: number;
+  categoria_nombre?: string;
   stockEfectivo?: number;
   cantidadSeleccionada?: number;
 }
