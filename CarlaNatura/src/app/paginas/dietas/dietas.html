@@ -2,10 +2,12 @@
   <div class="header-seccion container">
     <h2 class="text-verde">Tu Plan Nutricional</h2>
     <p>Calcula tu dieta personalizada basada en productos naturales</p>
-    <button class="btn btn-success fw-bold px-4 shadow-sm d-block d-lg-inline-block text-center" src="https://dietascarlanatura.streamlit.app/">
-      Visita la pagina de Dietas
+  <button class="btn btn-success fw-bold px-4 shadow-sm d-block d-lg-inline-block mx-auto m-lg-0" 
+            (click)="irADietas()">
+      Visita la página de Dietas
     </button>
   </div>
+
 
   <div class="iframe-container shadow">
     @if (urlSegura) {

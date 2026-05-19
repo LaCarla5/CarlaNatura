@@ -21,4 +21,9 @@ export class Dietas implements OnInit{
       // Marcamos la URL como segura para que Angular permita cargarla en el iframe
       this.urlSegura = this.sanitizer.bypassSecurityTrustResourceUrl(this.urlExterna);
     }
+
+    irADietas() {
+  // Abre tu app de Streamlit en una pestaña nueva del navegador
+  window.open('https://dietascarlanatura.streamlit.app/', '_blank');
+  }
 }
