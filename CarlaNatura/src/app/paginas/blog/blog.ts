@@ -34,12 +34,16 @@ export class Blog implements OnInit {
   }
 
   verNoticiaInterna(post: any) {
+    const fechaFormateada = post.fecha_publicacion 
+  ? new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(post.fecha_publicacion))
+  : 'Reciente';
+
     Swal.fire({
       title: `<span style="color: #2d7a4d; font-family: 'Playfair Display', serif; font-size: 2rem;">${post.titulo}</span>`,
       html: `
       <div style="text-align: left; padding: 0 10px;">
         <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">
-          <i class="bi bi-tag"></i> ${post.categoria} | <i class="bi bi-calendar3"></i> ${post.fecha_publicacion || 'Reciente'}
+          <i class="bi bi-tag"></i> ${post.categoria} | <i class="bi bi-calendar3"></i> ${fechaFormateada}
         </p>
         <hr style="border-top: 1px solid #eee;">
         <div style="line-height: 1.8; font-size: 1.15rem; color: #333; font-family: 'Georgia', serif;">
