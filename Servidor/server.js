@@ -332,7 +332,7 @@ app.get('/api/citas/:usuario_id', (req, res) => {
   const { usuario_id } = req.params; 
 
   // Cambiado 'usuario_id' por 'cliente_id' en el WHERE
-  const sql = "SELECT * FROM citas WHERE cliente_id = ? ORDER BY fecha ASC";
+  const sql = "SELECT * FROM citas WHERE usuario_id = ? ORDER BY fecha ASC";
 
   conexion.query(sql, [usuario_id], (err, resultado) => {
     if (err) {
