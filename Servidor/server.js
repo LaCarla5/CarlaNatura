@@ -328,6 +328,20 @@ app.put('/api/citas/:id/estado', (req, res) => {
   });
 });
 
+app.get('/api/citas/usuario/:usuario_id', (req, res) => {
+  const { usario_id } = req.query; // Recibe el id del usuario
+
+  const sql = "SELECT * FROM citas WHERE usuario_id = ? AND estado = 'confirmada' ORDER BY fecha ASC";
+
+  conexion.query(sql, [usuario_id], (err, resultado) => {
+    if (err) {
+      console.error('Error al consultar disponibilidad:', err);
+      return res.status(500).json({ error: 'Error en el servidor' });
+    }
+    res.json(resultado);
+  });
+});
+
 // --- RUTAS DE ADMIN CITAS ---
 
 // Obtener todas para la tabla general
