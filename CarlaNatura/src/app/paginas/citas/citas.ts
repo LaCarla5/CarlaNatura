@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, PLATFORM_ID, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CalendarModule, CalendarView, CalendarDateFormatter, CalendarNativeDateFormatter, CalendarEvent } from 'angular-calendar';
 import { HttpClient } from '@angular/common/http';
@@ -23,7 +23,8 @@ export class Citas implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private http = inject(HttpClient);
-
+  private cdr = inject(ChangeDetectorRef);
+  
   view: CalendarView = CalendarView.Month;
   viewDate: Date = new Date();
   isBrowser: boolean;
@@ -69,6 +70,7 @@ export class Citas implements OnInit {
             meta: { citaOriginal: cita }
           };
         });
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error al poblar el calendario del usuario:', err)
     });
