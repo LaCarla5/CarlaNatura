@@ -328,15 +328,16 @@ app.put('/api/citas/:id/estado', (req, res) => {
   });
 });
 
-app.get('/api/citas/usuario/:usuario_id', (req, res) => {
-  const { usario_id } = req.query; // Recibe el id del usuario
+app.get('/api/citas/:usuario_id', (req, res) => {
+  const { usuario_id } = req.params; 
 
-  const sql = "SELECT * FROM citas WHERE usuario_id = ? AND estado = 'confirmada' ORDER BY fecha ASC";
+  // Cambiado 'usuario_id' por 'cliente_id' en el WHERE
+  const sql = "SELECT * FROM citas WHERE cliente_id = ? ORDER BY fecha ASC";
 
   conexion.query(sql, [usuario_id], (err, resultado) => {
     if (err) {
-      console.error('Error al consultar disponibilidad:', err);
-      return res.status(500).json({ error: 'Error en el servidor' });
+      console.error('Error al consultar las citas del usuario:', err);
+      return res.status(500).json({ error: 'Error interno del servidor' });
     }
     res.json(resultado);
   });

@@ -195,7 +195,8 @@ export class BlogAdmin implements OnInit {
             text: 'Al añadir una URL, el contenido guardado dejará de mostrarse.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Sí, aplicar'
+            confirmButtonText: 'Sí, aplicar',
+            color: '#198754',
           }).then((res) => {
             if (res.isConfirmed) return { titulo, categoria, urlExterna, contenido, imagen };
             return false;

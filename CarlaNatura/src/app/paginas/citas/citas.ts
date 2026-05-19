@@ -46,7 +46,7 @@ export class Citas implements OnInit {
     const userId = this.authService.getUserId();
     if (!userId) return;
 
-    this.http.get<any[]>(`https://carlanatura.onrender.com/api/citas/usuario/${userId}`).subscribe({
+    this.http.get<any[]>(`https://carlanatura.onrender.com/api/citas/${userId}`).subscribe({
       next: (citas) => {
         this.eventosUsuario = citas.map(cita => {
           const horaLimpia = cita.hora ? cita.hora.substring(0, 5) : '';
