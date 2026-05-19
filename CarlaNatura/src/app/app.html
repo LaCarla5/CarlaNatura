@@ -6,38 +6,43 @@
         <span class="fw-bold text-success fs-3">{{ title() }}</span>
       </a>
 
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-center">
+        <ul class="navbar-nav ms-auto align-items-lg-center py-3 py-lg-0 gap-2 gap-lg-0">
           
           <ng-container *ngIf="authService.isLoggedIn$ | async">
             
             <ng-container *ngIf="authService.getUserRole() === 'ADMIN'">
               <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle mb-2 mb-lg-0 d-inline-block d-lg-block" 
                    routerLink="/admin/catalogo-admin" routerLinkActive="active-link">
                   <i class="bi bi-shield-lock-fill"></i> Productos
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle mb-2 mb-lg-0 d-inline-block d-lg-block" 
                    routerLink="/admin/usuarios-admin" routerLinkActive="active-link">
                   <i class="bi bi-people-fill"></i> Usuarios
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle mb-2 mb-lg-0 d-inline-block d-lg-block" 
                    routerLink="/admin/citas-admin" routerLinkActive="active-link">
                   <i class="bi bi-calendar-check"></i> Citas
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle mb-2 mb-lg-0 d-inline-block d-lg-block" 
                    routerLink="/admin/blog-admin" routerLinkActive="active-link">
                   <i class="bi bi-calendar-check"></i> Blog
                 </a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle" 
+                <a class="nav-link text-success fw-bold border border-success rounded-pill px-3 me-lg-2 shadow-sm bg-success-subtle mb-2 mb-lg-0 d-inline-block d-lg-block" 
                    routerLink="/admin/compras-admin" routerLinkActive="active-link">
                   <i class="bi bi-calendar-check"></i> Pedidos
                 </a>
@@ -50,9 +55,9 @@
               <li class="nav-item"><a class="nav-link" routerLink="/blog" routerLinkActive="active-link">Blog</a></li>
               <li class="nav-item"><a class="nav-link" routerLink="/dietas" routerLinkActive="active-link">Dietas</a></li>
               
-              <li class="nav-item">
-                <a class="nav-link position-relative" routerLink="/carrito">
-                  <i class="bi bi-cart">Carrito</i>
+              <li class="nav-item mb-2 mb-lg-0">
+                <a class="nav-link position-relative d-inline-block d-lg-block" routerLink="/carrito">
+                  <i class="bi bi-cart"> Carrito</i>
                   <span class="badge rounded-pill bg-danger position-absolute top-0 start-100 translate-middle">
                     {{ miCarrito.cantidadTotal() }}
                   </span>
@@ -65,8 +70,8 @@
                 <i class="bi bi-person-circle fs-5"></i> Mi Perfil
               </a>
             </li>
-            <li class="nav-item ms-lg-2">
-              <button class="btn btn-danger fw-bold px-4 shadow-sm" (click)="authService.logout()">
+            <li class="nav-item ms-lg-2 mt-2 mt-lg-0">
+              <button class="btn btn-danger fw-bold px-4 shadow-sm w-100 w-lg-auto" (click)="authService.logout()">
                 Cerrar Sesión
               </button>
             </li>
@@ -74,8 +79,8 @@
 
           <ng-container *ngIf="!(authService.isLoggedIn$ | async)">
             <li class="nav-item"><a class="nav-link" routerLink="/blog">Blog</a></li>
-            <li class="nav-item ms-lg-3">
-              <a routerLink="/login" class="btn btn-success fw-bold px-4 shadow-sm">
+            <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
+              <a routerLink="/login" class="btn btn-success fw-bold px-4 shadow-sm d-block d-lg-inline-block text-center">
                 Iniciar Sesión / Registrarse
               </a>
             </li>
