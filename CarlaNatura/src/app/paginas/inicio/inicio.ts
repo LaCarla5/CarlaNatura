@@ -23,18 +23,27 @@ export class Inicio {
     if (!this.authService.isLoggedIn()) {
       return false;
     }
-    
-    // Al decirle "as any", TypeScript se olvida de 'UserRole' 
-    // y te deja compararlo con el texto 'admin' sin protestar
     const rol = this.authService.getUserRole() as any;
-    
     return rol === 'admin'; 
   }
 
-  verDetalle(item: string) {
-    // 1. Si está logueado, decidimos a qué ruta mandarlo según su rol
+verDetalle(item: string) {
+    // 1. Si está logueado, comprobamos si es admin para cambiar la ruta
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/' + item]); 
+      
+      // Si el usuario es administrador, le sumamos '-admin' a la ruta (ej: 'catalogo' pasa a 'catalogo-admin')
+      // Pero si por algún motivo el HTML ya te manda 'catalogo-admin', evitamos duplicarlo
+      let rutaFinal = item;
+      if (this.isAdmin && !item.endsWith('-admin')) {
+        // Corrección especial para 'citas' -> 'cita-admin' si tu ruta de admin se llama así
+        if (item === 'citas') {
+          rutaFinal = 'cita-admin';
+        } else {
+          rutaFinal = `${item}-admin`;
+        }
+      }
+
+      this.router.navigate(['/' + rutaFinal]); 
     } 
     // 2. Si no está logueado, salta el aviso para ir al login
     else {
@@ -43,8 +52,8 @@ export class Inicio {
         text: 'Para acceder a esta sección de CarlaNatura, por favor inicia sesión primero.',
         icon: 'info',
         showCancelButton: true,
-        confirmButtonColor: '#198754', // Tu verde
-        cancelButtonColor: '#bf9525',  // Tu dorado
+        confirmButtonColor: '#198754',
+        cancelButtonColor: '#bf9525',
         confirmButtonText: 'Ir al Login',
         cancelButtonText: 'Seguir mirando'
       }).then((result) => {
