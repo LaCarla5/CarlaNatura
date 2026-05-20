@@ -40,7 +40,7 @@ export class Catalogo {
     this.http.get<Producto[]>(this.apiUrl).subscribe({
       next: (res) => {
         // Obtenemos los items del carrito desde tu servicio
-        console.log('¿Qué viene de la BBDD?', res);
+        //console.log('¿Qué viene de la BBDD?', res);
         const itemsCarrito: any[] = (this.carritoService as any).items || [];
 
         this.productos = res.map(p => {

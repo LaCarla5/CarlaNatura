@@ -423,7 +423,7 @@ app.patch('/api/admin/citas/:id', (req, res) => {
 
     sgMail.send(msg)
       .then(() => {
-        console.log('✅ Correo enviado con SendGrid');
+        //console.log('✅ Correo enviado con SendGrid');
         res.json({ message: 'Estado actualizado y correo enviado' });
       })
       .catch((error) => {
@@ -870,7 +870,7 @@ app.post('/api/admin/pedidos/notificar', (req, res) => {
 
   sgMail.send(msg)
     .then(() => {
-      console.log('✅ Correo enviado con SendGrid');
+      //console.log('✅ Correo enviado con SendGrid');
       res.json({ message: 'Estado actualizado y correo enviado' });
     })
     .catch((error) => {
