@@ -24,8 +24,8 @@ export class Inicio {
       return false;
     }
     const rol = this.authService.getUserRole() as any;
-    console.log(rol)
-    return rol === 'admin'; 
+    //console.log(rol)
+    return rol === 'ADMIN'; 
   }
 
 verDetalle(item: string) {
