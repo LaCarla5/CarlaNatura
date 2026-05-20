@@ -1,12 +1,13 @@
 import { Component, signal, inject } from '@angular/core'; // Añadimos inject
 import { Router } from '@angular/router'; // Importante para navegar
+import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2'; // Mensaje mas suaves
 import { AuthService, UserRole } from '../../services/auth/auth';
 
 @Component({
   selector: 'app-inicio',
   standalone: true, // Asumo que es standalone por el formato que usas
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './inicio.html',
   styleUrl: './inicio.scss',
 })
