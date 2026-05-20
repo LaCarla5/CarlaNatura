@@ -86,12 +86,25 @@ export class Citas implements OnInit {
   }
 
   
-  // Función principal cuando pinchan en un día
+// Función principal cuando pinchan en un día
 async dayClicked({ date }: { date: Date }): Promise<void> {
   if (!this.isBrowser) return;
 
-  // Bloquear fechas anteriores al dia de hoy
-  if (date < this.viewDate) {
+  // Formateamos el día en el que se ha pinchado a "AÑO-MES-DÍA"
+  const y1 = date.getFullYear();
+  const m1 = (date.getMonth() + 1).toString().padStart(2, '0');
+  const d1 = date.getDate().toString().padStart(2, '0');
+  const fechaSeleccionadaTexto = `${y1}-${m1}-${d1}`;
+
+  // Formateamos el día de HOY a "AÑO-MES-DÍA"
+  const hoy = new Date();
+  const y2 = hoy.getFullYear();
+  const m2 = (hoy.getMonth() + 1).toString().padStart(2, '0');
+  const d2 = hoy.getDate().toString().padStart(2, '0');
+  const fechaHoyTexto = `${y2}-${m2}-${d2}`;
+
+  // Comparamos los textos directamente
+  if (fechaSeleccionadaTexto < fechaHoyTexto) {
     Swal.fire({
       title: 'Fecha no válida',
       text: 'No puedes reservar citas en días pasados.',
@@ -103,11 +116,8 @@ async dayClicked({ date }: { date: Date }): Promise<void> {
 
   if (!this.comprobarAcceso()) return;
 
-  // Formateamos la fecha correctamente para la DB
-  const year = date.getFullYear();
-  const month = (date.getMonth() + 1).toString().padStart(2, '0');
-  const day = date.getDate().toString().padStart(2, '0');
-  const fechaISO = `${year}-${month}-${day}`; 
+  // Como ya calculaste arriba el formato para la DB, puedes reutilizarlo directamente aquí:
+  const fechaISO = fechaSeleccionadaTexto; 
 
   const fechaFormateada = date.toLocaleDateString('es-ES', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
